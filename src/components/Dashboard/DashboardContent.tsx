@@ -4,6 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
 import StatsCard from './StatsCard';
 import EmployeeTable from './EmployeeTable';
+import Analytics from './Analytics';
+import Reports from './Reports';
 import { Users, UserCheck, UserPlus, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -183,9 +185,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
     case 'profile':
       return renderEmployees();
     case 'analytics':
-      return renderPlaceholder('Analytics', 'Advanced analytics and insights');
+      return <Analytics />;
     case 'reports':
-      return renderPlaceholder('Reports', 'Generate and view reports');
+      return <Reports />;
     case 'attendance':
       return renderPlaceholder('Attendance', 'Track and manage attendance');
     case 'leave':
