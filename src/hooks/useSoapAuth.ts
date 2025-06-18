@@ -27,7 +27,7 @@ const useSoapAuth = () => {
     isLoading: true,
     error: null,
   });
-//   const navigate = useNavigate();
+
 
   // SOAP Request Helper
   const makeSoapRequest = useCallback(async (
@@ -75,7 +75,6 @@ const useSoapAuth = () => {
     return response.text();
   }, []);
 
-  // Parse SOAP Response
   const parseSoapResponse = useCallback((xmlText: string, method: string) => {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlText, "text/xml");
