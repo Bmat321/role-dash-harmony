@@ -7,7 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    port: 8000,
     proxy: {
       // ✅ Proxy SOAP calls to backend to avoid CORS
       '/hris': {

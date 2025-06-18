@@ -56,6 +56,8 @@ const useSoapAuth = () => {
       </soapenv:Envelope>
     `;
 
+    
+
     const response = await fetch('/hris', {
       method: 'POST',
       headers: {
@@ -63,6 +65,7 @@ const useSoapAuth = () => {
         'SOAPAction': method,
       },
       body: soapRequest,
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -115,7 +118,6 @@ const useSoapAuth = () => {
 
   // Public Auth Methods
   const login = useCallback(async (email: string, password: string) => {
-    console.log("email", email, "password", password);
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
@@ -217,7 +219,6 @@ const useSoapAuth = () => {
 
   // Helper function to extract user data from response
   const extractUserFromResponse = (response: Element): User => {
-    console.log("response", response);
     const userId = response.getElementsByTagName("id")[0]?.textContent;
     const firstName = response.getElementsByTagName("firstName")[0]?.textContent;
     const lastName = response.getElementsByTagName("lastName")[0]?.textContent;
