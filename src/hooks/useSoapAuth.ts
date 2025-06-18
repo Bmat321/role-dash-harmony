@@ -55,10 +55,9 @@ const useSoapAuth = () => {
         </soapenv:Body>
       </soapenv:Envelope>
     `;
+      console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
 
-    
-
-      const response = await fetch("https://hris-backend-1.onrender.com/hris", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/xml;charset=UTF-8',
