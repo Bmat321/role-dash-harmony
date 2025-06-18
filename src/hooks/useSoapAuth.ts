@@ -1,4 +1,4 @@
-// src/hooks/useSoapAuth.ts
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
