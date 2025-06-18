@@ -8,7 +8,6 @@ import { LogOut, Bell, Settings } from 'lucide-react';
 
 const DashboardHeader: React.FC = () => {
   const { user, logout } = useAuth();
-
   if (!user) return null;
 
   const getInitials = (name: string) => {
@@ -47,7 +46,7 @@ const DashboardHeader: React.FC = () => {
             </div>
             <Avatar>
               <AvatarFallback className="bg-primary-100 text-primary-700">
-                {getInitials(user.name)}
+                {getInitials(user.firstName)}
               </AvatarFallback>
             </Avatar>
           </div>

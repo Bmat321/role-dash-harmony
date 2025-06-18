@@ -18,7 +18,7 @@ const Login = () => {
   };
 
   const demoAccounts = [
-    { role: 'Admin', email: 'admin@hris.com', password: 'admin123', color: 'bg-admin' },
+    { role: 'Admin', email: 'admin@hris.com', password: 'Admin@123', color: 'bg-admin' },
     { role: 'HR', email: 'hr@hris.com', password: 'hr123', color: 'bg-hr' },
     { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-manager' },
     { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-employee' },

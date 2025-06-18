@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      // ✅ Proxy SOAP calls to backend to avoid CORS
+      '/hris': {
+        target: 'https://hris-backend-1.onrender.com',
+        changeOrigin: true,
+      }
+    }
   },
   plugins: [
     react(),
