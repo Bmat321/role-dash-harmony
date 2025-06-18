@@ -1,29 +1,29 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
+import { defineConfig, UserConfig, ConfigEnv } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+import { componentTagger } from 'lovable-tagger';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   server: {
-    host: "::",
+    host: '::',
     port: 8000,
-    proxy: {
-      // ✅ Proxy SOAP calls to backend to avoid CORS
+    // Only proxy during development mode
+    proxy: mode === 'development' ? {
       '/hris': {
-        target: 'https://hris-backend-1.onrender.com',
+        target: 'http://localhost:8000',  // Local backend in development
         changeOrigin: true,
-      }
-    }
+        secure: false, // Do not verify SSL certificate in dev (useful for local HTTPS servers)
+      },
+    } : {}, // No proxy for production
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
 }));
