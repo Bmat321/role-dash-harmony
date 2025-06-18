@@ -87,33 +87,7 @@ const useSoapAuth = () => {
     return xmlDoc.getElementsByTagName(`${method}Response`)[0];
   }, []);
 
-  // Initialize Auth
-  // useEffect(() => {
-  //   const initializeAuth = async () => {
-  //     const token = localStorage.getItem('hris_mock_token');
-  //     const userData = localStorage.getItem('hris_mock_user');
-  //     // const token = localStorage.getItem('soap_api_token');
-  //     // const userData = localStorage.getItem('soap_api_user');
-
-  //     if (token && userData) {
-  //       try {
-  //         const parsedUser = JSON.parse(userData);
-  //         await validateToken(token);
-  //         setAuthState({
-  //           user: parsedUser,
-  //           isLoading: false,
-  //           error: null,
-  //         });
-  //       } catch (error) {
-  //         logout();
-  //       }
-  //     } else {
-  //       setAuthState(prev => ({ ...prev, isLoading: false }));
-  //     }
-  //   };
-
-  //   initializeAuth();
-  // }, []);
+ 
 
   // Public Auth Methods
   const login = useCallback(async (email: string, password: string) => {

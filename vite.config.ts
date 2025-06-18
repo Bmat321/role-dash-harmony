@@ -8,10 +8,10 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => ({
   server: {
     host: '::',
     port: 8000,
-    // Only proxy during development mode
+   
     proxy: mode === 'development' ? {
       '/hris': {
-        target: 'http://localhost:8000',  // Local backend in development
+        target: 'http://localhost:8000', 
         changeOrigin: true,
         secure: false, // Do not verify SSL certificate in dev (useful for local HTTPS servers)
       },
