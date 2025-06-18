@@ -58,14 +58,14 @@ const useSoapAuth = () => {
 
     
 
-    const response = await fetch('/hris', {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'text/xml;charset=UTF-8',
         'SOAPAction': method,
       },
       body: soapRequest,
-      credentials: 'include'
+      credentials: 'include',
     });
 
     if (!response.ok) {
