@@ -60,8 +60,9 @@ const useSoapAuth = () => {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/hris`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/xml;charset=UTF-8;action=' + method, // Non-simple content type
-        'SOAPAction': method
+        'Content-Type': 'text/xml;charset=UTF-8',
+        'SOAPAction': method,
+        'X-SOAP-Request': 'true' 
       },
       
       body: soapRequest,
