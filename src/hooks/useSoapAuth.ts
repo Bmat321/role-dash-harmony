@@ -62,17 +62,27 @@ const useSoapAuth = () => {
       headers: {
         'Content-Type': 'text/xml;charset=UTF-8',
         'SOAPAction': method,
+        'Accept': 'text/xml',
       },
       body: soapRequest,
       credentials: 'include',
       mode: 'cors' // Explicitly set CORS mode
     });
 
-    if (!response.ok) {
-      throw new Error(`SOAP request failed with status ${response.status}`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`SOAP request failed with status ${response.status}`);
+    // }
 
-    return response.text();
+    // return response.text();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('SOAP request failed:', errorText);
+      throw new Error(`SOAP request failed with status ${response.status}: ${errorText}`);
+    }
+    const responseText = await response.text();
+    console.log('SOAP response:', responseText);
+    return responseText;
+
   }, []);
 
   const parseSoapResponse = useCallback((xmlText: string, method: string) => {
