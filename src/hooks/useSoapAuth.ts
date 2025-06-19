@@ -65,6 +65,7 @@ const useSoapAuth = () => {
       },
       body: soapRequest,
       credentials: 'include',
+      mode: 'cors' // Explicitly set CORS mode
     });
 
     if (!response.ok) {
