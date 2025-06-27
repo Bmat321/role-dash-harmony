@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -15,6 +16,10 @@ import AttendanceManagement from '@/components/Attendance/AttendanceManagement';
 import LeaveManagement from '@/components/Leave/LeaveManagement';
 import PayrollManagement from '@/components/Payroll/PayrollManagement';
 import SystemSettings from '@/components/Settings/SystemSettings';
+import PerformanceManagement from '@/components/Performance/PerformanceManagement';
+import RecruitmentManagement from '@/components/Recruitment/RecruitmentManagement';
+import DocumentManagement from '@/components/Documents/DocumentManagement';
+import TimeTrackingManagement from '@/components/TimeTracking/TimeTrackingManagement';
 import { Users, UserCheck, UserPlus, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -213,6 +218,30 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
       return (
         <div className="p-3 lg:p-6">
           <PayrollManagement />
+        </div>
+      );
+    case 'performance':
+      return (
+        <div className="p-3 lg:p-6">
+          <PerformanceManagement />
+        </div>
+      );
+    case 'recruitment':
+      return (
+        <div className="p-3 lg:p-6">
+          <RecruitmentManagement />
+        </div>
+      );
+    case 'documents':
+      return (
+        <div className="p-3 lg:p-6">
+          <DocumentManagement />
+        </div>
+      );
+    case 'time-tracking':
+      return (
+        <div className="p-3 lg:p-6">
+          <TimeTrackingManagement />
         </div>
       );
     case 'settings':

@@ -12,9 +12,16 @@ import {
   User,
   Clock,
   DollarSign,
-  Menu,
-  X
+  ChevronLeft,
+  ChevronRight,
+  UserPlus,
+  Target,
+  Briefcase,
+  FolderOpen,
+  Timer,
+  Menu
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CollapsibleSidebarProps {
   activeTab: string;
@@ -25,6 +32,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
   const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   if (!user) return null;
 
@@ -38,7 +46,11 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
         return [
           ...baseItems,
           { id: 'employees', label: 'Employee Management', icon: Users },
-          { id: 'invitations', label: 'User Invitations', icon: User },
+          { id: 'invitations', label: 'User Invitations', icon: UserPlus },
+          { id: 'performance', label: 'Performance', icon: Target },
+          { id: 'recruitment', label: 'Recruitment', icon: Briefcase },
+          { id: 'documents', label: 'Documents', icon: FolderOpen },
+          { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
           { id: 'analytics', label: 'Analytics', icon: BarChart },
           { id: 'reports', label: 'Reports', icon: FileText },
           { id: 'settings', label: 'System Settings', icon: Settings },
@@ -48,6 +60,10 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
         return [
           ...baseItems,
           { id: 'employees', label: 'Employees', icon: Users },
+          { id: 'invitations', label: 'User Invitations', icon: UserPlus },
+          { id: 'performance', label: 'Performance', icon: Target },
+          { id: 'recruitment', label: 'Recruitment', icon: Briefcase },
+          { id: 'documents', label: 'Documents', icon: FolderOpen },
           { id: 'attendance', label: 'Attendance', icon: Clock },
           { id: 'leave', label: 'Leave Management', icon: Calendar },
           { id: 'reports', label: 'HR Reports', icon: FileText },
@@ -57,6 +73,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
         return [
           ...baseItems,
           { id: 'team', label: 'My Team', icon: Users },
+          { id: 'performance', label: 'Performance', icon: Target },
+          { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
           { id: 'attendance', label: 'Team Attendance', icon: Clock },
           { id: 'leave', label: 'Leave Requests', icon: Calendar },
           { id: 'reports', label: 'Team Reports', icon: FileText },
@@ -66,6 +84,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
         return [
           ...baseItems,
           { id: 'profile', label: 'My Profile', icon: User },
+          { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
           { id: 'attendance', label: 'My Attendance', icon: Clock },
           { id: 'leave', label: 'Leave Balance', icon: Calendar },
           { id: 'payroll', label: 'Payroll', icon: DollarSign },
@@ -79,102 +98,143 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
   const menuItems = getMenuItems();
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    if (isMobile) {
+      setIsMobileOpen(!isMobileOpen);
+    } else {
+      setIsCollapsed(!isCollapsed);
+    }
   };
 
-  const toggleMobileSidebar = () => {
-    setIsMobileOpen(!isMobileOpen);
+  const handleItemClick = (itemId: string) => {
+    setActiveTab(itemId);
+    if (isMobile) {
+      setIsMobileOpen(false);
+    }
   };
 
-  return (
-    <>
-      {/* Mobile Toggle Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="fixed top-4 left-4 z-50 md:hidden"
-        onClick={toggleMobileSidebar}
-      >
-        {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-      </Button>
-
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
+  // Mobile overlay
+  if (isMobile && isMobileOpen) {
+    return (
+      <>
+        {/* Overlay */}
         <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={toggleMobileSidebar}
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
         />
-      )}
-
-      {/* Sidebar */}
-      <div className={`
-        ${isCollapsed ? 'w-16' : 'w-64'} 
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        fixed md:relative h-screen bg-white border-r border-gray-200 transition-all duration-300 z-40
-      `}>
-        {/* Header */}
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            {!isCollapsed && (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">H</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">HRIS</span>
-              </div>
-            )}
-            
-            {/* Desktop Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden md:flex p-1"
-              onClick={toggleSidebar}
-            >
-              <Menu className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
         
-        {/* Navigation */}
-        <nav className="px-2 pb-4">
-          <div className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Button
-                  key={item.id}
-                  variant={activeTab === item.id ? "secondary" : "ghost"}
-                  className={`
-                    w-full justify-start relative group
-                    ${activeTab === item.id 
-                      ? 'bg-primary-50 text-primary-700 border-primary-200' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }
-                    ${isCollapsed ? 'px-3' : 'px-3'}
-                  `}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setIsMobileOpen(false);
-                  }}
-                  title={isCollapsed ? item.label : undefined}
-                >
-                  <Icon className={`h-4 w-4 ${isCollapsed ? 'mx-auto' : 'mr-3'}`} />
-                  {!isCollapsed && <span className="truncate">{item.label}</span>}
-                  
-                  {/* Tooltip for collapsed state */}
-                  {isCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
-                      {item.label}
-                    </div>
-                  )}
-                </Button>
-              );
-            })}
+        {/* Mobile Sidebar */}
+        <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-50 lg:hidden transform transition-transform duration-300 ease-in-out">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">H</span>
+                </div>
+                <span className="text-lg font-bold text-gray-900">HRIS</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileOpen(false)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </nav>
+          
+          <nav className="p-4">
+            <div className="space-y-2">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Button
+                    key={item.id}
+                    variant={activeTab === item.id ? "secondary" : "ghost"}
+                    className={`w-full justify-start ${
+                      activeTab === item.id 
+                        ? 'bg-primary/10 text-primary border-primary/20' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    onClick={() => handleItemClick(item.id)}
+                  >
+                    <Icon className="mr-3 h-4 w-4" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </div>
+          </nav>
+        </div>
+      </>
+    );
+  }
+
+  // Desktop/tablet sidebar
+  return (
+    <div className={`hidden lg:flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ${
+      isCollapsed ? 'w-16' : 'w-64'
+    }`}>
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          {!isCollapsed && (
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">H</span>
+              </div>
+              <span className="text-lg font-bold text-gray-900">HRIS</span>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className={isCollapsed ? 'mx-auto' : ''}
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
-    </>
+      
+      {/* Navigation */}
+      <nav className="flex-1 p-4">
+        <div className="space-y-2">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Button
+                key={item.id}
+                variant={activeTab === item.id ? "secondary" : "ghost"}
+                className={`w-full ${isCollapsed ? 'justify-center px-2' : 'justify-start'} ${
+                  activeTab === item.id 
+                    ? 'bg-primary/10 text-primary border-primary/20' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+                onClick={() => handleItemClick(item.id)}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <Icon className={`h-4 w-4 ${!isCollapsed ? 'mr-3' : ''}`} />
+                {!isCollapsed && item.label}
+              </Button>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+};
+
+// Mobile menu button component
+export const MobileMenuButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onClick}
+      className="lg:hidden"
+    >
+      <Menu className="h-5 w-5" />
+    </Button>
   );
 };
 

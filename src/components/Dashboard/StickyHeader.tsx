@@ -1,75 +1,159 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import RoleBadge from '@/components/RoleBadge';
+import { useIsMobile } from '@/hooks/use-mobile';
 import NotificationCenter from './NotificationCenter';
-import { LogOut, Settings } from 'lucide-react';
+import { 
+  Bell, 
+  Search, 
+  Settings, 
+  User, 
+  LogOut,
+  Menu
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarContent, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 
-const StickyHeader: React.FC = () => {
+interface StickyHeaderProps {
+  onMobileMenuToggle?: () => void;
+}
+
+const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle }) => {
   const { user, logout } = useAuth();
+  const isMobile = useIsMobile();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
   if (!user) return null;
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getUserInitials = () => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
+    }
+    return user.email?.charAt(0).toUpperCase() || 'U';
+  };
+
+  const getUserFullName = () => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    return user.email || 'User';
+  };
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'hr': return 'bg-blue-100 text-blue-800';
+      case 'manager': return 'bg-green-100 text-green-800';
+      case 'employee': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 md:px-6 py-4 shadow-sm">
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-3 lg:px-6 py-3 lg:py-4">
       <div className="flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900 truncate">
-            {user.role === 'admin' && 'System Administration'}
-            {user.role === 'hr' && 'HR Dashboard'}
-            {user.role === 'manager' && 'Team Management'}
-            {user.role === 'employee' && 'Employee Portal'}
-          </h1>
-          <p className="text-sm text-gray-600 mt-1 hidden md:block">
-            Welcome back, {user.name}
-          </p>
-        </div>
-        
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <NotificationCenter />
+        {/* Left side - Mobile menu button and search */}
+        <div className="flex items-center gap-3 lg:gap-4 flex-1">
+          {/* Mobile menu button */}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onMobileMenuToggle}
+              className="lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           
-          <Button variant="ghost" size="sm" className="hidden md:flex">
-            <Settings className="h-4 w-4" />
-          </Button>
-          
-          <div className="flex items-center space-x-3">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-medium text-gray-900">{user.name}</p>
-              <div className="flex items-center justify-end space-x-2">
-                <RoleBadge role={user.role} size="sm" />
-              </div>
+          {/* Search bar - hidden on mobile */}
+          {!isMobile && (
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search employees, documents..."
+                className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
+              />
             </div>
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-primary-100 text-primary-700 text-sm">
-                {getInitials(user.firstName)}
-              </AvatarFallback>
-            </Avatar>
+          )}
+        </div>
+
+        {/* Right side - Notifications and user menu */}
+        <div className="flex items-center gap-2 lg:gap-4">
+          {/* Notifications */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+              className="relative"
+            >
+              <Bell className="h-5 w-5" />
+              <Badge className="absolute -top-1 -right-1 px-1 py-0 text-xs bg-red-500 text-white border-white">
+                5
+              </Badge>
+            </Button>
+            
+            {isNotificationOpen && (
+              <div className="absolute right-0 top-12 z-50">
+                <NotificationCenter onClose={() => setIsNotificationOpen(false)} />
+              </div>
+            )}
           </div>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={logout}
-            className="text-red-600 border-red-200 hover:bg-red-50 hidden md:flex"
-          >
-            <LogOut className="h-4 w-4 mr-1" />
-            Logout
-          </Button>
-          
-          {/* Mobile logout */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={logout}
-            className="md:hidden text-red-600"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                    {getUserInitials()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{getUserFullName()}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                  <Badge className={`${getRoleBadgeColor(user.role)} w-fit mt-1 capitalize`}>
+                    {user.role}
+                  </Badge>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={logout}
+                className="text-red-600 focus:text-red-600"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
