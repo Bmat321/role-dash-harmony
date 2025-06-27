@@ -8,6 +8,9 @@ import EmployeeTable from './EmployeeTable';
 import Analytics from './Analytics';
 import Reports from './Reports';
 import UpcomingLeave from './UpcomingLeave';
+import DepartmentRoleStats from './DepartmentRoleStats';
+import UserInvitation from '@/components/Admin/UserInvitation';
+import ProfilePictureUpload from '@/components/Profile/ProfilePictureUpload';
 import EmployeeManagement from '@/components/Employee/EmployeeManagement';
 import AttendanceManagement from '@/components/Attendance/AttendanceManagement';
 import LeaveManagement from '@/components/Leave/LeaveManagement';
@@ -15,7 +18,6 @@ import PayrollManagement from '@/components/Payroll/PayrollManagement';
 import SystemSettings from '@/components/Settings/SystemSettings';
 import { Users, UserCheck, UserPlus, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface DashboardContentProps {
@@ -87,63 +89,20 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
         </div>
 
         {/* Department and Role Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <DepartmentRoleStats stats={stats} />
+
+        {/* Upcoming Leave - Show on desktop, hide on mobile dashboard */}
+        {!isMobile && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base lg:text-lg">Department Distribution</CardTitle>
-              <CardDescription className="text-sm">Employee count by department</CardDescription>
+              <CardTitle className="text-lg">Upcoming Leave</CardTitle>
+              <CardDescription>Team leave schedule</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 lg:space-y-4">
-              {Object.entries(stats.departments).map(([dept, count]) => (
-                <div key={dept} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{dept}</span>
-                    <span className="text-xs lg:text-sm text-gray-500">{count} employees</span>
-                  </div>
-                  <Progress 
-                    value={(count / stats.totalEmployees) * 100} 
-                    className="h-2"
-                  />
-                </div>
-              ))}
+            <CardContent>
+              <UpcomingLeave />
             </CardContent>
           </Card>
-
-          {/* Upcoming Leave - Show on desktop, hide on mobile dashboard */}
-          {!isMobile && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Upcoming Leave</CardTitle>
-                <CardDescription>Team leave schedule</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <UpcomingLeave />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Role Distribution - Show on mobile too but smaller */}
-          <Card className={isMobile ? "lg:hidden" : ""}>
-            <CardHeader>
-              <CardTitle className="text-base lg:text-lg">Role Distribution</CardTitle>
-              <CardDescription className="text-sm">Employee count by role</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 lg:space-y-4">
-              {Object.entries(stats.roleDistribution).map(([role, count]) => (
-                <div key={role} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium capitalize">{role}</span>
-                    <span className="text-xs lg:text-sm text-gray-500">{count} employees</span>
-                  </div>
-                  <Progress 
-                    value={(count / stats.totalEmployees) * 100} 
-                    className="h-2"
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        )}
 
         {/* Recent Activity */}
         <Card>
@@ -194,6 +153,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
           <UpcomingLeave />
         </div>
       );
+    case 'invitations':
+      return (
+        <div className="p-3 lg:p-6">
+          <UserInvitation />
+        </div>
+      );
     case 'employees':
       return (
         <div className="p-3 lg:p-6">
@@ -203,7 +168,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
     case 'team':
     case 'profile':
       return (
-        <div className="p-3 lg:p-6">
+        <div className="p-3 lg:p-6 space-y-6">
+          {activeTab === 'profile' && (
+            <ProfilePictureUpload 
+              userName={user.name} 
+              hasUploadedBefore={false}
+            />
+          )}
           <EmployeeTable employees={employees} />
         </div>
       );

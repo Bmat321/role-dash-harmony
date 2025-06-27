@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import DashboardHeader from './DashboardHeader';
-import Sidebar from './Sidebar';
+import StickyHeader from './StickyHeader';
+import CollapsibleSidebar from './CollapsibleSidebar';
 import DashboardContent from './DashboardContent';
 
 const Dashboard: React.FC = () => {
@@ -13,10 +13,10 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div className="flex-1 flex flex-col">
-        <DashboardHeader />
-        <main className="flex-1 p-6">
+      <CollapsibleSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <StickyHeader />
+        <main className="flex-1 overflow-auto">
           <DashboardContent activeTab={activeTab} />
         </main>
       </div>
