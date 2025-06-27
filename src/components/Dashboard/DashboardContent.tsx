@@ -6,6 +6,11 @@ import StatsCard from './StatsCard';
 import EmployeeTable from './EmployeeTable';
 import Analytics from './Analytics';
 import Reports from './Reports';
+import EmployeeManagement from '@/components/Employee/EmployeeManagement';
+import AttendanceManagement from '@/components/Attendance/AttendanceManagement';
+import LeaveManagement from '@/components/Leave/LeaveManagement';
+import PayrollManagement from '@/components/Payroll/PayrollManagement';
+import SystemSettings from '@/components/Settings/SystemSettings';
 import { Users, UserCheck, UserPlus, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -159,43 +164,26 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
     );
   };
 
-  const renderEmployees = () => {
-    return <EmployeeTable employees={employees} />;
-  };
-
-  const renderPlaceholder = (title: string, description: string) => {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-500">This feature is coming soon...</p>
-        </CardContent>
-      </Card>
-    );
-  };
-
   switch (activeTab) {
     case 'dashboard':
       return renderDashboard();
     case 'employees':
+      return <EmployeeManagement />;
     case 'team':
     case 'profile':
-      return renderEmployees();
+      return <EmployeeTable employees={employees} />;
     case 'analytics':
       return <Analytics />;
     case 'reports':
       return <Reports />;
     case 'attendance':
-      return renderPlaceholder('Attendance', 'Track and manage attendance');
+      return <AttendanceManagement />;
     case 'leave':
-      return renderPlaceholder('Leave Management', 'Manage leave requests and balances');
+      return <LeaveManagement />;
     case 'payroll':
-      return renderPlaceholder('Payroll', 'View payroll information');
+      return <PayrollManagement />;
     case 'settings':
-      return renderPlaceholder('Settings', 'System configuration and settings');
+      return <SystemSettings />;
     default:
       return renderDashboard();
   }
