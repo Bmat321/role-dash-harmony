@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -57,6 +56,14 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
   }
 
   if (!user || !stats) return null;
+
+  const getUserFullName = () => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    // Fallback if name is stored differently
+    return user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  };
 
   const renderDashboard = () => {
     return (
@@ -171,7 +178,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
         <div className="p-3 lg:p-6 space-y-6">
           {activeTab === 'profile' && (
             <ProfilePictureUpload 
-              userName={user.name} 
+              userName={getUserFullName()} 
               hasUploadedBefore={false}
             />
           )}
