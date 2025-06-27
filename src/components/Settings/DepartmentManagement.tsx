@@ -80,7 +80,14 @@ const DepartmentManagement: React.FC = () => {
       // Update existing department
       setDepartments(prev => prev.map(dept => 
         dept.id === editingDepartment.id 
-          ? { ...dept, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
+          ? {
+              ...dept,
+              name: formData.name,
+              description: formData.description,
+              managerId: formData.managerId || undefined,
+              budget: formData.budget ? parseInt(formData.budget) : undefined,
+              updatedAt: new Date().toISOString().split('T')[0]
+            }
           : dept
       ));
       toast({

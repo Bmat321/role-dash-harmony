@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
-import { Clock, ClockIn, ClockOut, Calendar as CalendarIcon } from 'lucide-react';
+import { Clock, Calendar as CalendarIcon } from 'lucide-react';
 import { AttendanceRecord, AttendanceStats } from '@/types/attendance';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -163,7 +163,7 @@ const AttendanceManagement: React.FC = () => {
                     className="flex-1"
                     variant={currentStatus === 'out' ? 'default' : 'outline'}
                   >
-                    <ClockIn className="h-4 w-4 mr-2" />
+                    <Clock className="h-4 w-4 mr-2" />
                     Clock In
                   </Button>
                   <Button 
@@ -172,7 +172,7 @@ const AttendanceManagement: React.FC = () => {
                     className="flex-1"
                     variant={currentStatus === 'in' ? 'default' : 'outline'}
                   >
-                    <ClockOut className="h-4 w-4 mr-2" />
+                    <Clock className="h-4 w-4 mr-2" />
                     Clock Out
                   </Button>
                 </div>
