@@ -2,10 +2,12 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DepartmentManagement from './DepartmentManagement';
+import GeneralSettings from './GeneralSettings';
+import SecuritySettings from './SecuritySettings';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 
-const SystemSettings: React.FC = () => {
+export const SystemSettings: React.FC = () => {
   const { user } = useAuth();
 
   if (user?.role !== 'admin') {
@@ -25,31 +27,23 @@ const SystemSettings: React.FC = () => {
         <p className="text-gray-600">Configure system-wide settings and preferences</p>
       </div>
 
-      <Tabs defaultValue="departments" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="departments">Departments</TabsTrigger>
+      <Tabs defaultValue="general" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="general">General Settings</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="departments">Departments</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="departments">
-          <DepartmentManagement />
-        </TabsContent>
-
         <TabsContent value="general">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-gray-500">General settings coming soon...</p>
-            </CardContent>
-          </Card>
+          <GeneralSettings />
         </TabsContent>
 
         <TabsContent value="security">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-gray-500">Security settings coming soon...</p>
-            </CardContent>
-          </Card>
+          <SecuritySettings />
+        </TabsContent>
+
+        <TabsContent value="departments">
+          <DepartmentManagement />
         </TabsContent>
       </Tabs>
     </div>

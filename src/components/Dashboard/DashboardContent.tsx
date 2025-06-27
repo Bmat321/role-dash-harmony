@@ -2,10 +2,12 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
+import { useIsMobile } from '@/hooks/use-mobile';
 import StatsCard from './StatsCard';
 import EmployeeTable from './EmployeeTable';
 import Analytics from './Analytics';
 import Reports from './Reports';
+import UpcomingLeave from './UpcomingLeave';
 import EmployeeManagement from '@/components/Employee/EmployeeManagement';
 import AttendanceManagement from '@/components/Attendance/AttendanceManagement';
 import LeaveManagement from '@/components/Leave/LeaveManagement';
@@ -23,11 +25,12 @@ interface DashboardContentProps {
 const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
   const { user } = useAuth();
   const { employees, stats, isLoading } = useEmployees();
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="p-3 lg:p-6 space-y-4 lg:space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
               <CardHeader>
@@ -55,9 +58,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
 
   const renderDashboard = () => {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <StatsCard
             title="Total Employees"
             value={stats.totalEmployees}
@@ -83,19 +86,19 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
           />
         </div>
 
-        {/* Department Breakdown */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Department and Role Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Department Distribution</CardTitle>
-              <CardDescription>Employee count by department</CardDescription>
+              <CardTitle className="text-base lg:text-lg">Department Distribution</CardTitle>
+              <CardDescription className="text-sm">Employee count by department</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 lg:space-y-4">
               {Object.entries(stats.departments).map(([dept, count]) => (
                 <div key={dept} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{dept}</span>
-                    <span className="text-sm text-gray-500">{count} employees</span>
+                    <span className="text-xs lg:text-sm text-gray-500">{count} employees</span>
                   </div>
                   <Progress 
                     value={(count / stats.totalEmployees) * 100} 
@@ -106,17 +109,31 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* Upcoming Leave - Show on desktop, hide on mobile dashboard */}
+          {!isMobile && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Upcoming Leave</CardTitle>
+                <CardDescription>Team leave schedule</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UpcomingLeave />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Role Distribution - Show on mobile too but smaller */}
+          <Card className={isMobile ? "lg:hidden" : ""}>
             <CardHeader>
-              <CardTitle>Role Distribution</CardTitle>
-              <CardDescription>Employee count by role</CardDescription>
+              <CardTitle className="text-base lg:text-lg">Role Distribution</CardTitle>
+              <CardDescription className="text-sm">Employee count by role</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 lg:space-y-4">
               {Object.entries(stats.roleDistribution).map(([role, count]) => (
                 <div key={role} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium capitalize">{role}</span>
-                    <span className="text-sm text-gray-500">{count} employees</span>
+                    <span className="text-xs lg:text-sm text-gray-500">{count} employees</span>
                   </div>
                   <Progress 
                     value={(count / stats.totalEmployees) * 100} 
@@ -131,30 +148,30 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
         {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest updates and notifications</CardDescription>
+            <CardTitle className="text-base lg:text-lg">Recent Activity</CardTitle>
+            <CardDescription className="text-sm">Latest updates and notifications</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div>
+            <div className="space-y-3 lg:space-y-4">
+              <div className="flex items-start space-x-3 lg:space-x-4 p-3 lg:p-4 bg-green-50 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">New employee onboarded</p>
-                  <p className="text-xs text-gray-500">Alice Smith joined Marketing team</p>
+                  <p className="text-xs text-gray-500 truncate">Alice Smith joined Marketing team</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div>
+              <div className="flex items-start space-x-3 lg:space-x-4 p-3 lg:p-4 bg-blue-50 rounded-lg">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Leave request approved</p>
-                  <p className="text-xs text-gray-500">Jane Doe's vacation approved for next week</p>
+                  <p className="text-xs text-gray-500 truncate">Jane Doe's vacation approved for next week</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 bg-yellow-50 rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div>
+              <div className="flex items-start space-x-3 lg:space-x-4 p-3 lg:p-4 bg-yellow-50 rounded-lg">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Performance review due</p>
-                  <p className="text-xs text-gray-500">3 employees have pending reviews</p>
+                  <p className="text-xs text-gray-500 truncate">3 employees have pending reviews</p>
                 </div>
               </div>
             </div>
@@ -166,26 +183,72 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
 
   switch (activeTab) {
     case 'dashboard':
-      return renderDashboard();
+      return (
+        <div className="p-3 lg:p-6">
+          {renderDashboard()}
+        </div>
+      );
+    case 'upcoming-leave':
+      return (
+        <div className="p-3 lg:p-6">
+          <UpcomingLeave />
+        </div>
+      );
     case 'employees':
-      return <EmployeeManagement />;
+      return (
+        <div className="p-3 lg:p-6">
+          <EmployeeManagement />
+        </div>
+      );
     case 'team':
     case 'profile':
-      return <EmployeeTable employees={employees} />;
+      return (
+        <div className="p-3 lg:p-6">
+          <EmployeeTable employees={employees} />
+        </div>
+      );
     case 'analytics':
-      return <Analytics />;
+      return (
+        <div className="p-3 lg:p-6">
+          <Analytics />
+        </div>
+      );
     case 'reports':
-      return <Reports />;
+      return (
+        <div className="p-3 lg:p-6">
+          <Reports />
+        </div>
+      );
     case 'attendance':
-      return <AttendanceManagement />;
+      return (
+        <div className="p-3 lg:p-6">
+          <AttendanceManagement />
+        </div>
+      );
     case 'leave':
-      return <LeaveManagement />;
+      return (
+        <div className="p-3 lg:p-6">
+          <LeaveManagement />
+        </div>
+      );
     case 'payroll':
-      return <PayrollManagement />;
+      return (
+        <div className="p-3 lg:p-6">
+          <PayrollManagement />
+        </div>
+      );
     case 'settings':
-      return <SystemSettings />;
+      return (
+        <div className="p-3 lg:p-6">
+          <SystemSettings />
+        </div>
+      );
     default:
-      return renderDashboard();
+      return (
+        <div className="p-3 lg:p-6">
+          {renderDashboard()}
+        </div>
+      );
   }
 };
 
