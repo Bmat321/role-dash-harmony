@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarContent, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 
 interface StickyHeaderProps {
@@ -107,7 +107,7 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle }) => {
             
             {isNotificationOpen && (
               <div className="absolute right-0 top-12 z-50">
-                <NotificationCenter onClose={() => setIsNotificationOpen(false)} />
+                <NotificationCenter />
               </div>
             )}
           </div>

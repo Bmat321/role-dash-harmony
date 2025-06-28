@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarContent, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Briefcase, Users, Calendar, DollarSign, Plus, Search, Filter, Eye, Download, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,13 +38,15 @@ interface Candidate {
   skills: string[];
 }
 
+type JobType = 'full-time' | 'part-time' | 'contract' | 'intern';
+
 const RecruitmentManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState('jobs');
   const [newJob, setNewJob] = useState({
     title: '',
     department: '',
     location: '',
-    type: 'full-time' as const,
+    type: 'full-time' as JobType,
     salaryRange: '',
     description: ''
   });
@@ -258,7 +259,7 @@ const RecruitmentManagement: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="job-type">Employment Type</Label>
-                  <Select value={newJob.type} onValueChange={(value: 'full-time' | 'part-time' | 'contract' | 'intern') => setNewJob({...newJob, type: value})}>
+                  <Select value={newJob.type} onValueChange={(value: JobType) => setNewJob({...newJob, type: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

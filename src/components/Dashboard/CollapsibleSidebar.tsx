@@ -26,12 +26,18 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface CollapsibleSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  isMobileOpen: boolean;
+  onMobileToggle: () => void;
 }
 
-const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setActiveTab }) => {
+const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ 
+  activeTab, 
+  setActiveTab, 
+  isMobileOpen, 
+  onMobileToggle 
+}) => {
   const { user } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const isMobile = useIsMobile();
 
   if (!user) return null;
@@ -99,7 +105,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
 
   const toggleSidebar = () => {
     if (isMobile) {
-      setIsMobileOpen(!isMobileOpen);
+      onMobileToggle();
     } else {
       setIsCollapsed(!isCollapsed);
     }
@@ -108,7 +114,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
   const handleItemClick = (itemId: string) => {
     setActiveTab(itemId);
     if (isMobile) {
-      setIsMobileOpen(false);
+      onMobileToggle();
     }
   };
 
@@ -119,7 +125,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
         {/* Overlay */}
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
+          onClick={onMobileToggle}
         />
         
         {/* Mobile Sidebar */}
@@ -135,7 +141,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMobileOpen(false)}
+                onClick={onMobileToggle}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -221,20 +227,6 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ activeTab, setA
         </div>
       </nav>
     </div>
-  );
-};
-
-// Mobile menu button component
-export const MobileMenuButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={onClick}
-      className="lg:hidden"
-    >
-      <Menu className="h-5 w-5" />
-    </Button>
   );
 };
 

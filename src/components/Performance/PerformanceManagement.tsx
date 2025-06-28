@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,13 +37,15 @@ interface Goal {
   category: 'performance' | 'development' | 'behavioral';
 }
 
+type GoalCategory = 'performance' | 'development' | 'behavioral';
+
 const PerformanceManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState('reviews');
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [newGoal, setNewGoal] = useState({
     title: '',
     description: '',
-    category: 'performance' as const,
+    category: 'performance' as GoalCategory,
     targetDate: ''
   });
   const { toast } = useToast();
@@ -244,7 +245,7 @@ const PerformanceManagement: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select value={newGoal.category} onValueChange={(value: 'performance' | 'development' | 'behavioral') => setNewGoal({...newGoal, category: value})}>
+                  <Select value={newGoal.category} onValueChange={(value: GoalCategory) => setNewGoal({...newGoal, category: value})}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
