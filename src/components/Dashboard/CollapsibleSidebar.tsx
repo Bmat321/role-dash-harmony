@@ -19,7 +19,9 @@ import {
   Briefcase,
   FolderOpen,
   Timer,
-  Menu
+  Menu,
+  Award,
+  FileUp
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -54,6 +56,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'employees', label: 'Employee Management', icon: Users },
           { id: 'invitations', label: 'User Invitations', icon: UserPlus },
           { id: 'performance', label: 'Performance', icon: Target },
+          { id: 'appraisal', label: 'Appraisal System', icon: Award },
+          { id: 'handover', label: 'Handover Reports', icon: FileUp },
           { id: 'recruitment', label: 'Recruitment', icon: Briefcase },
           { id: 'documents', label: 'Documents', icon: FolderOpen },
           { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
@@ -68,10 +72,13 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'employees', label: 'Employees', icon: Users },
           { id: 'invitations', label: 'User Invitations', icon: UserPlus },
           { id: 'performance', label: 'Performance', icon: Target },
+          { id: 'appraisal', label: 'Appraisal System', icon: Award },
+          { id: 'handover', label: 'Handover Reports', icon: FileUp },
           { id: 'recruitment', label: 'Recruitment', icon: Briefcase },
           { id: 'documents', label: 'Documents', icon: FolderOpen },
           { id: 'attendance', label: 'Attendance', icon: Clock },
           { id: 'leave', label: 'Leave Management', icon: Calendar },
+          { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
           { id: 'reports', label: 'HR Reports', icon: FileText },
         ];
       
@@ -80,6 +87,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           ...baseItems,
           { id: 'team', label: 'My Team', icon: Users },
           { id: 'performance', label: 'Performance', icon: Target },
+          { id: 'appraisal', label: 'Team Appraisal', icon: Award },
+          { id: 'handover', label: 'Handover Reports', icon: FileUp },
           { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
           { id: 'attendance', label: 'Team Attendance', icon: Clock },
           { id: 'leave', label: 'Leave Requests', icon: Calendar },
@@ -90,6 +99,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         return [
           ...baseItems,
           { id: 'profile', label: 'My Profile', icon: User },
+          { id: 'appraisal', label: 'My Appraisal', icon: Award },
+          { id: 'handover', label: 'Daily Handover', icon: FileUp },
           { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
           { id: 'attendance', label: 'My Attendance', icon: Clock },
           { id: 'leave', label: 'Leave Balance', icon: Calendar },
@@ -129,19 +140,20 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         />
         
         {/* Mobile Sidebar */}
-        <div className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-50 lg:hidden transform transition-transform duration-300 ease-in-out">
-          <div className="p-4 border-b border-gray-200">
+        <div className="fixed left-0 top-0 h-full w-64 bg-gray-900 border-r border-gray-700 z-50 lg:hidden transform transition-transform duration-300 ease-in-out">
+          <div className="p-4 border-b border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">H</span>
                 </div>
-                <span className="text-lg font-bold text-gray-900">HRIS</span>
+                <span className="text-lg font-bold text-white">HRIS</span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onMobileToggle}
+                className="text-gray-300 hover:text-white hover:bg-gray-800"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -158,8 +170,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                     variant={activeTab === item.id ? "secondary" : "ghost"}
                     className={`w-full justify-start ${
                       activeTab === item.id 
-                        ? 'bg-primary/10 text-primary border-primary/20' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'text-gray-300 hover:text-white hover:bg-gray-800'
                     }`}
                     onClick={() => handleItemClick(item.id)}
                   >
@@ -177,25 +189,25 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
 
   // Desktop/tablet sidebar
   return (
-    <div className={`hidden lg:flex flex-col bg-white border-r border-gray-200 h-full transition-all duration-300 ${
+    <div className={`hidden lg:flex flex-col bg-gray-900 border-r border-gray-700 h-full transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
     }`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">H</span>
               </div>
-              <span className="text-lg font-bold text-gray-900">HRIS</span>
+              <span className="text-lg font-bold text-white">HRIS</span>
             </div>
           )}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleSidebar}
-            className={isCollapsed ? 'mx-auto' : ''}
+            className={`text-gray-300 hover:text-white hover:bg-gray-800 ${isCollapsed ? 'mx-auto' : ''}`}
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -213,8 +225,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                 variant={activeTab === item.id ? "secondary" : "ghost"}
                 className={`w-full ${isCollapsed ? 'justify-center px-2' : 'justify-start'} ${
                   activeTab === item.id 
-                    ? 'bg-primary/10 text-primary border-primary/20' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                    : 'text-gray-300 hover:text-white hover:bg-gray-800'
                 }`}
                 onClick={() => handleItemClick(item.id)}
                 title={isCollapsed ? item.label : undefined}

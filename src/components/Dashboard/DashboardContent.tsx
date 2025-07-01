@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -20,6 +19,8 @@ import PerformanceManagement from '@/components/Performance/PerformanceManagemen
 import RecruitmentManagement from '@/components/Recruitment/RecruitmentManagement';
 import DocumentManagement from '@/components/Documents/DocumentManagement';
 import TimeTrackingManagement from '@/components/TimeTracking/TimeTrackingManagement';
+import AppraisalManagement from '@/components/Appraisal/AppraisalManagement';
+import HandoverManagement from '@/components/Handover/HandoverManagement';
 import { Users, UserCheck, UserPlus, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,8 +67,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     }
-    // Fallback if name is stored differently
-    return user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    return user.name || user.email || 'User';
   };
 
   const renderDashboard = () => {
@@ -242,6 +242,18 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeTab }) => {
       return (
         <div className="p-3 lg:p-6">
           <TimeTrackingManagement />
+        </div>
+      );
+    case 'appraisal':
+      return (
+        <div className="p-3 lg:p-6">
+          <AppraisalManagement />
+        </div>
+      );
+    case 'handover':
+      return (
+        <div className="p-3 lg:p-6">
+          <HandoverManagement />
         </div>
       );
     case 'settings':
