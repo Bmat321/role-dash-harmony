@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,7 +20,21 @@ import {
   Timer,
   Menu,
   Award,
-  FileUp
+  FileUp,
+  LayoutDashboard,
+  Users as UsersIcon,
+  Clock as ClockIcon,
+  Calendar as CalendarIcon,
+  DollarSign as DollarSignIcon,
+  TrendingUp as TrendingUpIcon,
+  FileText as FileTextIcon,
+  UserPlus as UserPlusIcon,
+  FileText as FileTextIcon2,
+  FileText as FileTextIcon3,
+  Timer as TimerIcon,
+  BarChart as BarChartIcon,
+  Settings as SettingsIcon,
+  CreditCard as CreditCardIcon
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -44,75 +57,22 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
 
   if (!user) return null;
 
-  const getMenuItems = () => {
-    const baseItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: Home },
-    ];
-
-    switch (user.role) {
-      case 'admin':
-        return [
-          ...baseItems,
-          { id: 'employees', label: 'Employee Management', icon: Users },
-          { id: 'invitations', label: 'User Invitations', icon: UserPlus },
-          { id: 'performance', label: 'Performance', icon: Target },
-          { id: 'appraisal', label: 'Appraisal System', icon: Award },
-          { id: 'handover', label: 'Handover Reports', icon: FileUp },
-          { id: 'recruitment', label: 'Recruitment', icon: Briefcase },
-          { id: 'documents', label: 'Documents', icon: FolderOpen },
-          { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
-          { id: 'analytics', label: 'Analytics', icon: BarChart },
-          { id: 'reports', label: 'Reports', icon: FileText },
-          { id: 'settings', label: 'System Settings', icon: Settings },
-        ];
-      
-      case 'hr':
-        return [
-          ...baseItems,
-          { id: 'employees', label: 'Employees', icon: Users },
-          { id: 'invitations', label: 'User Invitations', icon: UserPlus },
-          { id: 'performance', label: 'Performance', icon: Target },
-          { id: 'appraisal', label: 'Appraisal System', icon: Award },
-          { id: 'handover', label: 'Handover Reports', icon: FileUp },
-          { id: 'recruitment', label: 'Recruitment', icon: Briefcase },
-          { id: 'documents', label: 'Documents', icon: FolderOpen },
-          { id: 'attendance', label: 'Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Management', icon: Calendar },
-          { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
-          { id: 'reports', label: 'HR Reports', icon: FileText },
-        ];
-      
-      case 'manager':
-        return [
-          ...baseItems,
-          { id: 'team', label: 'My Team', icon: Users },
-          { id: 'performance', label: 'Performance', icon: Target },
-          { id: 'appraisal', label: 'Team Appraisal', icon: Award },
-          { id: 'handover', label: 'Handover Reports', icon: FileUp },
-          { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
-          { id: 'attendance', label: 'Team Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Requests', icon: Calendar },
-          { id: 'reports', label: 'Team Reports', icon: FileText },
-        ];
-      
-      case 'employee':
-        return [
-          ...baseItems,
-          { id: 'profile', label: 'My Profile', icon: User },
-          { id: 'appraisal', label: 'My Appraisal', icon: Award },
-          { id: 'handover', label: 'Daily Handover', icon: FileUp },
-          { id: 'time-tracking', label: 'Time Tracking', icon: Timer },
-          { id: 'attendance', label: 'My Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Balance', icon: Calendar },
-          { id: 'payroll', label: 'Payroll', icon: DollarSign },
-        ];
-      
-      default:
-        return baseItems;
-    }
-  };
-
-  const menuItems = getMenuItems();
+  const menuItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'employees', icon: UsersIcon, label: 'Employees' },
+    { id: 'attendance', icon: ClockIcon, label: 'Attendance' },
+    { id: 'leave', icon: CalendarIcon, label: 'Leave Management' },
+    { id: 'loan', icon: DollarSignIcon, label: 'Loan Management' },
+    { id: 'payroll', icon: CreditCardIcon, label: 'Payroll' },
+    { id: 'performance', icon: TrendingUpIcon, label: 'Performance' },
+    { id: 'appraisal', icon: FileTextIcon, label: 'Appraisal' },
+    { id: 'recruitment', icon: UserPlusIcon, label: 'Recruitment' },
+    { id: 'documents', icon: FileTextIcon, label: 'Documents' },
+    { id: 'handover', icon: FileTextIcon2, label: 'Handover' },
+    { id: 'time-tracking', icon: TimerIcon, label: 'Time Tracking' },
+    { id: 'reports', icon: BarChartIcon, label: 'Reports' },
+    { id: 'settings', icon: SettingsIcon, label: 'Settings' },
+  ];
 
   const toggleSidebar = () => {
     if (isMobile) {

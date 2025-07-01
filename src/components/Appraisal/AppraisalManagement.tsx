@@ -111,6 +111,7 @@ const AppraisalManagement: React.FC = () => {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     type: 'monthly' as AppraisalType,
@@ -267,6 +268,42 @@ const AppraisalManagement: React.FC = () => {
         return 'Unknown';
     }
   };
+
+  const handleViewAppraisal = (appraisal: Appraisal) => {
+    setSelectedAppraisal(appraisal);
+  };
+
+  const handleAppraisalUpdate = (updatedCriteria: AppraisalCriteria[], totalScore: number) => {
+    if (!selectedAppraisal) return;
+
+    setAppraisals(prev => prev.map(appraisal => {
+      if (appraisal.id === selectedAppraisal.id) {
+        return {
+          ...appraisal,
+          criteria: updatedCriteria,
+          status: 'inProgress' // Update status based on workflow
+        };
+      }
+      return appraisal;
+    }));
+
+    setSelectedAppraisal(null);
+  };
+
+  if (selectedAppraisal) {
+    return (
+      <AppraisalScoring
+        appraisalId={selectedAppraisal.id}
+        title={selectedAppraisal.title}
+        employeeName={selectedAppraisal.employeeName}
+        criteria={selectedAppraisal.criteria}
+        isManager={canManageAppraisals}
+        status="employee_pending"
+        onBack={() => setSelectedAppraisal(null)}
+        onSubmit={handleAppraisalUpdate}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -508,7 +545,11 @@ const AppraisalManagement: React.FC = () => {
                         <Badge variant="secondary">{appraisal.status}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewAppraisal(appraisal)}
+                        >
                           View Details
                         </Button>
                       </TableCell>
