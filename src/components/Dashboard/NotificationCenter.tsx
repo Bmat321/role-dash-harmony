@@ -1,173 +1,116 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, X, Check, AlertCircle, Info, Calendar, User } from 'lucide-react';
+import { Bell, X, Calendar, User, AlertTriangle } from 'lucide-react';
 
-interface Notification {
-  id: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  actionUrl?: string;
+interface NotificationCenterProps {
+  onClose: () => void;
 }
 
-const NotificationCenter: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
+const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
+  const notifications = [
     {
-      id: '1',
-      type: 'info',
-      title: 'New Employee Onboarded',
-      message: 'Alice Smith has joined the Marketing team',
-      timestamp: '2 hours ago',
-      read: false
+      id: 1,
+      type: 'leave',
+      title: 'Leave Request Approved',
+      message: 'Your vacation request for Feb 15-19 has been approved.',
+      time: '2 hours ago',
+      unread: true
     },
     {
-      id: '2',
-      type: 'warning',
-      title: 'Leave Request Pending',
-      message: 'John Doe has requested 5 days leave starting next week',
-      timestamp: '4 hours ago',
-      read: false
+      id: 2,
+      type: 'attendance',
+      title: 'Late Check-in Alert',
+      message: 'You checked in 15 minutes late today.',
+      time: '1 day ago',
+      unread: true
     },
     {
-      id: '3',
-      type: 'success',
-      title: 'Performance Review Completed',
-      message: 'Sarah Johnson\'s quarterly review has been submitted',
-      timestamp: '1 day ago',
-      read: true
+      id: 3,
+      type: 'payroll',
+      title: 'Payslip Available',
+      message: 'Your January payslip is now available for download.',
+      time: '3 days ago',
+      unread: false
     },
     {
-      id: '4',
-      type: 'error',
-      title: 'Attendance Alert',
-      message: 'Multiple employees have exceeded absence threshold',
-      timestamp: '2 days ago',
-      read: false
-    },
-    {
-      id: '5',
-      type: 'info',
+      id: 4,
+      type: 'general',
       title: 'System Maintenance',
-      message: 'Scheduled maintenance on Sunday 2AM - 4AM',
-      timestamp: '3 days ago',
-      read: true
+      message: 'Scheduled maintenance on Sunday 2 AM - 4 AM.',
+      time: '1 week ago',
+      unread: false
     }
-  ]);
+  ];
 
-  const getIcon = (type: string) => {
+  const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'warning': return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case 'success': return <Check className="h-4 w-4 text-green-500" />;
-      case 'error': return <X className="h-4 w-4 text-red-500" />;
-      default: return <Info className="h-4 w-4 text-blue-500" />;
+      case 'leave':
+        return <Calendar className="h-4 w-4 text-blue-500" />;
+      case 'attendance':
+        return <AlertTriangle className="h-4 w-4 text-orange-500" />;
+      case 'payroll':
+        return <User className="h-4 w-4 text-green-500" />;
+      default:
+        return <Bell className="h-4 w-4 text-gray-500" />;
     }
   };
-
-  const getBorderColor = (type: string) => {
-    switch (type) {
-      case 'warning': return 'border-l-yellow-500';
-      case 'success': return 'border-l-green-500';
-      case 'error': return 'border-l-red-500';
-      default: return 'border-l-blue-500';
-    }
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({ ...notif, read: true }))
-    );
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <Card className="w-80 shadow-lg">
+    <Card className="w-80 shadow-lg border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-            {unreadCount > 0 && (
-              <Badge className="bg-red-500 text-white px-2 py-1 text-xs">
-                {unreadCount}
-              </Badge>
-            )}
-          </CardTitle>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAllAsRead}
-              className="text-xs"
-            >
-              Mark all read
-            </Button>
-          )}
+          <CardTitle className="text-lg">Notifications</CardTitle>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-96">
-          <div className="space-y-2 p-4">
-            {notifications.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No notifications</p>
-              </div>
-            ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-3 border-l-4 rounded-r-lg cursor-pointer transition-colors ${
-                    getBorderColor(notification.type)
-                  } ${
-                    notification.read 
-                      ? 'bg-gray-50 opacity-75' 
-                      : 'bg-white hover:bg-gray-50'
-                  }`}
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  <div className="flex items-start gap-3">
-                    {getIcon(notification.type)}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className={`text-sm font-medium ${
-                          notification.read ? 'text-gray-600' : 'text-gray-900'
-                        }`}>
-                          {notification.title}
-                        </h4>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                        )}
-                      </div>
-                      <p className={`text-xs ${
-                        notification.read ? 'text-gray-500' : 'text-gray-700'
-                      }`}>
-                        {notification.message}
+          <div className="space-y-1">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                  notification.unread ? 'bg-blue-50' : ''
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 mt-1">
+                    {getNotificationIcon(notification.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {notification.title}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {notification.timestamp}
-                      </p>
+                      {notification.unread && (
+                        <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
+                          New
+                        </Badge>
+                      )}
                     </div>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {notification.time}
+                    </p>
                   </div>
                 </div>
-              ))
-            )}
+              </div>
+            ))}
           </div>
         </ScrollArea>
+        <div className="p-4 border-t">
+          <Button variant="outline" className="w-full text-sm">
+            View All Notifications
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

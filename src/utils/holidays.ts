@@ -24,7 +24,7 @@ export const isPublicHoliday = (date: Date): boolean => {
   return nigerianPublicHolidays2024.some(holiday => holiday.date === dateString);
 };
 
-export const calculateWorkingDays = (startDate: string, endDate: string): number => {
+export const calculateWorkingDays = (startDate: string, endDate: string): { workingDays: number; totalDays: number } => {
   const start = new Date(startDate);
   const end = new Date(endDate);
   let workingDays = 0;
