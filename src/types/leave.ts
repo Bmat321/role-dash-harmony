@@ -13,6 +13,8 @@ export interface LeaveRequest {
   approvedBy?: string;
   approvedDate?: string;
   comments?: string;
+  teamLeadId?: string;
+  teamLeadName?: string;
 }
 
 export interface LeaveBalance {

@@ -7,251 +7,348 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileUp, Download, Eye, Calendar, Clock, User } from 'lucide-react';
+import { Plus, FileUp, Download, Eye, Calendar } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface HandoverReport {
   id: string;
   employeeId: string;
   employeeName: string;
-  teamLeadId: string;
-  teamLeadName: string;
   date: string;
   shift: 'day' | 'night';
   summary: string;
-  keyActivities: string;
-  pendingTasks: string;
-  issues: string;
-  recommendations: string;
-  status: 'draft' | 'submitted' | 'reviewed';
-  submittedAt?: string;
-  pdfUrl?: string;
+  achievements: string;
+  challenges: string;
+  nextDayPlan: string;
+  teamLeadId: string;
+  teamLeadName: string;
+  status: 'submitted' | 'reviewed' | 'approved';
+  pdfFile?: File;
+  pdfFileName?: string;
+  submittedAt: string;
 }
+
+const mockTeamLeads = [
+  { id: 'tl1', name: 'Sarah Johnson', department: 'IT' },
+  { id: 'tl2', name: 'Michael Brown', department: 'HR' },
+  { id: 'tl3', name: 'Emily Davis', department: 'Finance' },
+  { id: 'tl4', name: 'David Wilson', department: 'Marketing' }
+];
+
+const mockHandoverReports: HandoverReport[] = [
+  {
+    id: '1',
+    employeeId: '4',
+    employeeName: 'Jane Doe',
+    date: '2024-01-20',
+    shift: 'day',
+    summary: 'Completed all assigned tasks for client projects',
+    achievements: 'Successfully delivered Project Alpha milestone',
+    challenges: 'Minor delay in API integration',
+    nextDayPlan: 'Continue with Project Beta development',
+    teamLeadId: 'tl1',
+    teamLeadName: 'Sarah Johnson',
+    status: 'approved',
+    pdfFileName: 'handover_20240120.pdf',
+    submittedAt: '2024-01-20T17:30:00Z'
+  }
+];
 
 const HandoverManagement: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('my-reports');
-  const [handoverReports, setHandoverReports] = useState<HandoverReport[]>([
-    {
-      id: '1',
-      employeeId: '4',
-      employeeName: 'Jane Doe',
-      teamLeadId: '2',
-      teamLeadName: 'Sarah Johnson',
-      date: '2024-01-15',
-      shift: 'day',
-      summary: 'Completed all assigned tasks for the day',
-      keyActivities: 'Client meetings, document reviews, team coordination',
-      pendingTasks: 'Follow up with client ABC, complete project report',
-      issues: 'System downtime for 30 minutes',
-      recommendations: 'Upgrade server capacity',
-      status: 'submitted',
-      submittedAt: '2024-01-15T17:30:00Z'
-    }
-  ]);
-
-  const [newReport, setNewReport] = useState({
+  const [handoverReports, setHandoverReports] = useState<HandoverReport[]>(mockHandoverReports);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     shift: 'day' as 'day' | 'night',
     summary: '',
-    keyActivities: '',
-    pendingTasks: '',
-    issues: '',
-    recommendations: ''
+    achievements: '',
+    challenges: '',
+    nextDayPlan: '',
+    teamLeadId: ''
   });
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const canReviewHandovers = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
 
-  const handleSubmitReport = () => {
-    if (!newReport.summary || !newReport.keyActivities) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a PDF file only.",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File Too Large",
+          description: "Please upload a PDF file smaller than 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.teamLeadId) {
       toast({
-        title: "Error",
-        description: "Please fill in required fields",
+        title: "Team Lead Required",
+        description: "Please select a team lead to review your handover report.",
         variant: "destructive"
       });
       return;
     }
 
-    const report: HandoverReport = {
+    if (!selectedFile) {
+      toast({
+        title: "PDF File Required",
+        description: "Please upload a PDF handover report.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const selectedTeamLead = mockTeamLeads.find(tl => tl.id === formData.teamLeadId);
+    
+    const newReport: HandoverReport = {
       id: Date.now().toString(),
       employeeId: user?.id || '',
       employeeName: user ? `${user.firstName} ${user.lastName}` : '',
-      teamLeadId: '2', // This should be dynamic based on organizational structure
-      teamLeadName: 'Team Lead',
-      date: newReport.date,
-      shift: newReport.shift,
-      summary: newReport.summary,
-      keyActivities: newReport.keyActivities,
-      pendingTasks: newReport.pendingTasks,
-      issues: newReport.issues,
-      recommendations: newReport.recommendations,
+      date: formData.date,
+      shift: formData.shift,
+      summary: formData.summary,
+      achievements: formData.achievements,
+      challenges: formData.challenges,
+      nextDayPlan: formData.nextDayPlan,
+      teamLeadId: formData.teamLeadId,
+      teamLeadName: selectedTeamLead?.name || '',
       status: 'submitted',
+      pdfFile: selectedFile,
+      pdfFileName: selectedFile.name,
       submittedAt: new Date().toISOString()
     };
 
-    setHandoverReports(prev => [report, ...prev]);
-    setNewReport({
+    setHandoverReports(prev => [newReport, ...prev]);
+    setIsDialogOpen(false);
+    setFormData({
       date: new Date().toISOString().split('T')[0],
       shift: 'day',
       summary: '',
-      keyActivities: '',
-      pendingTasks: '',
-      issues: '',
-      recommendations: ''
+      achievements: '',
+      challenges: '',
+      nextDayPlan: '',
+      teamLeadId: ''
     });
-    setIsDialogOpen(false);
+    setSelectedFile(null);
+    
+    toast({
+      title: "Handover Report Submitted",
+      description: `Your ${formData.shift} shift handover report has been submitted to ${selectedTeamLead?.name}.`,
+    });
+  };
+
+  const handleStatusChange = (reportId: string, newStatus: HandoverReport['status']) => {
+    setHandoverReports(prev => prev.map(report => 
+      report.id === reportId 
+        ? { ...report, status: newStatus }
+        : report
+    ));
 
     toast({
-      title: "Report Submitted",
-      description: "Your handover report has been submitted successfully",
+      title: "Status Updated",
+      description: `Handover report status changed to ${newStatus}.`,
     });
   };
 
-  const generatePDF = (report: HandoverReport) => {
-    // This would typically generate a PDF using a library like jsPDF
+  const getStatusBadge = (status: HandoverReport['status']) => {
+    const variants = {
+      submitted: 'outline',
+      reviewed: 'secondary',
+      approved: 'default'
+    } as const;
+
+    const colors = {
+      submitted: 'text-yellow-700 border-yellow-300',
+      reviewed: 'text-blue-700 border-blue-300',
+      approved: 'text-green-700 border-green-300'
+    };
+
+    return (
+      <Badge variant={variants[status]} className={colors[status]}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
+  const downloadPDF = (report: HandoverReport) => {
+    // In a real application, this would download the actual PDF file
     toast({
-      title: "PDF Generated",
-      description: "Handover report PDF has been generated",
+      title: "Download Started",
+      description: `Downloading ${report.pdfFileName}`,
     });
   };
-
-  const getStatusColor = (status: HandoverReport['status']) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'submitted': return 'bg-blue-100 text-blue-800';
-      case 'reviewed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getShiftColor = (shift: 'day' | 'night') => {
-    return shift === 'day' 
-      ? 'bg-yellow-100 text-yellow-800' 
-      : 'bg-purple-100 text-purple-800';
-  };
-
-  const canViewAllReports = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Handover Reports</h2>
-          <p className="text-gray-600">Daily handover reports management</p>
+          <h2 className="text-2xl font-bold">Daily Handover Reports</h2>
+          <p className="text-gray-600">Submit and manage daily handover reports</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <FileUp className="h-4 w-4 mr-2" />
-              Submit Report
+              <Plus className="h-4 w-4 mr-2" />
+              Submit Handover
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Daily Handover Report</DialogTitle>
+              <DialogTitle>Submit Daily Handover Report</DialogTitle>
               <DialogDescription>
-                Submit your daily handover report to your team lead
+                Upload your daily handover report in PDF format along with a summary
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="shift">Shift</Label>
+                    <Select value={formData.shift} onValueChange={(value: 'day' | 'night') => setFormData(prev => ({ ...prev, shift: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="day">Day Shift (8:30 AM - 5:00 PM)</SelectItem>
+                        <SelectItem value="night">Night Shift (8:00 PM - 4:00 AM)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div>
-                  <Label>Date</Label>
-                  <Input
-                    type="date"
-                    value={newReport.date}
-                    onChange={(e) => setNewReport(prev => ({ ...prev, date: e.target.value }))}
+                  <Label htmlFor="teamLead">Team Lead</Label>
+                  <Select value={formData.teamLeadId} onValueChange={(value) => setFormData(prev => ({ ...prev, teamLeadId: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select team lead" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {mockTeamLeads.map((lead) => (
+                        <SelectItem key={lead.id} value={lead.id}>
+                          {lead.name} - {lead.department}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="pdfFile">Upload PDF Report</Label>
+                  <div className="mt-2">
+                    <Input
+                      id="pdfFile"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="cursor-pointer"
+                      required
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Upload PDF file (max 5MB)
+                    </p>
+                    {selectedFile && (
+                      <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded flex items-center gap-2">
+                        <FileUp className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-700">{selectedFile.name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="summary">Summary</Label>
+                  <Textarea
+                    id="summary"
+                    value={formData.summary}
+                    onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
+                    placeholder="Brief summary of the day's work"
+                    required
                   />
                 </div>
+
                 <div>
-                  <Label>Shift</Label>
-                  <select
-                    className="w-full p-2 border rounded-md"
-                    value={newReport.shift}
-                    onChange={(e) => setNewReport(prev => ({ ...prev, shift: e.target.value as 'day' | 'night' }))}
-                  >
-                    <option value="day">Day Shift (8:30 AM - 5:00 PM)</option>
-                    <option value="night">Night Shift (8:00 PM - 4:00 AM)</option>
-                  </select>
+                  <Label htmlFor="achievements">Key Achievements</Label>
+                  <Textarea
+                    id="achievements"
+                    value={formData.achievements}
+                    onChange={(e) => setFormData(prev => ({ ...prev, achievements: e.target.value }))}
+                    placeholder="What did you accomplish today?"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="challenges">Challenges Faced</Label>
+                  <Textarea
+                    id="challenges"
+                    value={formData.challenges}
+                    onChange={(e) => setFormData(prev => ({ ...prev, challenges: e.target.value }))}
+                    placeholder="Any challenges or issues encountered"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="nextDayPlan">Next Day Plan</Label>
+                  <Textarea
+                    id="nextDayPlan"
+                    value={formData.nextDayPlan}
+                    onChange={(e) => setFormData(prev => ({ ...prev, nextDayPlan: e.target.value }))}
+                    placeholder="Plans and priorities for tomorrow"
+                  />
                 </div>
               </div>
-              
-              <div>
-                <Label>Summary *</Label>
-                <Textarea
-                  value={newReport.summary}
-                  onChange={(e) => setNewReport(prev => ({ ...prev, summary: e.target.value }))}
-                  placeholder="Brief summary of the day's work"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label>Key Activities *</Label>
-                <Textarea
-                  value={newReport.keyActivities}
-                  onChange={(e) => setNewReport(prev => ({ ...prev, keyActivities: e.target.value }))}
-                  placeholder="List of key activities completed"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label>Pending Tasks</Label>
-                <Textarea
-                  value={newReport.pendingTasks}
-                  onChange={(e) => setNewReport(prev => ({ ...prev, pendingTasks: e.target.value }))}
-                  placeholder="Tasks that need to be completed"
-                />
-              </div>
-              
-              <div>
-                <Label>Issues Encountered</Label>
-                <Textarea
-                  value={newReport.issues}
-                  onChange={(e) => setNewReport(prev => ({ ...prev, issues: e.target.value }))}
-                  placeholder="Any issues or challenges faced"
-                />
-              </div>
-              
-              <div>
-                <Label>Recommendations</Label>
-                <Textarea
-                  value={newReport.recommendations}
-                  onChange={(e) => setNewReport(prev => ({ ...prev, recommendations: e.target.value }))}
-                  placeholder="Suggestions for improvements"
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmitReport}>
-                Submit Report
-              </Button>
-            </div>
+              <DialogFooter className="mt-6">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Submit Report</Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="my-reports" className="space-y-6">
         <TabsList>
           <TabsTrigger value="my-reports">My Reports</TabsTrigger>
-          {canViewAllReports && <TabsTrigger value="team-reports">Team Reports</TabsTrigger>}
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          {canReviewHandovers && <TabsTrigger value="team-reports">Team Reports</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="my-reports">
           <Card>
             <CardHeader>
               <CardTitle>My Handover Reports</CardTitle>
-              <CardDescription>View and manage your submitted handover reports</CardDescription>
+              <CardDescription>View and track your submitted handover reports</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -259,38 +356,44 @@ const HandoverManagement: React.FC = () => {
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Shift</TableHead>
-                    <TableHead>Summary</TableHead>
                     <TableHead>Team Lead</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>PDF File</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {handoverReports
-                    .filter(report => !canViewAllReports || report.employeeId === user?.id)
+                    .filter(report => !canReviewHandovers || report.employeeId === user?.id)
                     .map((report) => (
                     <TableRow key={report.id}>
                       <TableCell>{new Date(report.date).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <Badge className={getShiftColor(report.shift)}>
-                          {report.shift === 'day' ? 'Day (8:30-17:00)' : 'Night (20:00-04:00)'}
+                        <Badge variant="outline" className={report.shift === 'day' ? 'text-orange-700' : 'text-blue-700'}>
+                          {report.shift === 'day' ? 'Day' : 'Night'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">{report.summary}</TableCell>
                       <TableCell>{report.teamLeadName}</TableCell>
+                      <TableCell>{getStatusBadge(report.status)}</TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(report.status)}>
-                          {report.status}
-                        </Badge>
+                        {report.pdfFileName && (
+                          <div className="flex items-center gap-2">
+                            <FileUp className="h-4 w-4 text-gray-500" />
+                            <span className="text-sm">{report.pdfFileName}</span>
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => generatePDF(report)}>
-                            <Download className="h-4 w-4" />
-                          </Button>
+                        <div className="flex gap-2">
+                          {report.pdfFileName && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadPDF(report)}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -301,12 +404,12 @@ const HandoverManagement: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {canViewAllReports && (
+        {canReviewHandovers && (
           <TabsContent value="team-reports">
             <Card>
               <CardHeader>
                 <CardTitle>Team Handover Reports</CardTitle>
-                <CardDescription>Review handover reports from your team members</CardDescription>
+                <CardDescription>Review and approve team handover reports</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -315,9 +418,8 @@ const HandoverManagement: React.FC = () => {
                       <TableHead>Employee</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Shift</TableHead>
-                      <TableHead>Key Activities</TableHead>
-                      <TableHead>Pending Tasks</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>PDF File</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -327,25 +429,55 @@ const HandoverManagement: React.FC = () => {
                         <TableCell className="font-medium">{report.employeeName}</TableCell>
                         <TableCell>{new Date(report.date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Badge className={getShiftColor(report.shift)}>
+                          <Badge variant="outline" className={report.shift === 'day' ? 'text-orange-700' : 'text-blue-700'}>
                             {report.shift === 'day' ? 'Day' : 'Night'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="max-w-xs truncate">{report.keyActivities}</TableCell>
-                        <TableCell className="max-w-xs truncate">{report.pendingTasks}</TableCell>
+                        <TableCell>{getStatusBadge(report.status)}</TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(report.status)}>
-                            {report.status}
-                          </Badge>
+                          {report.pdfFileName && (
+                            <div className="flex items-center gap-2">
+                              <FileUp className="h-4 w-4 text-gray-500" />
+                              <span className="text-sm">{report.pdfFileName}</span>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2">
-                            <Button size="sm" variant="outline">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => generatePDF(report)}>
-                              <Download className="h-4 w-4" />
-                            </Button>
+                          <div className="flex gap-2">
+                            {report.pdfFileName && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => downloadPDF(report)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {report.status === 'submitted' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStatusChange(report.id, 'reviewed')}
+                                >
+                                  Review
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleStatusChange(report.id, 'approved')}
+                                >
+                                  Approve
+                                </Button>
+                              </>
+                            )}
+                            {report.status === 'reviewed' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleStatusChange(report.id, 'approved')}
+                              >
+                                Approve
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -356,49 +488,6 @@ const HandoverManagement: React.FC = () => {
             </Card>
           </TabsContent>
         )}
-
-        <TabsContent value="analytics">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  This Month
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">23</div>
-                <p className="text-xs text-gray-500">Reports submitted</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <Clock className="h-4 w-4 mr-2" />
-                  On Time
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">95%</div>
-                <p className="text-xs text-gray-500">Submission rate</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center">
-                  <User className="h-4 w-4 mr-2" />
-                  Team Average
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">4.2</div>
-                <p className="text-xs text-gray-500">Reports per week</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
       </Tabs>
     </div>
   );

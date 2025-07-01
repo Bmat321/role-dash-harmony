@@ -7,7 +7,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import NotificationCenter from './NotificationCenter';
 import { 
   Bell, 
-  Search, 
   Settings, 
   User, 
   LogOut,
@@ -21,8 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface StickyHeaderProps {
   onMobileMenuToggle?: () => void;
@@ -62,8 +60,8 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle }) => {
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-3 lg:px-6 py-3 lg:py-4">
       <div className="flex items-center justify-between">
-        {/* Left side - Mobile menu button and search */}
-        <div className="flex items-center gap-3 lg:gap-4 flex-1">
+        {/* Left side - Mobile menu button */}
+        <div className="flex items-center gap-3 lg:gap-4">
           {/* Mobile menu button */}
           {isMobile && (
             <Button
@@ -76,17 +74,10 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle }) => {
             </Button>
           )}
           
-          {/* Search bar - hidden on mobile */}
-          {!isMobile && (
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search employees, documents..."
-                className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
-              />
-            </div>
-          )}
+          {/* Company branding or title can go here */}
+          <div className="hidden lg:block">
+            <h1 className="text-xl font-semibold text-gray-900">HRIS Dashboard</h1>
+          </div>
         </div>
 
         {/* Right side - Notifications and user menu */}
@@ -107,7 +98,7 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle }) => {
             
             {isNotificationOpen && (
               <div className="absolute right-0 top-12 z-50">
-                <NotificationCenter />
+                <NotificationCenter onClose={() => setIsNotificationOpen(false)} />
               </div>
             )}
           </div>

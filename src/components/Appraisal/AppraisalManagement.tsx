@@ -1,224 +1,271 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Slider } from '@/components/ui/slider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Award, Send, Eye, Calendar, Target, BarChart } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-
-interface AppraisalCriteria {
-  id: string;
-  category: string;
-  objective: string;
-  kpi: string;
-  measurement: string;
-  maxMarks: number;
-  score?: number;
-}
+import { toast } from '@/hooks/use-toast';
 
 interface Appraisal {
   id: string;
   employeeId: string;
   employeeName: string;
-  period: 'monthly' | 'quarterly' | 'bi-annually' | 'annually';
-  department: string;
-  status: 'draft' | 'sent' | 'completed' | 'overdue';
-  totalScore: number;
-  maxScore: number;
-  createdDate: string;
+  templateId: string;
+  title: string;
+  type: AppraisalType;
+  period: string;
   dueDate: string;
+  status: 'pending' | 'inProgress' | 'completed';
+  createdBy: string;
+  createdAt: string;
   criteria: AppraisalCriteria[];
 }
 
-const defaultCriteria: AppraisalCriteria[] = [
+interface AppraisalTemplate {
+  id: string;
+  name: string;
+  description: string;
+  criteria: AppraisalCriteria[];
+  createdBy: string;
+  createdAt: string;
+}
+
+interface AppraisalCriteria {
+  id: string;
+  name: string;
+  description: string;
+  weight: number;
+  employeeScore: number;
+  managerScore: number;
+  finalScore: number;
+  comments: string;
+}
+
+type AppraisalType = 'monthly' | 'quarterly' | 'annual';
+
+interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+}
+
+const mockEmployees: Employee[] = [
+  { id: '1', name: 'John Doe', email: 'john.doe@example.com', department: 'IT' },
+  { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', department: 'HR' },
+  { id: '3', name: 'Mike Wilson', email: 'mike.wilson@example.com', department: 'Finance' },
+  { id: '4', name: 'Emily Johnson', email: 'emily.johnson@example.com', department: 'Marketing' }
+];
+
+const mockAppraisals: Appraisal[] = [
   {
     id: '1',
-    category: 'OBJECTIVES',
-    objective: 'Unit Objective',
-    kpi: 'Timely and Accurate fulfilment of all visa and immigration requests as received via email; Track all sales',
-    measurement: 'Show evidence on daily report on HRIS, Weekly Visa and Immigration request fulfilment data and sales. MIS tracking report. 1 negative mark per missed/ delayed requests due to human error.',
-    maxMarks: 20
-  },
+    employeeId: '1',
+    employeeName: 'John Doe',
+    templateId: '1',
+    title: 'January Performance Appraisal',
+    type: 'monthly',
+    period: 'January 2024',
+    dueDate: '2024-02-15',
+    status: 'completed',
+    createdBy: 'admin',
+    createdAt: '2024-01-01',
+    criteria: [
+      { id: 'c1', name: 'Quality of Work', description: 'Accuracy and thoroughness', weight: 30, employeeScore: 4, managerScore: 5, finalScore: 4.5, comments: 'Excellent work this month' },
+      { id: 'c2', name: 'Teamwork', description: 'Collaboration and support', weight: 20, employeeScore: 5, managerScore: 5, finalScore: 5, comments: 'Great team player' },
+      { id: 'c3', name: 'Initiative', description: 'Proactiveness and innovation', weight: 25, employeeScore: 4, managerScore: 4, finalScore: 4, comments: 'Shows good initiative' },
+      { id: 'c4', name: 'Attendance', description: 'Punctuality and presence', weight: 25, employeeScore: 5, managerScore: 5, finalScore: 5, comments: 'Perfect attendance' }
+    ]
+  }
+];
+
+const mockTemplates: AppraisalTemplate[] = [
   {
-    id: '2',
-    category: 'OBJECTIVES',
-    objective: 'Mandatory Sales Requirement',
-    kpi: 'Close sale/ contribute an initiative that generates revenue. (Show evidence of total individual sales)',
-    measurement: '(Show evidence of total individual sales)',
-    maxMarks: 15
-  },
-  {
-    id: '3',
-    category: 'FINANCIAL',
-    objective: 'Satisfactory service to internal customer',
-    kpi: 'Early submission of time bound tasks, Availability via SMS, CUG, Whatsapp, 3CX, when required. Immediate acceptable feedback/ dissemination of relevant info to all concerned. Satisfactory and Timely responses to internal requests.',
-    measurement: 'Daily Minutes of meeting/ Weekly Sales Activity/ Monthly Accounts Management/ Quarterly Board Report report submission. Show screen shots of time stamps and link to weekly reports on concave.',
-    maxMarks: 10
-  },
-  {
-    id: '4',
-    category: 'FINANCIAL',
-    objective: 'Must keep the external client complaint volume down for the entire year',
-    kpi: 'Must keep the external client complaint volume down for the entire year. Manage internal or external issues, generate QA investigation report and follow through till resolved',
-    measurement: 'Show QA investigation report of all incidents. Evidence of feedback link for process and corrective trainings, Minimum of 2 internal/ external commendations per appraisal period',
-    maxMarks: 10
-  },
-  {
-    id: '5',
-    category: 'FINANCIAL',
-    objective: 'Followed up via calls, messages, emails etc and responded according to SLA',
-    kpi: 'Followed up via calls, messages, emails etc and responded according to SLA. Kept to agreed terms, implementation of signed contract and agreed timelines',
-    measurement: 'Minimum of 80% customer satisfaction ratings. Show evidence of 100% vendor/ supplier visit reports/ Audit reports/ renewal reports/ vendor quarterly evaluation report',
-    maxMarks: 10
-  },
-  {
-    id: '6',
-    category: 'CUSTOMER SERVICE',
-    objective: 'Adherence to SOPs, documentation of processes, back up of key positions',
-    kpi: 'Strict adherence to SOPs/ stipulated guidelines on reports, Up to date documentation in line with expectations, Documented leave reliever training and demonstrated ability to take ownership of tasks and persons assigned',
-    measurement: 'Show evidence of SOPs on flow charts, Identify CHOICE and Mission Statement. Show minimum of three self driven initiatives within appraisal period that demonstrated any of our CHOICE core values.',
-    maxMarks: 5
-  },
-  {
-    id: '7',
-    category: 'CUSTOMER SERVICE',
-    objective: 'Punctuality and availability',
-    kpi: 'Resumption as stated in departmental calendar/ as directed at client\'s office, at internal/ external meetings and at training sessions',
-    measurement: 'Average of daily attendance score from the Time and Attendance biometric machine, also from the HRIS. Evidence of training feedback form of all scheduled trainings',
-    maxMarks: 5
-  },
-  {
-    id: '8',
-    category: 'CUSTOMER SERVICE',
-    objective: 'Prime responsibilities and duties',
-    kpi: 'Prime Responsibilities and Duties (As listed in Job Description)',
-    measurement: 'Average of monthly evaluation scores/ QA biannual scores attained within appraisal period',
-    maxMarks: 10
-  },
-  {
-    id: '9',
-    category: 'INTERNAL PROCESS',
-    objective: 'Leadership Evaluation and knowledge sharing',
-    kpi: 'Compliance with BTM Culture tests- Annual Customer service certificate, Quarterly English and Geography tests',
-    measurement: 'Show certificates and screen shots of quarterly English test, annual Customer service training, annual Business Ethics training and bi-annual Geography tests',
-    maxMarks: 5
-  },
-  {
-    id: '10',
-    category: 'INTERNAL PROCESS',
-    objective: 'Individual/ Self Driven Role Related Training',
-    kpi: 'Identify, attend and document self driven role related trainings, webinars and conferences as assigned or listed in the training calendar/ Personal Brand Positioning across digital platforms',
-    measurement: 'Show evidence of 8 hours of training per appraisal period and 16 hours for the entire year or show links to 8 BTM related brand awareness published work on social media per appraisal period and 16 hours/ 16 BTM related posts on personal SM handle for the entire year.',
-    maxMarks: 10
+    id: '1',
+    name: 'Monthly Performance Template',
+    description: 'Template for monthly performance appraisals',
+    createdBy: 'admin',
+    createdAt: '2024-01-01',
+    criteria: [
+      { id: 'c1', name: 'Quality of Work', description: 'Accuracy and thoroughness', weight: 30, employeeScore: 0, managerScore: 0, finalScore: 0, comments: '' },
+      { id: 'c2', name: 'Teamwork', description: 'Collaboration and support', weight: 20, employeeScore: 0, managerScore: 0, finalScore: 0, comments: '' },
+      { id: 'c3', name: 'Initiative', description: 'Proactiveness and innovation', weight: 25, employeeScore: 0, managerScore: 0, finalScore: 0, comments: '' },
+      { id: 'c4', name: 'Attendance', description: 'Punctuality and presence', weight: 25, employeeScore: 0, managerScore: 0, finalScore: 0, comments: '' }
+    ]
   }
 ];
 
 const AppraisalManagement: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [appraisals, setAppraisals] = useState<Appraisal[]>([]);
-  const [newAppraisal, setNewAppraisal] = useState({
-    employeeId: '',
-    period: 'quarterly' as Appraisal['period'],
-    department: '',
-    dueDate: ''
+  const [appraisals, setAppraisals] = useState<Appraisal[]>(mockAppraisals);
+  const [templates, setTemplates] = useState<AppraisalTemplate[]>(mockTemplates);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [formData, setFormData] = useState({
+    title: '',
+    type: 'monthly' as AppraisalType,
+    dueDate: '',
+    criteria: [] as AppraisalCriteria[]
   });
-  const [scoringAppraisal, setScoringAppraisal] = useState<Appraisal | null>(null);
 
-  const canCreateAppraisal = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
+  const canManageAppraisals = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
 
-  const handleCreateAppraisal = () => {
-    if (!newAppraisal.employeeId || !newAppraisal.department || !newAppraisal.dueDate) {
+  const handleCreateAppraisal = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedEmployee || !selectedTemplate) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
+        title: "Missing Information",
+        description: "Please select an employee and template.",
         variant: "destructive"
       });
       return;
     }
 
-    const appraisal: Appraisal = {
+    const template = templates.find(t => t.id === selectedTemplate);
+    const employee = mockEmployees.find(e => e.id === selectedEmployee);
+    
+    if (!template || !employee) return;
+
+    const newAppraisal: Appraisal = {
       id: Date.now().toString(),
-      employeeId: newAppraisal.employeeId,
-      employeeName: `Employee ${newAppraisal.employeeId}`,
-      period: newAppraisal.period,
-      department: newAppraisal.department,
-      status: 'draft',
-      totalScore: 0,
-      maxScore: 100,
-      createdDate: new Date().toISOString().split('T')[0],
-      dueDate: newAppraisal.dueDate,
-      criteria: defaultCriteria.map(c => ({ ...c, score: 0 }))
+      employeeId: selectedEmployee,
+      employeeName: employee.name,
+      templateId: selectedTemplate,
+      title: formData.title,
+      type: formData.type,
+      period: getPeriodString(formData.type),
+      dueDate: formData.dueDate,
+      status: 'pending',
+      createdBy: user?.id || '',
+      createdAt: new Date().toISOString(),
+      criteria: template.criteria.map(criterion => ({
+        ...criterion,
+        employeeScore: 0,
+        managerScore: 0,
+        finalScore: 0,
+        comments: ''
+      }))
     };
 
-    setAppraisals(prev => [appraisal, ...prev]);
-    setNewAppraisal({
-      employeeId: '',
-      period: 'quarterly',
-      department: '',
-      dueDate: ''
+    setAppraisals(prev => [newAppraisal, ...prev]);
+    
+    // Reset form and close dialog
+    setFormData({
+      title: '',
+      type: 'monthly',
+      dueDate: '',
+      criteria: []
     });
-
+    setSelectedEmployee('');
+    setSelectedTemplate('');
+    setIsCreateDialogOpen(false);
+    
     toast({
       title: "Appraisal Created",
-      description: "New appraisal has been created successfully",
+      description: `Appraisal for ${employee.name} has been created and sent.`,
     });
   };
 
-  const handleScoreChange = (criteriaId: string, score: number) => {
-    if (!scoringAppraisal) return;
-
-    const updatedCriteria = scoringAppraisal.criteria.map(c => 
-      c.id === criteriaId ? { ...c, score } : c
-    );
-
-    const totalScore = updatedCriteria.reduce((sum, c) => sum + (c.score || 0), 0);
+  const handleCreateTemplate = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    setScoringAppraisal({
-      ...scoringAppraisal,
-      criteria: updatedCriteria,
-      totalScore
-    });
-  };
-
-  const handleSendAppraisal = (appraisalId: string) => {
-    setAppraisals(prev => prev.map(a => 
-      a.id === appraisalId 
-        ? { ...a, status: 'sent' as const }
-        : a
-    ));
-
-    toast({
-      title: "Appraisal Sent",
-      description: "Appraisal has been sent to the employee",
-    });
-  };
-
-  const getStatusColor = (status: Appraisal['status']) => {
-    switch (status) {
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    if (formData.criteria.length === 0) {
+      toast({
+        title: "No Criteria",
+        description: "Please add at least one appraisal criterion.",
+        variant: "destructive"
+      });
+      return;
     }
+
+    const totalWeight = formData.criteria.reduce((sum, criterion) => sum + criterion.weight, 0);
+    
+    if (totalWeight !== 100) {
+      toast({
+        title: "Invalid Weights",
+        description: "Total weight of all criteria must equal 100%.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newTemplate: AppraisalTemplate = {
+      id: Date.now().toString(),
+      name: formData.title,
+      description: `${formData.type} appraisal template`,
+      criteria: formData.criteria,
+      createdBy: user?.id || '',
+      createdAt: new Date().toISOString()
+    };
+
+    setTemplates(prev => [newTemplate, ...prev]);
+    
+    // Reset form and close dialog
+    setFormData({
+      title: '',
+      type: 'monthly',
+      dueDate: '',
+      criteria: []
+    });
+    setIsTemplateDialogOpen(false);
+    
+    toast({
+      title: "Template Created",
+      description: "Appraisal template has been created successfully.",
+    });
   };
 
-  const getScoreColor = (score: number, maxScore: number) => {
-    const percentage = (score / maxScore) * 100;
-    if (percentage >= 80) return 'text-green-600';
-    if (percentage >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number) => {
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const newCriteria = [...prev.criteria];
+      newCriteria[index] = { ...newCriteria[index], [name]: value };
+      return { ...prev, criteria: newCriteria };
+    });
+  };
+
+  const handleAddCriterion = () => {
+    setFormData(prev => ({
+      ...prev,
+      criteria: [...prev.criteria, { id: Date.now().toString(), name: '', description: '', weight: 0, employeeScore: 0, managerScore: 0, finalScore: 0, comments: '' }]
+    }));
+  };
+
+  const handleRemoveCriterion = (index: number) => {
+    setFormData(prev => {
+      const newCriteria = [...prev.criteria];
+      newCriteria.splice(index, 1);
+      return { ...prev, criteria: newCriteria };
+    });
+  };
+
+  const getPeriodString = (type: AppraisalType): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.toLocaleString('default', { month: 'long' });
+
+    switch (type) {
+      case 'monthly':
+        return `${month} ${year}`;
+      case 'quarterly':
+        const quarter = Math.floor((now.getMonth() / 3) + 1);
+        return `Q${quarter} ${year}`;
+      case 'annual':
+        return `${year}`;
+      default:
+        return 'Unknown';
+    }
   };
 
   return (
@@ -228,136 +275,225 @@ const AppraisalManagement: React.FC = () => {
           <h2 className="text-2xl font-bold">Appraisal Management</h2>
           <p className="text-gray-600">Manage employee performance appraisals</p>
         </div>
-        {canCreateAppraisal && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Appraisal
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Create New Appraisal</DialogTitle>
-                <DialogDescription>Set up a new performance appraisal</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Employee ID</Label>
-                  <Input
-                    value={newAppraisal.employeeId}
-                    onChange={(e) => setNewAppraisal(prev => ({ ...prev, employeeId: e.target.value }))}
-                    placeholder="Enter employee ID"
-                  />
-                </div>
-                <div>
-                  <Label>Period</Label>
-                  <Select value={newAppraisal.period} onValueChange={(value: Appraisal['period']) => setNewAppraisal(prev => ({ ...prev, period: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="quarterly">Quarterly</SelectItem>
-                      <SelectItem value="bi-annually">Bi-Annually</SelectItem>
-                      <SelectItem value="annually">Annually</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Department</Label>
-                  <Input
-                    value={newAppraisal.department}
-                    onChange={(e) => setNewAppraisal(prev => ({ ...prev, department: e.target.value }))}
-                    placeholder="Enter department"
-                  />
-                </div>
-                <div>
-                  <Label>Due Date</Label>
-                  <Input
-                    type="date"
-                    value={newAppraisal.dueDate}
-                    onChange={(e) => setNewAppraisal(prev => ({ ...prev, dueDate: e.target.value }))}
-                  />
-                </div>
-                <Button onClick={handleCreateAppraisal} className="w-full">
+        {canManageAppraisals && (
+          <div className="flex gap-2">
+            <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Template
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Create Appraisal Template</DialogTitle>
+                  <DialogDescription>
+                    Define a new template for performance appraisals
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateTemplate}>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Template Name</Label>
+                      <Input
+                        id="title"
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="type">Appraisal Type</Label>
+                      <Select value={formData.type} onValueChange={(value: AppraisalType) => setFormData(prev => ({ ...prev, type: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="quarterly">Quarterly</SelectItem>
+                          <SelectItem value="annual">Annual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Appraisal Criteria</Label>
+                      <div className="space-y-2">
+                        {formData.criteria.map((criterion, index) => (
+                          <Card key={criterion.id} className="border">
+                            <CardContent className="space-y-2">
+                              <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                  <Label htmlFor={`name-${index}`}>Name</Label>
+                                  <Input
+                                    id={`name-${index}`}
+                                    type="text"
+                                    name="name"
+                                    value={criterion.name}
+                                    onChange={(e) => handleInputChange(e, index)}
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor={`weight-${index}`}>Weight (%)</Label>
+                                  <Input
+                                    id={`weight-${index}`}
+                                    type="number"
+                                    name="weight"
+                                    value={criterion.weight}
+                                    onChange={(e) => handleInputChange(e, index)}
+                                    required
+                                  />
+                                </div>
+                                <div>
+                                  <Button type="button" variant="destructive" size="sm" onClick={() => handleRemoveCriterion(index)}>
+                                    Remove
+                                  </Button>
+                                </div>
+                              </div>
+                              <div>
+                                <Label htmlFor={`description-${index}`}>Description</Label>
+                                <Textarea
+                                  id={`description-${index}`}
+                                  name="description"
+                                  value={criterion.description}
+                                  onChange={(e) => handleInputChange(e, index)}
+                                  required
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        <Button type="button" variant="secondary" onClick={handleAddCriterion}>
+                          Add Criterion
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter className="mt-6">
+                    <Button type="button" variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">Create Template</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
                   Create Appraisal
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Create New Appraisal</DialogTitle>
+                  <DialogDescription>
+                    Assign an appraisal to an employee using a predefined template
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateAppraisal}>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="employee">Employee</Label>
+                      <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockEmployees.map((employee) => (
+                            <SelectItem key={employee.id} value={employee.id}>
+                              {employee.name} - {employee.department}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="template">Template</Label>
+                      <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a template" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {templates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="title">Appraisal Title</Label>
+                      <Input
+                        id="title"
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="type">Appraisal Type</Label>
+                      <Select value={formData.type} onValueChange={(value: AppraisalType) => setFormData(prev => ({ ...prev, type: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="quarterly">Quarterly</SelectItem>
+                          <SelectItem value="annual">Annual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="dueDate">Due Date</Label>
+                      <Input
+                        id="dueDate"
+                        type="date"
+                        value={formData.dueDate}
+                        onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter className="mt-6">
+                    <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">Create Appraisal</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="active" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="appraisals">Appraisals</TabsTrigger>
-          {canCreateAppraisal && <TabsTrigger value="scoring">Scoring</TabsTrigger>}
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="active">Active Appraisals</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="archive">Archive</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Appraisals</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{appraisals.length}</div>
-                <p className="text-xs text-gray-500">All time</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Pending</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {appraisals.filter(a => a.status === 'sent').length}
-                </div>
-                <p className="text-xs text-gray-500">Awaiting completion</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {appraisals.filter(a => a.status === 'completed').length}
-                </div>
-                <p className="text-xs text-gray-500">This period</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">85%</div>
-                <p className="text-xs text-gray-500">Team average</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="appraisals">
+        <TabsContent value="active">
           <Card>
             <CardHeader>
-              <CardTitle>Appraisal List</CardTitle>
-              <CardDescription>Manage all employee appraisals</CardDescription>
+              <CardTitle>Active Appraisals</CardTitle>
+              <CardDescription>List of ongoing performance appraisals</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Employee</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Period</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Due Date</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -365,30 +501,16 @@ const AppraisalManagement: React.FC = () => {
                   {appraisals.map((appraisal) => (
                     <TableRow key={appraisal.id}>
                       <TableCell className="font-medium">{appraisal.employeeName}</TableCell>
-                      <TableCell>{appraisal.department}</TableCell>
-                      <TableCell className="capitalize">{appraisal.period}</TableCell>
-                      <TableCell>
-                        <span className={getScoreColor(appraisal.totalScore, appraisal.maxScore)}>
-                          {appraisal.totalScore}/{appraisal.maxScore}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(appraisal.status)}>
-                          {appraisal.status}
-                        </Badge>
-                      </TableCell>
+                      <TableCell>{appraisal.title}</TableCell>
+                      <TableCell>{appraisal.type}</TableCell>
                       <TableCell>{new Date(appraisal.dueDate).toLocaleDateString()}</TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" onClick={() => setScoringAppraisal(appraisal)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          {canCreateAppraisal && appraisal.status === 'draft' && (
-                            <Button size="sm" onClick={() => handleSendAppraisal(appraisal.id)}>
-                              <Send className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
+                        <Badge variant="secondary">{appraisal.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -397,162 +519,81 @@ const AppraisalManagement: React.FC = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {canCreateAppraisal && (
-          <TabsContent value="scoring">
-            {scoringAppraisal ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Score Appraisal - {scoringAppraisal.employeeName}</CardTitle>
-                  <CardDescription>
-                    {scoringAppraisal.period} appraisal for {scoringAppraisal.department} department
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {scoringAppraisal.totalScore}
-                      </div>
-                      <div className="text-sm text-gray-500">Total Score</div>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="text-2xl font-bold">{scoringAppraisal.maxScore}</div>
-                      <div className="text-sm text-gray-500">Maximum Score</div>
-                    </div>
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
-                        {Math.round((scoringAppraisal.totalScore / scoringAppraisal.maxScore) * 100)}%
-                      </div>
-                      <div className="text-sm text-gray-500">Percentage</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    {scoringAppraisal.criteria.map((criteria) => (
-                      <div key={criteria.id} className="border rounded-lg p-4 space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="outline">{criteria.category}</Badge>
-                              <span className="font-medium">Max: {criteria.maxMarks} marks</span>
-                            </div>
-                            <h4 className="font-semibold mb-2">{criteria.objective}</h4>
-                            <p className="text-sm text-gray-600 mb-2">{criteria.kpi}</p>
-                            <p className="text-xs text-gray-500">{criteria.measurement}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Score: {criteria.score || 0}/{criteria.maxMarks}</Label>
-                            <span className="text-sm text-gray-500">
-                              {Math.round(((criteria.score || 0) / criteria.maxMarks) * 100)}%
-                            </span>
-                          </div>
-                          <Slider
-                            value={[criteria.score || 0]}
-                            onValueChange={(value) => handleScoreChange(criteria.id, value[0])}
-                            max={criteria.maxMarks}
-                            min={0}
-                            step={0.5}
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <Button variant="outline" onClick={() => setScoringAppraisal(null)}>
-                      Back to List
-                    </Button>
-                    <Button onClick={() => {
-                      setAppraisals(prev => prev.map(a => 
-                        a.id === scoringAppraisal.id ? scoringAppraisal : a
-                      ));
-                      setScoringAppraisal(null);
-                      toast({
-                        title: "Appraisal Updated",
-                        description: "Scores have been saved successfully",
-                      });
-                    }}>
-                      Save Scores
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <Award className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500">Select an appraisal from the list to start scoring</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        )}
-
-        <TabsContent value="analytics">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart className="h-5 w-5 mr-2" />
-                  Performance Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Excellent (90-100%)</span>
-                    <span className="font-bold text-green-600">25%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Good (80-89%)</span>
-                    <span className="font-bold text-blue-600">45%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Average (70-79%)</span>
-                    <span className="font-bold text-yellow-600">20%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Below Average (&lt;70%)</span>
-                    <span className="font-bold text-red-600">10%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Target className="h-5 w-5 mr-2" />
-                  Department Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span>Sales</span>
-                    <span className="font-bold">88%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>Marketing</span>
-                    <span className="font-bold">85%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>IT</span>
-                    <span className="font-bold">92%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>HR</span>
-                    <span className="font-bold">87%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="templates">
+          <Card>
+            <CardHeader>
+              <CardTitle>Appraisal Templates</CardTitle>
+              <CardDescription>List of available appraisal templates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Created By</TableHead>
+                    <TableHead>Created At</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {templates.map((template) => (
+                    <TableRow key={template.id}>
+                      <TableCell className="font-medium">{template.name}</TableCell>
+                      <TableCell>{template.description}</TableCell>
+                      <TableCell>{mockEmployees.find(e => e.id === template.createdBy)?.name || 'System'}</TableCell>
+                      <TableCell>{new Date(template.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="archive">
+          <Card>
+            <CardHeader>
+              <CardTitle>Archived Appraisals</CardTitle>
+              <CardDescription>List of completed performance appraisals</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {appraisals.filter(appraisal => appraisal.status === 'completed').map((appraisal) => (
+                    <TableRow key={appraisal.id}>
+                      <TableCell className="font-medium">{appraisal.employeeName}</TableCell>
+                      <TableCell>{appraisal.title}</TableCell>
+                      <TableCell>{appraisal.type}</TableCell>
+                      <TableCell>{new Date(appraisal.dueDate).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{appraisal.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
