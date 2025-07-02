@@ -77,33 +77,6 @@ const AppraisalManagement: React.FC = () => {
     return badges[status] || <Badge variant="outline">Unknown</Badge>;
   };
 
-  const getUserAppraisals = () => {
-    if (isTeamLead) {
-      return appraisals.filter(appr => appr.teamLeadId === user?.id);
-    } else if (isEmployee) {
-      return appraisals.filter(appr => appr.employeeId === user?.id);
-    } else if (isHR) {
-      return appraisals.filter(appr => ['hr_review', 'completed'].includes(appr.status));
-    }
-    return appraisals;
-  };
-
-  const getPendingAppraisals = () => {
-    const userAppraisals = getUserAppraisals();
-    if (isEmployee) {
-      return userAppraisals.filter(appr => ['sent_to_employee', 'needs_revision'].includes(appr.status));
-    } else if (isTeamLead) {
-      return userAppraisals.filter(appr => appr.status === 'employee_completed');
-    } else if (isHR) {
-      return userAppraisals.filter(appr => appr.status === 'hr_review');
-    }
-    return [];
-  };
-
-  const getCompletedAppraisals = () => {
-    return getUserAppraisals().filter(appr => ['approved', 'completed'].includes(appr.status));
-  };
-
   if (selectedAppraisal) {
     return (
       <AppraisalScoring
@@ -140,7 +113,7 @@ const AppraisalManagement: React.FC = () => {
               <CardTitle className="text-sm font-medium text-gray-600">Total Appraisals</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{getUserAppraisals().length}</div>
+              <div className="text-2xl font-bold">{appraisals.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -148,7 +121,7 @@ const AppraisalManagement: React.FC = () => {
               <CardTitle className="text-sm font-medium text-gray-600">Pending Action</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{getPendingAppraisals().length}</div>
+              <div className="text-2xl font-bold text-yellow-600">0</div>
             </CardContent>
           </Card>
           <Card>
@@ -156,7 +129,7 @@ const AppraisalManagement: React.FC = () => {
               <CardTitle className="text-sm font-medium text-gray-600">Completed</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{getCompletedAppraisals().length}</div>
+              <div className="text-2xl font-bold text-green-600">0</div>
             </CardContent>
           </Card>
           <Card>
@@ -164,196 +137,74 @@ const AppraisalManagement: React.FC = () => {
               <CardTitle className="text-sm font-medium text-gray-600">This Month</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {getUserAppraisals().filter(appr => 
-                  new Date(appr.createdAt).getMonth() === new Date().getMonth()
-                ).length}
-              </div>
+              <div className="text-2xl font-bold text-blue-600">0</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="pending" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Pending ({getPendingAppraisals().length})
-            </TabsTrigger>
-            <TabsTrigger value="all" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              All Appraisals
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Completed
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="pending">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Appraisals</CardTitle>
-                <CardDescription>
-                  {isEmployee && "Complete your self-assessments"}
-                  {isTeamLead && "Review employee submissions"}
-                  {isHR && "Final review and approval"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {getPendingAppraisals().length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No pending appraisals</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Title</TableHead>
-                          <TableHead>Employee</TableHead>
-                          <TableHead className="hidden sm:table-cell">Period</TableHead>
-                          <TableHead className="hidden sm:table-cell">Due Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {getPendingAppraisals().map((appraisal) => (
-                          <TableRow key={appraisal.id}>
-                            <TableCell className="font-medium">{appraisal.title}</TableCell>
-                            <TableCell>{appraisal.employeeName}</TableCell>
-                            <TableCell className="hidden sm:table-cell">{appraisal.period}</TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              {new Date(appraisal.dueDate).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell>{getStatusBadge(appraisal.status)}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewAppraisal(appraisal)}
-                                className="flex items-center gap-1"
-                              >
-                                <Eye className="h-3 w-3" />
-                                <span className="hidden sm:inline">View</span>
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Appraisals</CardTitle>
+            <CardDescription>All appraisals in the system</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {appraisals.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No appraisals found</p>
+                {isTeamLead && (
+                  <Button 
+                    onClick={() => setIsCreateDialogOpen(true)}
+                    className="mt-4"
+                    variant="outline"
+                  >
+                    Create your first appraisal
+                  </Button>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="all">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Appraisals</CardTitle>
-                <CardDescription>Complete list of appraisals</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Employee</TableHead>
-                        <TableHead className="hidden sm:table-cell">Team Lead</TableHead>
-                        <TableHead className="hidden sm:table-cell">Period</TableHead>
-                        <TableHead className="hidden sm:table-cell">Due Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Employee</TableHead>
+                      <TableHead className="hidden sm:table-cell">Period</TableHead>
+                      <TableHead className="hidden sm:table-cell">Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {appraisals.map((appraisal) => (
+                      <TableRow key={appraisal.id}>
+                        <TableCell className="font-medium">{appraisal.title}</TableCell>
+                        <TableCell>{appraisal.employeeName}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{appraisal.period}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {new Date(appraisal.dueDate).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(appraisal.status)}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewAppraisal(appraisal)}
+                            className="flex items-center gap-1"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span className="hidden sm:inline">View</span>
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {getUserAppraisals().map((appraisal) => (
-                        <TableRow key={appraisal.id}>
-                          <TableCell className="font-medium">{appraisal.title}</TableCell>
-                          <TableCell>{appraisal.employeeName}</TableCell>
-                          <TableCell className="hidden sm:table-cell">{appraisal.teamLeadName}</TableCell>
-                          <TableCell className="hidden sm:table-cell">{appraisal.period}</TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {new Date(appraisal.dueDate).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(appraisal.status)}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewAppraisal(appraisal)}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-3 w-3" />
-                              <span className="hidden sm:inline">View</span>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="completed">
-            <Card>
-              <CardHeader>
-                <CardTitle>Completed Appraisals</CardTitle>
-                <CardDescription>Approved and finalized appraisals</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Employee</TableHead>
-                        <TableHead className="hidden sm:table-cell">Final Score</TableHead>
-                        <TableHead className="hidden sm:table-cell">Completed Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {getCompletedAppraisals().map((appraisal) => (
-                        <TableRow key={appraisal.id}>
-                          <TableCell className="font-medium">{appraisal.title}</TableCell>
-                          <TableCell>{appraisal.employeeName}</TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            <span className="font-medium">
-                              {appraisal.totalScore.final.toFixed(1)}/100
-                            </span>
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {new Date(appraisal.updatedAt).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(appraisal.status)}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleViewAppraisal(appraisal)}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-3 w-3" />
-                              <span className="hidden sm:inline">View</span>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Create Appraisal Dialog */}
         <AppraisalCreation

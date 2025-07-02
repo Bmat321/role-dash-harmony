@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Dashboard from './Dashboard';
+import DashboardOverview from './DashboardOverview';
 import EmployeeManagement from '../Employee/EmployeeManagement';
 import AttendanceManagement from '../Attendance/AttendanceManagement';
 import LeaveManagement from '../Leave/LeaveManagement';
@@ -25,7 +25,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
 
   switch (activeItem) {
     case 'dashboard':
-      return <Dashboard />;
+      return <DashboardOverview />;
     case 'employees':
       return <EmployeeManagement />;
     case 'attendance':
@@ -53,7 +53,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
     case 'settings':
       return <GeneralSettings />;
     default:
-      return <div>Content for {activeItem}</div>;
+      return <DashboardOverview />;
   }
 };
 
