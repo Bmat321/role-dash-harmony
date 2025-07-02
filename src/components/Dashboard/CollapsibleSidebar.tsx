@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,22 +58,76 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
 
   if (!user) return null;
 
-  const menuItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'employees', icon: UsersIcon, label: 'Employees' },
-    { id: 'attendance', icon: ClockIcon, label: 'Attendance' },
-    { id: 'leave', icon: CalendarIcon, label: 'Leave Management' },
-    { id: 'loan', icon: DollarSignIcon, label: 'Loan Management' },
-    { id: 'payroll', icon: CreditCardIcon, label: 'Payroll' },
-    { id: 'performance', icon: TrendingUpIcon, label: 'Performance' },
-    { id: 'appraisal', icon: FileTextIcon, label: 'Appraisal' },
-    { id: 'recruitment', icon: UserPlusIcon, label: 'Recruitment' },
-    { id: 'documents', icon: FileTextIcon, label: 'Documents' },
-    { id: 'handover', icon: FileTextIcon2, label: 'Handover' },
-    { id: 'time-tracking', icon: TimerIcon, label: 'Time Tracking' },
-    { id: 'reports', icon: BarChartIcon, label: 'Reports' },
-    { id: 'settings', icon: SettingsIcon, label: 'Settings' },
-  ];
+  const getMenuItemsForRole = () => {
+    const baseItems = [
+      { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    ];
+
+    switch (user.role) {
+      case 'admin':
+        return [
+          ...baseItems,
+          { id: 'employees', icon: UsersIcon, label: 'Employees' },
+          { id: 'attendance', icon: ClockIcon, label: 'Attendance' },
+          { id: 'leave', icon: CalendarIcon, label: 'Leave Management' },
+          { id: 'loan', icon: DollarSignIcon, label: 'Loan Management' },
+          { id: 'payroll', icon: CreditCardIcon, label: 'Payroll' },
+          { id: 'performance', icon: TrendingUpIcon, label: 'Performance' },
+          { id: 'appraisal', icon: FileTextIcon, label: 'Appraisal' },
+          { id: 'recruitment', icon: UserPlusIcon, label: 'Recruitment' },
+          { id: 'documents', icon: FileTextIcon2, label: 'Documents' },
+          { id: 'handover', icon: FileTextIcon3, label: 'Handover' },
+          { id: 'time-tracking', icon: TimerIcon, label: 'Time Tracking' },
+          { id: 'analytics', icon: BarChartIcon, label: 'Analytics' },
+          { id: 'reports', icon: BarChartIcon, label: 'Reports' },
+          { id: 'settings', icon: SettingsIcon, label: 'Settings' },
+        ];
+      
+      case 'hr':
+        return [
+          ...baseItems,
+          { id: 'employees', icon: UsersIcon, label: 'Employees' },
+          { id: 'attendance', icon: ClockIcon, label: 'Attendance' },
+          { id: 'leave', icon: CalendarIcon, label: 'Leave Management' },
+          { id: 'payroll', icon: CreditCardIcon, label: 'Payroll' },
+          { id: 'performance', icon: TrendingUpIcon, label: 'Performance' },
+          { id: 'appraisal', icon: FileTextIcon, label: 'Appraisal' },
+          { id: 'recruitment', icon: UserPlusIcon, label: 'Recruitment' },
+          { id: 'documents', icon: FileTextIcon2, label: 'Documents' },
+          { id: 'reports', icon: BarChartIcon, label: 'Reports' },
+        ];
+      
+      case 'manager':
+        return [
+          ...baseItems,
+          { id: 'employees', icon: UsersIcon, label: 'My Team' },
+          { id: 'attendance', icon: ClockIcon, label: 'Team Attendance' },
+          { id: 'leave', icon: CalendarIcon, label: 'Leave Requests' },
+          { id: 'performance', icon: TrendingUpIcon, label: 'Performance' },
+          { id: 'appraisal', icon: FileTextIcon, label: 'Appraisal' },
+          { id: 'documents', icon: FileTextIcon2, label: 'Documents' },
+          { id: 'time-tracking', icon: TimerIcon, label: 'Time Tracking' },
+          { id: 'reports', icon: BarChartIcon, label: 'Team Reports' },
+        ];
+      
+      case 'employee':
+        return [
+          ...baseItems,
+          { id: 'attendance', icon: ClockIcon, label: 'My Attendance' },
+          { id: 'leave', icon: CalendarIcon, label: 'Leave Balance' },
+          { id: 'loan', icon: DollarSignIcon, label: 'My Loans' },
+          { id: 'payroll', icon: CreditCardIcon, label: 'Payroll' },
+          { id: 'appraisal', icon: FileTextIcon, label: 'My Appraisals' },
+          { id: 'documents', icon: FileTextIcon2, label: 'My Documents' },
+          { id: 'time-tracking', icon: TimerIcon, label: 'Time Tracking' },
+        ];
+      
+      default:
+        return baseItems;
+    }
+  };
+
+  const menuItems = getMenuItemsForRole();
 
   const toggleSidebar = () => {
     if (isMobile) {

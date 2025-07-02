@@ -11,7 +11,8 @@ import DocumentManagement from '../Documents/DocumentManagement';
 import HandoverManagement from '../Handover/HandoverManagement';
 import TimeTrackingManagement from '../TimeTracking/TimeTrackingManagement';
 import Reports from './Reports';
-import GeneralSettings from '../Settings/GeneralSettings';
+import Analytics from './Analytics';
+import SystemSettings from '../Settings/SystemSettings';
 import { useAuth } from '@/contexts/AuthContext';
 import LoanManagement from '../Loan/LoanManagement';
 import AppraisalManagement from '../Appraisal/AppraisalManagement';
@@ -48,10 +49,12 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
       return <HandoverManagement />;
     case 'time-tracking':
       return <TimeTrackingManagement />;
+    case 'analytics':
+      return <Analytics />;
     case 'reports':
       return <Reports />;
     case 'settings':
-      return <GeneralSettings />;
+      return <SystemSettings />;
     default:
       return <DashboardOverview />;
   }

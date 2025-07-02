@@ -1,14 +1,72 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Calendar, TrendingUp, CheckCircle } from 'lucide-react';
+import { Users, Calendar, TrendingUp, CheckCircle, Clock, DollarSign, FileText, UserPlus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DashboardOverview: React.FC = () => {
+  const { user } = useAuth();
+
+  const getQuickActionsForRole = () => {
+    switch (user?.role) {
+      case 'admin':
+      case 'hr':
+        return [
+          { icon: Users, label: 'Add Employee', color: 'text-blue-500' },
+          { icon: Calendar, label: 'Manage Leave', color: 'text-green-500' },
+          { icon: TrendingUp, label: 'View Reports', color: 'text-purple-500' },
+          { icon: UserPlus, label: 'Recruitment', color: 'text-orange-500' },
+        ];
+      
+      case 'manager':
+        return [
+          { icon: Users, label: 'View Team', color: 'text-blue-500' },
+          { icon: Calendar, label: 'Leave Requests', color: 'text-green-500' },
+          { icon: TrendingUp, label: 'Team Reports', color: 'text-purple-500' },
+          { icon: CheckCircle, label: 'Appraisals', color: 'text-orange-500' },
+        ];
+      
+      case 'employee':
+        return [
+          { icon: Clock, label: 'Check Attendance', color: 'text-blue-500' },
+          { icon: Calendar, label: 'Request Leave', color: 'text-green-500' },
+          { icon: DollarSign, label: 'View Payroll', color: 'text-purple-500' },
+          { icon: FileText, label: 'My Documents', color: 'text-orange-500' },
+        ];
+      
+      default:
+        return [
+          { icon: Users, label: 'Add Employee', color: 'text-blue-500' },
+          { icon: Calendar, label: 'Request Leave', color: 'text-green-500' },
+          { icon: TrendingUp, label: 'View Reports', color: 'text-purple-500' },
+          { icon: CheckCircle, label: 'Complete Appraisal', color: 'text-orange-500' },
+        ];
+    }
+  };
+
+  const quickActions = getQuickActionsForRole();
+
+  const getWelcomeMessage = () => {
+    const firstName = user?.firstName || 'User';
+    switch (user?.role) {
+      case 'admin':
+        return `Welcome back, ${firstName}! System overview at your fingertips.`;
+      case 'hr':
+        return `Welcome back, ${firstName}! Manage your HR operations efficiently.`;
+      case 'manager':
+        return `Welcome back, ${firstName}! Keep track of your team's progress.`;
+      case 'employee':
+        return `Welcome back, ${firstName}! Your personal dashboard is ready.`;
+      default:
+        return `Welcome back, ${firstName}! Your HRIS dashboard is ready.`;
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-gray-600">Welcome to your HRIS dashboard</p>
+        <p className="text-gray-600">{getWelcomeMessage()}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -97,22 +155,15 @@ const DashboardOverview: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              <button className="p-4 border rounded-lg hover:bg-gray-50 text-left">
-                <Users className="h-6 w-6 mb-2 text-blue-500" />
-                <div className="text-sm font-medium">Add Employee</div>
-              </button>
-              <button className="p-4 border rounded-lg hover:bg-gray-50 text-left">
-                <Calendar className="h-6 w-6 mb-2 text-green-500" />
-                <div className="text-sm font-medium">Request Leave</div>
-              </button>
-              <button className="p-4 border rounded-lg hover:bg-gray-50 text-left">
-                <TrendingUp className="h-6 w-6 mb-2 text-purple-500" />
-                <div className="text-sm font-medium">View Reports</div>
-              </button>
-              <button className="p-4 border rounded-lg hover:bg-gray-50 text-left">
-                <CheckCircle className="h-6 w-6 mb-2 text-orange-500" />
-                <div className="text-sm font-medium">Complete Appraisal</div>
-              </button>
+              {quickActions.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <button key={action.label} className="p-4 border rounded-lg hover:bg-gray-50 text-left">
+                    <Icon className={`h-6 w-6 mb-2 ${action.color}`} />
+                    <div className="text-sm font-medium">{action.label}</div>
+                  </button>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

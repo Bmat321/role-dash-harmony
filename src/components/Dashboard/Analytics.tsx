@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -42,11 +43,6 @@ const Analytics: React.FC = () => {
     { month: 'Jun', attendance: 95.8 },
   ];
 
-  const salaryData = departmentData.map(dept => ({
-    department: dept.department,
-    avgSalary: Math.floor(Math.random() * 40000) + 60000,
-  }));
-
   const chartConfig = {
     employees: { label: 'Employees', color: '#3B82F6' },
     hires: { label: 'New Hires', color: '#10B981' },
@@ -56,7 +52,12 @@ const Analytics: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 lg:space-y-6">
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Analytics</h1>
+        <p className="text-gray-600">Detailed insights and analytics</p>
+      </div>
+
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
         <Card>
@@ -110,18 +111,12 @@ const Analytics: React.FC = () => {
             <CardDescription className="text-sm">Employee count by department</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className={`h-[250px] ${isMobile ? 'lg:h-[300px]' : 'lg:h-[300px]'}`}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={departmentData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="department" 
-                    fontSize={isMobile ? 10 : 12}
-                    angle={isMobile ? -45 : 0}
-                    textAnchor={isMobile ? 'end' : 'middle'}
-                    height={isMobile ? 60 : 30}
-                  />
-                  <YAxis fontSize={isMobile ? 10 : 12} />
+                  <XAxis dataKey="department" fontSize={12} />
+                  <YAxis fontSize={12} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="employees" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -137,7 +132,7 @@ const Analytics: React.FC = () => {
             <CardDescription className="text-sm">Employee breakdown by role</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className={`h-[250px] ${isMobile ? 'lg:h-[300px]' : 'lg:h-[300px]'}`}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -145,8 +140,8 @@ const Analytics: React.FC = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={isMobile ? false : ({ role, count }) => `${role}: ${count}`}
-                    outerRadius={isMobile ? 60 : 80}
+                    label={({ role, count }) => `${role}: ${count}`}
+                    outerRadius={80}
                     fill="#8884d8"
                     dataKey="count"
                   >
@@ -158,130 +153,6 @@ const Analytics: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
-          </CardContent>
-        </Card>
-
-        {/* Hiring Trends */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base lg:text-lg">Hiring vs Termination Trends</CardTitle>
-            <CardDescription className="text-sm">Monthly hiring and termination data</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className={`h-[250px] ${isMobile ? 'lg:h-[300px]' : 'lg:h-[300px]'}`}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={hiringTrends} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" fontSize={isMobile ? 10 : 12} />
-                  <YAxis fontSize={isMobile ? 10 : 12} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="hires" fill="#10B981" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="terminations" fill="#EF4444" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        {/* Attendance Trends */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base lg:text-lg">Attendance Trends</CardTitle>
-            <CardDescription className="text-sm">Monthly attendance percentage</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className={`h-[250px] ${isMobile ? 'lg:h-[300px]' : 'lg:h-[300px]'}`}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={attendanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" fontSize={isMobile ? 10 : 12} />
-                  <YAxis domain={[90, 100]} fontSize={isMobile ? 10 : 12} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="attendance" 
-                    stroke="#8B5CF6" 
-                    fill="#8B5CF6" 
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Salary Analysis - Full width on mobile */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base lg:text-lg">Average Salary by Department</CardTitle>
-          <CardDescription className="text-sm">Comparative salary analysis across departments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className={`h-[300px] ${isMobile ? 'lg:h-[400px]' : 'lg:h-[400px]'}`}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={salaryData} 
-                layout={isMobile ? "vertical" : "horizontal"}
-                margin={{ top: 20, right: 30, left: isMobile ? 60 : 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  type={isMobile ? "number" : "number"} 
-                  fontSize={isMobile ? 10 : 12}
-                />
-                <YAxis 
-                  dataKey="department" 
-                  type={isMobile ? "category" : "category"} 
-                  fontSize={isMobile ? 10 : 12}
-                  width={isMobile ? 50 : 80}
-                />
-                <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  formatter={(value) => [`$${value.toLocaleString()}`, 'Average Salary']}
-                />
-                <Bar dataKey="avgSalary" fill="#F59E0B" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-
-      {/* Insights Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-green-600 text-base lg:text-lg">Key Insights</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm">• Engineering has the highest headcount (35%)</p>
-            <p className="text-sm">• New hire rate increased by 25% this quarter</p>
-            <p className="text-sm">• Attendance improved by 1.2% month-over-month</p>
-            <p className="text-sm">• IT department has highest average salary</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-yellow-600 text-base lg:text-lg">Areas for Attention</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm">• Sales department turnover above average</p>
-            <p className="text-sm">• March showed higher termination rates</p>
-            <p className="text-sm">• Consider salary review for Marketing team</p>
-            <p className="text-sm">• Remote work affecting attendance patterns</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-blue-600 text-base lg:text-lg">Recommendations</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm">• Implement retention program for Sales</p>
-            <p className="text-sm">• Expand Engineering team by 20%</p>
-            <p className="text-sm">• Review compensation packages quarterly</p>
-            <p className="text-sm">• Introduce flexible work arrangements</p>
           </CardContent>
         </Card>
       </div>
