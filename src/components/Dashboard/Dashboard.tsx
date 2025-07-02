@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0">
         <StickyHeader onMobileMenuToggle={handleMobileMenuToggle} />
         <main className="flex-1 overflow-auto">
-          <DashboardContent activeTab={activeTab} />
+          <DashboardContent activeItem={activeTab} />
         </main>
       </div>
     </div>

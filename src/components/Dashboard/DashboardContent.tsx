@@ -1,16 +1,17 @@
+
 import React from 'react';
 import Dashboard from './Dashboard';
-import Employees from '../Employees/Employees';
-import Attendance from '../Attendance/Attendance';
+import EmployeeManagement from '../Employee/EmployeeManagement';
+import AttendanceManagement from '../Attendance/AttendanceManagement';
 import LeaveManagement from '../Leave/LeaveManagement';
-import Payroll from '../Payroll/Payroll';
-import Performance from '../Performance/Performance';
-import Recruitment from '../Recruitment/Recruitment';
-import Documents from '../Documents/Documents';
-import Handover from '../Handover/Handover';
-import TimeTracking from '../TimeTracking/TimeTracking';
-import Reports from '../Reports/Reports';
-import Settings from '../Settings/Settings';
+import PayrollManagement from '../Payroll/PayrollManagement';
+import PerformanceManagement from '../Performance/PerformanceManagement';
+import RecruitmentManagement from '../Recruitment/RecruitmentManagement';
+import DocumentManagement from '../Documents/DocumentManagement';
+import HandoverManagement from '../Handover/HandoverManagement';
+import TimeTrackingManagement from '../TimeTracking/TimeTrackingManagement';
+import Reports from './Reports';
+import GeneralSettings from '../Settings/GeneralSettings';
 import { useAuth } from '@/contexts/AuthContext';
 import LoanManagement from '../Loan/LoanManagement';
 import AppraisalManagement from '../Appraisal/AppraisalManagement';
@@ -26,9 +27,9 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
     case 'dashboard':
       return <Dashboard />;
     case 'employees':
-      return <Employees />;
+      return <EmployeeManagement />;
     case 'attendance':
-      return <Attendance />;
+      return <AttendanceManagement />;
     case 'leave':
       return <LeaveManagement />;
     case 'loan':
@@ -36,21 +37,21 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
     case 'appraisal':
       return <AppraisalManagement />;
     case 'payroll':
-      return <Payroll />;
+      return <PayrollManagement />;
     case 'performance':
-      return <Performance />;
+      return <PerformanceManagement />;
     case 'recruitment':
-      return <Recruitment />;
+      return <RecruitmentManagement />;
     case 'documents':
-      return <Documents />;
+      return <DocumentManagement />;
     case 'handover':
-      return <Handover />;
+      return <HandoverManagement />;
     case 'time-tracking':
-      return <TimeTracking />;
+      return <TimeTrackingManagement />;
     case 'reports':
       return <Reports />;
     case 'settings':
-      return <Settings />;
+      return <GeneralSettings />;
     default:
       return <div>Content for {activeItem}</div>;
   }

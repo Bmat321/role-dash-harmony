@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import AppraisalScoring from './AppraisalScoring';
 
 interface Appraisal {
   id: string;
