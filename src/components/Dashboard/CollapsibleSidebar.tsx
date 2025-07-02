@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -113,6 +112,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       case 'employee':
         return [
           ...baseItems,
+          { id: 'profile', icon: User, label: 'My Profile' },
           { id: 'attendance', icon: ClockIcon, label: 'My Attendance' },
           { id: 'leave', icon: CalendarIcon, label: 'Leave Balance' },
           { id: 'loan', icon: DollarSignIcon, label: 'My Loans' },

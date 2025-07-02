@@ -16,17 +16,19 @@ import SystemSettings from '../Settings/SystemSettings';
 import { useAuth } from '@/contexts/AuthContext';
 import LoanManagement from '../Loan/LoanManagement';
 import AppraisalManagement from '../Appraisal/AppraisalManagement';
+import EmployeeProfile from '../Profile/EmployeeProfile';
 
 interface DashboardContentProps {
   activeItem: string;
+  onNavigate: (section: string) => void;
 }
 
-const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
+const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem, onNavigate }) => {
   const { user } = useAuth();
 
   switch (activeItem) {
     case 'dashboard':
-      return <DashboardOverview />;
+      return <DashboardOverview onNavigate={onNavigate} />;
     case 'employees':
       return <EmployeeManagement />;
     case 'attendance':
@@ -55,8 +57,10 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem }) => {
       return <Reports />;
     case 'settings':
       return <SystemSettings />;
+    case 'profile':
+      return <EmployeeProfile />;
     default:
-      return <DashboardOverview />;
+      return <DashboardOverview onNavigate={onNavigate} />;
   }
 };
 

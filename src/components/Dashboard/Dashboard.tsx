@@ -16,6 +16,10 @@ const Dashboard: React.FC = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
   };
 
+  const handleNavigate = (section: string) => {
+    setActiveTab(section);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <CollapsibleSidebar 
@@ -25,10 +29,10 @@ const Dashboard: React.FC = () => {
         onMobileToggle={handleMobileMenuToggle}
       />
       
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 ml-4 lg:ml-6">
         <StickyHeader onMobileMenuToggle={handleMobileMenuToggle} />
         <main className="flex-1 overflow-auto">
-          <DashboardContent activeItem={activeTab} />
+          <DashboardContent activeItem={activeTab} onNavigate={handleNavigate} />
         </main>
       </div>
     </div>

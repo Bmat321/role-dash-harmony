@@ -4,7 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, Calendar, TrendingUp, CheckCircle, Clock, DollarSign, FileText, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-const DashboardOverview: React.FC = () => {
+interface DashboardOverviewProps {
+  onNavigate?: (section: string) => void;
+}
+
+const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate }) => {
   const { user } = useAuth();
 
   const getQuickActionsForRole = () => {
@@ -12,34 +16,34 @@ const DashboardOverview: React.FC = () => {
       case 'admin':
       case 'hr':
         return [
-          { icon: Users, label: 'Add Employee', color: 'text-blue-500' },
-          { icon: Calendar, label: 'Manage Leave', color: 'text-green-500' },
-          { icon: TrendingUp, label: 'View Reports', color: 'text-purple-500' },
-          { icon: UserPlus, label: 'Recruitment', color: 'text-orange-500' },
+          { icon: Users, label: 'Add Employee', color: 'text-blue-500', action: 'employees' },
+          { icon: Calendar, label: 'Manage Leave', color: 'text-green-500', action: 'leave' },
+          { icon: TrendingUp, label: 'View Reports', color: 'text-purple-500', action: 'reports' },
+          { icon: UserPlus, label: 'Recruitment', color: 'text-orange-500', action: 'recruitment' },
         ];
       
       case 'manager':
         return [
-          { icon: Users, label: 'View Team', color: 'text-blue-500' },
-          { icon: Calendar, label: 'Leave Requests', color: 'text-green-500' },
-          { icon: TrendingUp, label: 'Team Reports', color: 'text-purple-500' },
-          { icon: CheckCircle, label: 'Appraisals', color: 'text-orange-500' },
+          { icon: Users, label: 'View Team', color: 'text-blue-500', action: 'employees' },
+          { icon: Calendar, label: 'Leave Requests', color: 'text-green-500', action: 'leave' },
+          { icon: TrendingUp, label: 'Team Reports', color: 'text-purple-500', action: 'reports' },
+          { icon: CheckCircle, label: 'Appraisals', color: 'text-orange-500', action: 'appraisal' },
         ];
       
       case 'employee':
         return [
-          { icon: Clock, label: 'Check Attendance', color: 'text-blue-500' },
-          { icon: Calendar, label: 'Request Leave', color: 'text-green-500' },
-          { icon: DollarSign, label: 'View Payroll', color: 'text-purple-500' },
-          { icon: FileText, label: 'My Documents', color: 'text-orange-500' },
+          { icon: Clock, label: 'Check Attendance', color: 'text-blue-500', action: 'attendance' },
+          { icon: Calendar, label: 'Request Leave', color: 'text-green-500', action: 'leave' },
+          { icon: DollarSign, label: 'View Payroll', color: 'text-purple-500', action: 'payroll' },
+          { icon: FileText, label: 'My Documents', color: 'text-orange-500', action: 'documents' },
         ];
       
       default:
         return [
-          { icon: Users, label: 'Add Employee', color: 'text-blue-500' },
-          { icon: Calendar, label: 'Request Leave', color: 'text-green-500' },
-          { icon: TrendingUp, label: 'View Reports', color: 'text-purple-500' },
-          { icon: CheckCircle, label: 'Complete Appraisal', color: 'text-orange-500' },
+          { icon: Users, label: 'Add Employee', color: 'text-blue-500', action: 'employees' },
+          { icon: Calendar, label: 'Request Leave', color: 'text-green-500', action: 'leave' },
+          { icon: TrendingUp, label: 'View Reports', color: 'text-purple-500', action: 'reports' },
+          { icon: CheckCircle, label: 'Complete Appraisal', color: 'text-orange-500', action: 'appraisal' },
         ];
     }
   };
@@ -62,8 +66,14 @@ const DashboardOverview: React.FC = () => {
     }
   };
 
+  const handleQuickAction = (action: string) => {
+    if (onNavigate) {
+      onNavigate(action);
+    }
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-gray-600">{getWelcomeMessage()}</p>
@@ -158,7 +168,11 @@ const DashboardOverview: React.FC = () => {
               {quickActions.map((action) => {
                 const Icon = action.icon;
                 return (
-                  <button key={action.label} className="p-4 border rounded-lg hover:bg-gray-50 text-left">
+                  <button 
+                    key={action.label} 
+                    className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors"
+                    onClick={() => handleQuickAction(action.action)}
+                  >
                     <Icon className={`h-6 w-6 mb-2 ${action.color}`} />
                     <div className="text-sm font-medium">{action.label}</div>
                   </button>
