@@ -12,7 +12,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Appraisal } from '@/types/appraisal';
-import { appraisalTemplate } from '@/data/appraisalTemplate';
+import { defaultAppraisalTemplate } from '@/data/appraisalTemplate';
 
 interface AppraisalCreationProps {
   isOpen: boolean;
@@ -57,7 +57,7 @@ const AppraisalCreation: React.FC<AppraisalCreationProps> = ({
       period: formData.period,
       dueDate: formData.dueDate.toISOString(),
       status: 'sent_to_employee',
-      objectives: appraisalTemplate.objectives.map((template, index) => ({
+      objectives: defaultAppraisalTemplate.objectives.map((template, index) => ({
         id: `obj_${index}`,
         category: template.category,
         name: template.name,
