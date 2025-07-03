@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Plus, Eye, Clock, CheckCircle, AlertTriangle, Users } from 'lucide-reac
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import AppraisalScoring from './AppraisalScoring';
-import AppraisalCreation from './AppraisalCreation';
+import AppraisalTargetSelection from './AppraisalTargetSelection';
 import { Appraisal } from '@/types/appraisal';
 
 // Mock data
@@ -26,7 +25,7 @@ const AppraisalManagement: React.FC = () => {
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const isTeamLead = user?.role === 'manager' || user?.role === 'admin';
+  const isTeamLead = user?.role === 'manager' || user?.role === 'team_lead' || user?.role === 'admin';
   const isEmployee = user?.role === 'employee';
   const isHR = user?.role === 'hr' || user?.role === 'admin';
 
@@ -91,7 +90,7 @@ const AppraisalManagement: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -207,7 +206,7 @@ const AppraisalManagement: React.FC = () => {
         </Card>
 
         {/* Create Appraisal Dialog */}
-        <AppraisalCreation
+        <AppraisalTargetSelection
           isOpen={isCreateDialogOpen}
           onClose={() => setIsCreateDialogOpen(false)}
           onCreateAppraisal={handleCreateAppraisal}

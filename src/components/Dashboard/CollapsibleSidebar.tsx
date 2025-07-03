@@ -97,6 +97,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         ];
       
       case 'manager':
+      case 'team_lead': // Team leads get same permissions as managers
         return [
           ...baseItems,
           { id: 'employees', icon: UsersIcon, label: 'My Team' },

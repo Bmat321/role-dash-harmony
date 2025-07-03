@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Calendar, TrendingUp, CheckCircle, Clock, DollarSign, FileText, UserPlus } from 'lucide-react';
@@ -23,6 +22,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate }) => 
         ];
       
       case 'manager':
+      case 'team_lead':
         return [
           { icon: Users, label: 'View Team', color: 'text-blue-500', action: 'employees' },
           { icon: Calendar, label: 'Leave Requests', color: 'text-green-500', action: 'leave' },
@@ -59,6 +59,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate }) => 
         return `Welcome back, ${firstName}! Manage your HR operations efficiently.`;
       case 'manager':
         return `Welcome back, ${firstName}! Keep track of your team's progress.`;
+      case 'team_lead':
+        return `Welcome back, ${firstName}! Lead your team to success.`;
       case 'employee':
         return `Welcome back, ${firstName}! Your personal dashboard is ready.`;
       default:

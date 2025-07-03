@@ -29,9 +29,9 @@ const Dashboard: React.FC = () => {
         onMobileToggle={handleMobileMenuToggle}
       />
       
-      <div className="flex-1 flex flex-col min-w-0 ml-4 lg:ml-6">
+      <div className="flex-1 flex flex-col min-w-0">
         <StickyHeader onMobileMenuToggle={handleMobileMenuToggle} />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto p-6">
           <DashboardContent activeItem={activeTab} onNavigate={handleNavigate} />
         </main>
       </div>
