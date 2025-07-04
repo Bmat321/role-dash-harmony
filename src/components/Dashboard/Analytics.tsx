@@ -5,7 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart, ComposedChart } from 'recharts';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { TrendingUp, TrendingDown, Users, Building, Calendar, DollarSign, Award, BookOpen, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Building, Calendar, DollarSign, Award, BookOpen, Activity, CreditCard, AlertTriangle } from 'lucide-react';
 
 const Analytics: React.FC = () => {
   const { employees, stats } = useEmployees();
@@ -24,7 +24,7 @@ const Analytics: React.FC = () => {
     fill: role === 'admin' ? '#6D28D9' : role === 'hr' ? '#0D9488' : role === 'manager' ? '#1E40AF' : '#4B5563',
   }));
 
-  // Mock data for new analytics features
+  // Mock data for existing analytics features
   const salaryDistributionByDept = [
     { department: 'Engineering', avgSalary: 85000, minSalary: 65000, maxSalary: 120000, employees: 45 },
     { department: 'Marketing', avgSalary: 68000, minSalary: 45000, maxSalary: 95000, employees: 25 },
@@ -49,21 +49,30 @@ const Analytics: React.FC = () => {
     { type: 'Emergency', used: 23, total: 50, fill: '#8B5CF6' },
   ];
 
-  const skillsInventoryData = [
-    { skill: 'JavaScript', proficient: 85, intermediate: 45, beginner: 25, total: 155 },
-    { skill: 'Python', proficient: 65, intermediate: 35, beginner: 15, total: 115 },
-    { skill: 'Project Management', proficient: 45, intermediate: 60, beginner: 30, total: 135 },
-    { skill: 'Data Analysis', proficient: 35, intermediate: 55, beginner: 40, total: 130 },
-    { skill: 'Digital Marketing', proficient: 25, intermediate: 35, beginner: 20, total: 80 },
-    { skill: 'UI/UX Design', proficient: 20, intermediate: 40, beginner: 25, total: 85 },
+  // New Loan Analytics Data
+  const loanIssuedOverTime = [
+    { month: 'Jan', issued: 45000, repaid: 38000, outstanding: 7000 },
+    { month: 'Feb', issued: 52000, repaid: 42000, outstanding: 10000 },
+    { month: 'Mar', issued: 38000, repaid: 55000, outstanding: -17000 },
+    { month: 'Apr', issued: 61000, repaid: 48000, outstanding: 13000 },
+    { month: 'May', issued: 43000, repaid: 51000, outstanding: -8000 },
+    { month: 'Jun', issued: 58000, repaid: 45000, outstanding: 13000 },
   ];
 
-  const topSkillsGaps = [
-    { skill: 'Cloud Computing', demand: 85, supply: 25, gap: 60 },
-    { skill: 'Machine Learning', demand: 70, supply: 20, gap: 50 },
-    { skill: 'Cybersecurity', demand: 65, supply: 18, gap: 47 },
-    { skill: 'DevOps', demand: 60, supply: 22, gap: 38 },
-    { skill: 'Mobile Development', demand: 55, supply: 28, gap: 27 },
+  const loansByDepartment = [
+    { department: 'Engineering', totalLoans: 125000, outstandingBalance: 35000, employeeCount: 45 },
+    { department: 'Sales', totalLoans: 89000, outstandingBalance: 28000, employeeCount: 35 },
+    { department: 'Marketing', totalLoans: 67000, outstandingBalance: 22000, employeeCount: 25 },
+    { department: 'HR', totalLoans: 34000, outstandingBalance: 12000, employeeCount: 15 },
+    { department: 'Finance', totalLoans: 52000, outstandingBalance: 18000, employeeCount: 20 },
+  ];
+
+  const loanTypeDistribution = [
+    { type: 'Personal', amount: 185000, count: 45, fill: '#3B82F6' },
+    { type: 'Emergency', amount: 95000, count: 28, fill: '#EF4444' },
+    { type: 'Education', amount: 125000, count: 22, fill: '#10B981' },
+    { type: 'Medical', amount: 67000, count: 18, fill: '#F59E0B' },
+    { type: 'Housing', amount: 245000, count: 15, fill: '#8B5CF6' },
   ];
 
   // Mock data for trending charts
@@ -91,9 +100,11 @@ const Analytics: React.FC = () => {
     terminations: { label: 'Terminations', color: '#EF4444' },
     attendance: { label: 'Attendance %', color: '#8B5CF6' },
     avgSalary: { label: 'Average Salary', color: '#F59E0B' },
-    proficient: { label: 'Proficient', color: '#10B981' },
-    intermediate: { label: 'Intermediate', color: '#F59E0B' },
-    beginner: { label: 'Beginner', color: '#EF4444' },
+    issued: { label: 'Loans Issued', color: '#3B82F6' },
+    repaid: { label: 'Loans Repaid', color: '#10B981' },
+    outstanding: { label: 'Outstanding Balance', color: '#EF4444' },
+    totalLoans: { label: 'Total Loans', color: '#6D28D9' },
+    outstandingBalance: { label: 'Outstanding', color: '#EF4444' },
   };
 
   return (
@@ -104,7 +115,7 @@ const Analytics: React.FC = () => {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs lg:text-sm font-medium">Employee Growth</CardTitle>
@@ -127,12 +138,22 @@ const Analytics: React.FC = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs lg:text-sm font-medium">Skills Coverage</CardTitle>
-            <Award className="h-3 w-3 lg:h-4 lg:w-4 text-blue-600" />
+            <CardTitle className="text-xs lg:text-sm font-medium">Active Loans</CardTitle>
+            <CreditCard className="h-3 w-3 lg:h-4 lg:w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg lg:text-2xl font-bold">78%</div>
-            <p className="text-xs text-muted-foreground">Critical skills met</p>
+            <div className="text-lg lg:text-2xl font-bold">128</div>
+            <p className="text-xs text-muted-foreground">$715K outstanding</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-xs lg:text-sm font-medium">Loan Recovery</CardTitle>
+            <TrendingUp className="h-3 w-3 lg:h-4 lg:w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg lg:text-2xl font-bold">94.2%</div>
+            <p className="text-xs text-muted-foreground">On-time repayment</p>
           </CardContent>
         </Card>
         <Card>
@@ -147,8 +168,93 @@ const Analytics: React.FC = () => {
         </Card>
       </div>
 
-      {/* Salary Distribution Charts */}
+      {/* Loan Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Loan Trends Over Time
+            </CardTitle>
+            <CardDescription className="text-sm">Track loans issued vs repaid monthly</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={loanIssuedOverTime} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" fontSize={12} />
+                  <YAxis fontSize={12} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="issued" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="repaid" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Line type="monotone" dataKey="outstanding" stroke="#EF4444" strokeWidth={3} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
+              <Building className="h-5 w-5" />
+              Loans by Department
+            </CardTitle>
+            <CardDescription className="text-sm">Outstanding loan balances per department</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={loansByDepartment} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="department" fontSize={12} />
+                  <YAxis fontSize={12} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="totalLoans" fill="#6D28D9" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="outstandingBalance" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Loan Types and Salary Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Loan Types Distribution
+            </CardTitle>
+            <CardDescription className="text-sm">Breakdown of loan types and amounts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={loanTypeDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ type, amount }) => `${type}: $${(amount/1000).toFixed(0)}K`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="amount"
+                  >
+                    {loanTypeDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base lg:text-lg flex items-center gap-2">
@@ -173,32 +279,9 @@ const Analytics: React.FC = () => {
             </ChartContainer>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Salary Distribution by Role
-            </CardTitle>
-            <CardDescription className="text-sm">Average compensation by role level</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salaryDistributionByRole} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="role" fontSize={12} />
-                  <YAxis fontSize={12} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="avgSalary" fill="#6D28D9" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Leave Types and Skills Charts */}
+      {/* Leave Types and Department Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <Card>
           <CardHeader>
@@ -219,54 +302,6 @@ const Analytics: React.FC = () => {
                   <Bar dataKey="total" fill="#E5E7EB" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="used" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                 </ComposedChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base lg:text-lg flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Skills Inventory Overview
-            </CardTitle>
-            <CardDescription className="text-sm">Workforce skill proficiency levels</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={skillsInventoryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="skill" fontSize={12} />
-                  <YAxis fontSize={12} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="proficient" stackId="skills" fill="#10B981" />
-                  <Bar dataKey="intermediate" stackId="skills" fill="#F59E0B" />
-                  <Bar dataKey="beginner" stackId="skills" fill="#EF4444" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Skills Gap Analysis and Department Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base lg:text-lg">Skills Gap Analysis</CardTitle>
-            <CardDescription className="text-sm">Critical skill shortages requiring attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topSkillsGaps} layout="vertical" margin={{ top: 20, right: 30, left: 40, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" fontSize={12} />
-                  <YAxis dataKey="skill" type="category" fontSize={12} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="gap" fill="#EF4444" radius={[0, 4, 4, 0]} />
-                </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
