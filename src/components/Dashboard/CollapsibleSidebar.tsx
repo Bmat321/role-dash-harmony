@@ -35,6 +35,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  badge?: number;
+}
+
 interface CollapsibleSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -52,8 +59,8 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
 
   if (!user) return null;
 
-  const getMenuItems = () => {
-    const baseItems = [
+  const getMenuItems = (): MenuItem[] => {
+    const baseItems: MenuItem[] = [
       { id: 'dashboard', label: 'Dashboard', icon: Home },
     ];
 
