@@ -1,571 +1,391 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Calendar, 
+  Clock, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle,
+  Plus,
+  FileText,
+  User
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Info } from 'lucide-react';
-import { LeaveRequest, LeaveBalance } from '@/types/leave';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
-import { calculateWorkingDays, getHolidaysInRange } from '@/utils/holidays';
 
-// Mock team leads data
-const mockTeamLeads = [
-  { id: 'tl1', name: 'Sarah Johnson', department: 'IT', email: 'sarah.johnson@company.com' },
-  { id: 'tl2', name: 'Michael Brown', department: 'HR', email: 'michael.brown@company.com' },
-  { id: 'tl3', name: 'Emily Davis', department: 'Finance', email: 'emily.davis@company.com' },
-  { id: 'tl4', name: 'David Wilson', department: 'Marketing', email: 'david.wilson@company.com' }
-];
-
-const mockLeaveRequests: LeaveRequest[] = [
-  {
-    id: '1',
-    employeeId: '4',
-    employeeName: 'Jane Doe',
-    type: 'vacation',
-    startDate: '2024-02-15',
-    endDate: '2024-02-19',
-    days: 5,
-    reason: 'Family vacation',
-    status: 'pending',
-    appliedDate: '2024-01-27'
-  },
-  {
-    id: '2',
-    employeeId: '4',
-    employeeName: 'Jane Doe',
-    type: 'sick',
-    startDate: '2024-01-20',
-    endDate: '2024-01-20',
-    days: 1,
-    reason: 'Doctor appointment',
-    status: 'approved',
-    appliedDate: '2024-01-19',
-    approvedBy: 'Sarah Johnson',
-    approvedDate: '2024-01-19'
-  }
-];
-
-const mockLeaveBalance: LeaveBalance = {
-  employeeId: '4',
-  vacation: { total: 20, used: 5, remaining: 15 },
-  sick: { total: 10, used: 1, remaining: 9 },
-  personal: { total: 5, used: 0, remaining: 5 },
-  maternity: { total: 90, used: 0, remaining: 90 }
-};
-
-const LeaveManagement: React.FC = () => {
+const LeaveManagement = () => {
   const { user } = useAuth();
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
-  const [leaveBalance] = useState<LeaveBalance>(mockLeaveBalance);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [formData, setFormData] = useState({
-    type: 'vacation' as LeaveRequest['type'],
-    startDate: '',
-    endDate: '',
-    reason: '',
-    teamLeadId: ''
-  });
-  const [dateCalculation, setDateCalculation] = useState<{
-    totalDays: number;
-    workingDays: number;
-    holidays: any[];
-  } | null>(null);
+  const [selectedLeave, setSelectedLeave] = useState(null);
+  const [rejectionNote, setRejectionNote] = useState('');
+  const [showRejectionDialog, setShowRejectionDialog] = useState(false);
 
-  const canApproveLeave = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
-
-  const calculateDays = (start: string, end: string) => {
-    if (!start || !end) return null;
-    
-    const calculation = calculateWorkingDays(start, end);
-    const holidays = getHolidaysInRange(start, end);
-    
-    return {
-      totalDays: calculation.totalDays,
-      workingDays: calculation.workingDays,
-      holidays
-    };
-  };
-
-  const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
-    const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
-    
-    if (newFormData.startDate && newFormData.endDate) {
-      const calculation = calculateDays(newFormData.startDate, newFormData.endDate);
-      setDateCalculation(calculation);
-    } else {
-      setDateCalculation(null);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.teamLeadId) {
-      toast({
-        title: "Team Lead Required",
-        description: "Please select a team lead to review your leave request.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const selectedTeamLead = mockTeamLeads.find(tl => tl.id === formData.teamLeadId);
-    const calculation = calculateDays(formData.startDate, formData.endDate);
-    
-    if (!calculation) {
-      toast({
-        title: "Invalid Dates",
-        description: "Please select valid start and end dates.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const newRequest: LeaveRequest = {
-      id: Date.now().toString(),
-      employeeId: user?.id || '',
-      employeeName: user ? `${user.firstName} ${user.lastName}` : '',
-      type: formData.type,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      days: calculation.workingDays,
-      reason: formData.reason,
+  // Mock data for leave requests
+  const leaveRequests = [
+    {
+      id: 1,
+      employeeName: 'John Doe',
+      employeeId: 'EMP001',
+      type: 'Annual Leave',
+      startDate: '2024-01-15',
+      endDate: '2024-01-19',
+      days: 5,
+      reason: 'Family vacation to Europe',
       status: 'pending',
-      appliedDate: new Date().toISOString().split('T')[0],
-      teamLeadId: formData.teamLeadId,
-      teamLeadName: selectedTeamLead?.name || ''
-    };
+      appliedDate: '2024-01-01',
+      department: 'Engineering'
+    },
+    {
+      id: 2,
+      employeeName: 'Jane Smith',
+      employeeId: 'EMP002',
+      type: 'Sick Leave',
+      startDate: '2024-01-10',
+      endDate: '2024-01-12',
+      days: 3,
+      reason: 'Medical appointment and recovery',
+      status: 'approved',
+      appliedDate: '2024-01-08',
+      department: 'Marketing'
+    },
+    {
+      id: 3,
+      employeeName: 'Mike Johnson',
+      employeeId: 'EMP003',
+      type: 'Personal Leave',
+      startDate: '2024-01-20',
+      endDate: '2024-01-22',
+      days: 3,
+      reason: 'Personal matters',
+      status: 'rejected',
+      appliedDate: '2024-01-05',
+      department: 'Sales',
+      rejectionReason: 'Insufficient leave balance'
+    }
+  ];
 
-    setLeaveRequests(prev => [newRequest, ...prev]);
-    setIsDialogOpen(false);
-    setFormData({ type: 'vacation', startDate: '', endDate: '', reason: '', teamLeadId: '' });
-    setDateCalculation(null);
-    
-    toast({
-      title: "Leave Request Submitted",
-      description: `Your ${formData.type} request for ${calculation.workingDays} working day(s) has been submitted to ${selectedTeamLead?.name}.`,
-    });
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+      case 'rejected':
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-100"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
   };
 
-  const handleApproveReject = (requestId: string, approved: boolean) => {
-    setLeaveRequests(prev => prev.map(request => {
-      if (request.id === requestId) {
-        return {
-          ...request,
-          status: approved ? 'approved' : 'rejected',
-          approvedBy: user ? `${user.firstName} ${user.lastName}` : '',
-          approvedDate: new Date().toISOString().split('T')[0],
-          comments: approved ? 'Approved' : 'Rejected'
-        };
-      }
-      return request;
-    }));
-
-    toast({
-      title: `Leave Request ${approved ? 'Approved' : 'Rejected'}`,
-      description: `The leave request has been ${approved ? 'approved' : 'rejected'}.`,
-    });
+  const handleApprove = (leaveId) => {
+    console.log('Approving leave request:', leaveId);
+    // Implementation for approving leave
   };
 
-  const getStatusBadge = (status: LeaveRequest['status']) => {
-    const variants = {
-      pending: 'outline',
-      approved: 'default',
-      rejected: 'destructive'
-    } as const;
-
-    return (
-      <Badge variant={variants[status]}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
+  const handleReject = (leave) => {
+    setSelectedLeave(leave);
+    setShowRejectionDialog(true);
   };
 
-  const getLeaveTypeColor = (type: LeaveRequest['type']) => {
-    const colors = {
-      vacation: 'bg-blue-100 text-blue-800',
-      sick: 'bg-red-100 text-red-800',
-      personal: 'bg-green-100 text-green-800',
-      maternity: 'bg-purple-100 text-purple-800',
-      emergency: 'bg-orange-100 text-orange-800'
-    };
-    return colors[type];
+  const confirmReject = () => {
+    console.log('Rejecting leave request:', selectedLeave.id, 'Note:', rejectionNote);
+    // Implementation for rejecting leave with note
+    setShowRejectionDialog(false);
+    setSelectedLeave(null);
+    setRejectionNote('');
   };
 
-  // Calendar data for leave visualization
-  const leaveCalendarData = leaveRequests
-    .filter(req => req.status === 'approved')
-    .flatMap(req => {
-      const dates = [];
-      const start = new Date(req.startDate);
-      const end = new Date(req.endDate);
+  // Employee view - their own leave requests
+  const employeeLeaves = leaveRequests.filter(leave => leave.employeeId === user?.employeeId);
+
+  // Manager/HR view - team or all leave requests
+  const managementLeaves = user?.role === 'admin' || user?.role === 'hr' 
+    ? leaveRequests 
+    : leaveRequests.filter(leave => leave.department === user?.department);
+
+  const renderLeaveCard = (leave, showActions = false) => (
+    <Card key={leave.id} className="mb-4">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">{leave.employeeName}</CardTitle>
+              <CardDescription>{leave.employeeId} • {leave.department}</CardDescription>
+            </div>
+          </div>
+          {getStatusBadge(leave.status)}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <Label className="text-sm font-medium text-gray-500">Leave Type</Label>
+            <p className="font-medium">{leave.type}</p>
+          </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-500">Duration</Label>
+            <p className="font-medium">{leave.days} days</p>
+          </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-500">Start Date</Label>
+            <p className="font-medium">{new Date(leave.startDate).toLocaleDateString()}</p>
+          </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-500">End Date</Label>
+            <p className="font-medium">{new Date(leave.endDate).toLocaleDateString()}</p>
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          <Label className="text-sm font-medium text-gray-500">Reason</Label>
+          <p className="text-sm text-gray-700 mt-1">{leave.reason}</p>
+        </div>
+
+        {leave.rejectionReason && leave.status === 'rejected' && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <Label className="text-sm font-medium text-red-700">Rejection Reason</Label>
+            <p className="text-sm text-red-600 mt-1">{leave.rejectionReason}</p>
+          </div>
+        )}
+
+        <div className="text-xs text-gray-500 mb-4">
+          Applied on: {new Date(leave.appliedDate).toLocaleDateString()}
+        </div>
+
+        {showActions && leave.status === 'pending' && (
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => handleApprove(leave.id)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              size="sm"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Approve
+            </Button>
+            <Button 
+              onClick={() => handleReject(leave)}
+              variant="outline"
+              className="border-red-300 text-red-600 hover:bg-red-50"
+              size="sm"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Reject
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderLeaveApplicationForm = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Plus className="w-5 h-5 mr-2" />
+          Apply for Leave
+        </CardTitle>
+        <CardDescription>Submit a new leave request</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="leaveType">Leave Type</Label>
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select leave type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="annual">Annual Leave</SelectItem>
+                <SelectItem value="sick">Sick Leave</SelectItem>
+                <SelectItem value="personal">Personal Leave</SelectItem>
+                <SelectItem value="maternity">Maternity Leave</SelectItem>
+                <SelectItem value="paternity">Paternity Leave</SelectItem>
+                <SelectItem value="emergency">Emergency Leave</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="duration">Duration (days)</Label>
+            <Input id="duration" type="number" placeholder="Number of days" />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="startDate">Start Date</Label>
+            <Input id="startDate" type="date" />
+          </div>
+          <div>
+            <Label htmlFor="endDate">End Date</Label>
+            <Input id="endDate" type="date" />
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="reason">Reason for Leave</Label>
+          <Textarea 
+            id="reason" 
+            placeholder="Please provide a reason for your leave request..." 
+            className="min-h-[100px]"
+          />
+        </div>
+        
+        <Button className="w-full">
+          <FileText className="w-4 h-4 mr-2" />
+          Submit Leave Request
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  const renderLeaveBalance = () => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-5 h-5 text-blue-600" />
+            <div>
+              <p className="text-sm font-medium text-gray-500">Annual Leave</p>
+              <p className="text-2xl font-bold text-blue-600">15 days</p>
+              <p className="text-xs text-gray-500">Available</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(new Date(d));
-      }
-      return dates;
-    });
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2">
+            <AlertCircle className="w-5 h-5 text-green-600" />
+            <div>
+              <p className="text-sm font-medium text-gray-500">Sick Leave</p>
+              <p className="text-2xl font-bold text-green-600">10 days</p>
+              <p className="text-xs text-gray-500">Available</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-2">
+            <Clock className="w-5 h-5 text-orange-600" />
+            <div>
+              <p className="text-sm font-medium text-gray-500">Personal Leave</p>
+              <p className="text-2xl font-bold text-orange-600">5 days</p>
+              <p className="text-xs text-gray-500">Available</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Leave Management</h2>
-          <p className="text-gray-600">Manage leave requests and balances</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Request Leave
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Request Leave</DialogTitle>
-              <DialogDescription>
-                Submit a new leave request. Working days will be calculated excluding weekends and Nigerian public holidays.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="type">Leave Type</Label>
-                    <Select value={formData.type} onValueChange={(value: LeaveRequest['type']) => setFormData(prev => ({ ...prev, type: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vacation">Vacation</SelectItem>
-                        <SelectItem value="sick">Sick Leave</SelectItem>
-                        <SelectItem value="personal">Personal</SelectItem>
-                        <SelectItem value="maternity">Maternity</SelectItem>
-                        <SelectItem value="emergency">Emergency</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="teamLead">Team Lead</Label>
-                    <Select value={formData.teamLeadId} onValueChange={(value) => setFormData(prev => ({ ...prev, teamLeadId: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select team lead" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mockTeamLeads.map((lead) => (
-                          <SelectItem key={lead.id} value={lead.id}>
-                            {lead.name} - {lead.department}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => handleDateChange('startDate', e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="endDate">End Date</Label>
-                    <Input
-                      id="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={(e) => handleDateChange('endDate', e.target.value)}
-                      min={formData.startDate}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {dateCalculation && (
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-2">
-                        <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-blue-900">Leave Duration Calculation</h4>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Total Days:</span>
-                              <span className="ml-2 font-medium">{dateCalculation.totalDays}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Working Days:</span>
-                              <span className="ml-2 font-medium text-blue-600">{dateCalculation.workingDays}</span>
-                            </div>
-                          </div>
-                          {dateCalculation.holidays.length > 0 && (
-                            <div className="mt-3">
-                              <p className="text-sm font-medium text-gray-700 mb-2">Excluded Days:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {dateCalculation.holidays.map((holiday, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {holiday.name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <div>
-                  <Label htmlFor="reason">Reason</Label>
-                  <Textarea
-                    id="reason"
-                    value={formData.reason}
-                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
-                    placeholder="Please provide a reason for your leave request"
-                    required
-                  />
-                </div>
-              </div>
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Submit Request</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Leave Management</h1>
+        <p className="text-gray-600 mt-2">Manage leave requests and balances</p>
       </div>
 
-      <Tabs defaultValue="requests" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="requests">My Requests</TabsTrigger>
-          <TabsTrigger value="balance">Leave Balance</TabsTrigger>
-          <TabsTrigger value="status">Status</TabsTrigger>
-          <TabsTrigger value="recent">Recent</TabsTrigger>
-          {canApproveLeave && <TabsTrigger value="approval">Approval Queue</TabsTrigger>}
-        </TabsList>
-
-        <TabsContent value="requests">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Leave Requests</CardTitle>
-              <CardDescription>View and track your leave requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Dates</TableHead>
-                    <TableHead>Days</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Applied Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {leaveRequests
-                    .filter(req => !canApproveLeave || req.employeeId === user?.id)
-                    .map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell>
-                        <Badge className={getLeaveTypeColor(request.type)}>
-                          {request.type.charAt(0).toUpperCase() + request.type.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{new Date(request.startDate).toLocaleDateString()}</div>
-                          <div className="text-gray-500">to {new Date(request.endDate).toLocaleDateString()}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{request.days} day(s)</TableCell>
-                      <TableCell className="max-w-xs truncate">{request.reason}</TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>{new Date(request.appliedDate).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="balance">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Object.entries(leaveBalance).filter(([key]) => key !== 'employeeId').map(([type, balance]) => (
-              <Card key={type}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg capitalize">{type}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Total:</span>
-                      <span className="font-medium">{balance.total} days</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Used:</span>
-                      <span className="font-medium text-red-600">{balance.used} days</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Remaining:</span>
-                      <span className="font-medium text-green-600">{balance.remaining} days</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full"
-                        style={{ width: `${(balance.used / balance.total) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="status">
-          <Card>
-            <CardHeader>
-              <CardTitle>Leave Status Overview</CardTitle>
-              <CardDescription>Track the status of all your leave requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {['pending', 'approved', 'rejected'].map((status) => {
-                  const count = leaveRequests.filter(req => req.status === status && (!canApproveLeave || req.employeeId === user?.id)).length;
-                  return (
-                    <Card key={status}>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold mb-2">{count}</div>
-                        <div className="text-sm text-gray-600 capitalize">{status} Requests</div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="recent">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your recent leave activities</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {leaveRequests
-                  .filter(req => !canApproveLeave || req.employeeId === user?.id)
-                  .slice(0, 5)
-                  .map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        request.status === 'approved' ? 'bg-green-500' :
-                        request.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500'
-                      }`} />
-                      <div>
-                        <div className="font-medium">{request.type.charAt(0).toUpperCase() + request.type.slice(1)}</div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(request.appliedDate).toLocaleDateString()} - {request.days} working days
-                        </div>
-                      </div>
-                    </div>
-                    {getStatusBadge(request.status)}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {canApproveLeave && (
-          <TabsContent value="approval">
+      {(user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager') ? (
+        <Tabs defaultValue="approval" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="approval">Leave Approval Queue</TabsTrigger>
+            <TabsTrigger value="overview">Leave Overview</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="approval" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Leave Approval Queue</CardTitle>
-                <CardDescription>Review and approve/reject leave requests</CardDescription>
+                <CardTitle>Pending Leave Requests</CardTitle>
+                <CardDescription>Review and approve leave requests from your team</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Dates</TableHead>
-                      <TableHead>Days</TableHead>
-                      <TableHead>Reason</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leaveRequests.map((request) => (
-                      <TableRow key={request.id}>
-                        <TableCell className="font-medium">{request.employeeName}</TableCell>
-                        <TableCell>
-                          <Badge className={getLeaveTypeColor(request.type)}>
-                            {request.type.charAt(0).toUpperCase() + request.type.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <div>{new Date(request.startDate).toLocaleDateString()}</div>
-                            <div className="text-gray-500">to {new Date(request.endDate).toLocaleDateString()}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{request.days} day(s)</TableCell>
-                        <TableCell className="max-w-xs truncate">{request.reason}</TableCell>
-                        <TableCell>{getStatusBadge(request.status)}</TableCell>
-                        <TableCell>
-                          {request.status === 'pending' && (
-                            <div className="flex space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleApproveReject(request.id, true)}
-                              >
-                                <Check className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleApproveReject(request.id, false)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                {managementLeaves.filter(leave => leave.status === 'pending').length === 0 ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">All caught up!</h3>
+                    <p className="text-gray-500">No pending leave requests to review.</p>
+                  </div>
+                ) : (
+                  managementLeaves
+                    .filter(leave => leave.status === 'pending')
+                    .map(leave => renderLeaveCard(leave, true))
+                )}
               </CardContent>
             </Card>
           </TabsContent>
-        )}
-      </Tabs>
+          
+          <TabsContent value="overview" className="space-y-4">
+            {managementLeaves.map(leave => renderLeaveCard(leave))}
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <Tabs defaultValue="balance" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="balance">Leave Balance</TabsTrigger>
+            <TabsTrigger value="apply">Apply for Leave</TabsTrigger>
+            <TabsTrigger value="history">Leave History</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="balance" className="space-y-4">
+            {renderLeaveBalance()}
+          </TabsContent>
+          
+          <TabsContent value="apply" className="space-y-4">
+            {renderLeaveApplicationForm()}
+          </TabsContent>
+          
+          <TabsContent value="history" className="space-y-4">
+            {employeeLeaves.map(leave => renderLeaveCard(leave))}
+          </TabsContent>
+        </Tabs>
+      )}
+
+      {/* Rejection Dialog */}
+      <Dialog open={showRejectionDialog} onOpenChange={setShowRejectionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Leave Request</DialogTitle>
+            <DialogDescription>
+              You are about to reject the leave request from {selectedLeave?.employeeName}. 
+              Please provide a reason (optional).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="rejectionNote">Rejection Note (Optional)</Label>
+            <Textarea
+              id="rejectionNote"
+              value={rejectionNote}
+              onChange={(e) => setRejectionNote(e.target.value)}
+              placeholder="Provide a reason for rejection..."
+              className="mt-2"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRejectionDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmReject}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Reject Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
