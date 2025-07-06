@@ -1,4 +1,3 @@
-
 import React from 'react';
 import DashboardOverview from './DashboardOverview';
 import EmployeeManagement from '../Employee/EmployeeManagement';
@@ -18,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import LoanManagement from '../Loan/LoanManagement';
 import AppraisalManagement from '../Appraisal/AppraisalManagement';
 import UserProfile from '../Profile/UserProfile';
+import AppraisalApprovalQueue from '../Appraisal/AppraisalApprovalQueue';
 
 interface DashboardContentProps {
   activeItem: string;
@@ -40,6 +40,8 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem, onNavig
       return <LoanManagement />;
     case 'appraisal':
       return <AppraisalManagement />;
+    case 'appraisal-approval':
+      return <AppraisalApprovalQueue />;
     case 'payroll':
       return <PayrollManagement />;
     case 'performance':
