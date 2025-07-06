@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +19,7 @@ import {
   TrendingUp,
   Briefcase,
   FolderOpen,
-  ArrowRightLeft,
+  FileTransfer,
   MapPin,
   CreditCard,
   Award,
@@ -61,7 +62,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'performance', label: 'Performance Management', icon: TrendingUp },
           { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
           { id: 'documents', label: 'Document Management', icon: FolderOpen },
-          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+          { id: 'handover', label: 'Handover Management', icon: FileTransfer },
           { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
           { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
           { id: 'analytics', label: 'Analytics', icon: BarChart },
@@ -81,7 +82,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'performance', label: 'Performance Management', icon: TrendingUp },
           { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
           { id: 'documents', label: 'Document Management', icon: FolderOpen },
-          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+          { id: 'handover', label: 'Handover Management', icon: FileTransfer },
           { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
           { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
           { id: 'reports', label: 'HR Reports', icon: FileText },
@@ -97,7 +98,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'loan', label: 'Loan Requests', icon: CreditCard },
           { id: 'appraisal', label: 'Appraisal Management', icon: Award },
           { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardCheck },
-          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+          { id: 'handover', label: 'Handover Management', icon: FileTransfer },
           { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
           { id: 'time-tracking', label: 'Team Time Tracking', icon: MapPin },
           { id: 'reports', label: 'Team Reports', icon: FileText },
@@ -113,7 +114,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'appraisal', label: 'My Appraisals', icon: Award },
           { id: 'payroll', label: 'Payroll', icon: DollarSign },
           { id: 'documents', label: 'My Documents', icon: FolderOpen },
-          { id: 'handover', label: 'Handover Tasks', icon: ArrowRightLeft },
+          { id: 'handover', label: 'Handover Tasks', icon: FileTransfer },
           { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
         ];
       
