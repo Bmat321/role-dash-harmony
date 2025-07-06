@@ -1,85 +1,72 @@
 import React from 'react';
-import CollapsibleSidebar from './CollapsibleSidebar';
-import StickyHeader from './StickyHeader';
 import DashboardOverview from './DashboardOverview';
+import EmployeeManagement from '../Employee/EmployeeManagement';
+import AttendanceManagement from '../Attendance/AttendanceManagement';
+import LeaveManagement from '../Leave/LeaveManagement';
+import PayrollManagement from '../Payroll/PayrollManagement';
+import PerformanceManagement from '../Performance/PerformanceManagement';
+import RecruitmentManagement from '../Recruitment/RecruitmentManagement';
+import DocumentManagement from '../Documents/DocumentManagement';
+import HandoverManagement from '../Handover/HandoverManagement';
+import HandoverApprovalQueue from '../Handover/HandoverApprovalQueue';
+import TimeTrackingManagement from '../TimeTracking/TimeTrackingManagement';
+import Reports from './Reports';
+import Analytics from './Analytics';
+import SystemSettings from '../Settings/SystemSettings';
+import { useAuth } from '@/contexts/AuthContext';
+import LoanManagement from '../Loan/LoanManagement';
+import AppraisalManagement from '../Appraisal/AppraisalManagement';
+import UserProfile from '../Profile/UserProfile';
+import AppraisalApprovalQueue from '../Appraisal/AppraisalApprovalQueue';
 
 interface DashboardContentProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  isMobileOpen: boolean;
-  onMobileToggle: () => void;
+  activeItem: string;
+  onNavigate: (section: string) => void;
 }
 
-const DashboardContent: React.FC<DashboardContentProps> = ({ 
-  activeTab, 
-  setActiveTab, 
-  isMobileOpen, 
-  onMobileToggle 
-}) => {
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <DashboardOverview />;
-      case 'employees':
-        return <div>Employees Content</div>;
-      case 'attendance':
-        return <div>Attendance Content</div>;
-      case 'leave':
-        return <div>Leave Management Content</div>;
-      case 'loan':
-        return <div>Loan Management Content</div>;
-      case 'appraisal':
-        return <div>Appraisal Management Content</div>;
-      case 'appraisal-approval':
-        return <div>Appraisal Approval Content</div>;
-      case 'payroll':
-        return <div>Payroll Management Content</div>;
-      case 'performance':
-        return <div>Performance Management Content</div>;
-      case 'recruitment':
-        return <div>Recruitment Content</div>;
-      case 'documents':
-        return <div>Document Management Content</div>;
-      case 'handover':
-        return <div>Handover Management Content</div>;
-      case 'handover-approval':
-        return <div>Handover Approval Content</div>;
-      case 'time-tracking':
-        return <div>Time Tracking Content</div>;
-      case 'analytics':
-        return <div>Analytics Content</div>;
-      case 'reports':
-        return <div>Reports Content</div>;
-      case 'settings':
-        return <div>Settings Content</div>;
-      case 'profile':
-        return <div>Profile Content</div>;
-      default:
-        return <DashboardOverview />;
-    }
-  };
+const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem, onNavigate }) => {
+  const { user } = useAuth();
 
-  return (
-    <div className="flex h-screen bg-gray-50">
-      <CollapsibleSidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isMobileOpen={isMobileOpen}
-        onMobileToggle={onMobileToggle}
-      />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <StickyHeader 
-          onMobileMenuToggle={onMobileToggle}
-          onTabChange={setActiveTab}
-        />
-        
-        <main className="flex-1 overflow-y-auto p-6">
-          {renderContent()}
-        </main>
-      </div>
-    </div>
-  );
+  switch (activeItem) {
+    case 'dashboard':
+      return <DashboardOverview onNavigate={onNavigate} />;
+    case 'employees':
+      return <EmployeeManagement />;
+    case 'attendance':
+      return <AttendanceManagement />;
+    case 'leave':
+      return <LeaveManagement />;
+    case 'loan':
+      return <LoanManagement />;
+    case 'appraisal':
+      return <AppraisalManagement />;
+    case 'appraisal-approval':
+      return <AppraisalApprovalQueue />;
+    case 'payroll':
+      return <PayrollManagement />;
+    case 'performance':
+      return <PerformanceManagement />;
+    case 'recruitment':
+      return <RecruitmentManagement />;
+    case 'documents':
+      return <DocumentManagement />;
+    case 'handover':
+      return <HandoverManagement />;
+    case 'handover-approval':
+      return <HandoverApprovalQueue />;
+    case 'time-tracking':
+      return <TimeTrackingManagement />;
+    case 'analytics':
+      return <Analytics />;
+    case 'reports':
+      return <Reports />;
+    case 'settings':
+      return <SystemSettings />;
+    case 'profile':
+      return <UserProfile />;
+    default:
+      return <DashboardOverview onNavigate={onNavigate} />;
+  }
 };
 
 export default DashboardContent;
