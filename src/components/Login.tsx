@@ -123,36 +123,49 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Side - Company Branding with BTM Text */}
-      <div className="flex-1 bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center p-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative z-10 text-center text-white space-y-8 max-w-lg">
-          <div className="space-y-4">
-            <h2 className="text-8xl font-bold tracking-wider">BTM</h2>
-            <p className="text-xl opacity-90">Business & Team Management</p>
-          </div>
-          
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
-                <Users className="h-8 w-8" />
-                <div className="text-left">
-                  <h3 className="font-semibold">Employee Management</h3>
-                  <p className="text-sm opacity-80">Comprehensive workforce management</p>
+      {/* Right Side - Company Branding with BTM Text and Background Image */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23667eea"/><stop offset="100%" style="stop-color:%23764ba2"/></linearGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><g opacity="0.1"><circle cx="200" cy="150" r="80" fill="white"/><circle cx="800" cy="200" r="120" fill="white"/><circle cx="1000" cy="600" r="100" fill="white"/><circle cx="300" cy="650" r="60" fill="white"/></g></svg>')`
+          }}
+        ></div>
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 to-indigo-800/80"></div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex items-center justify-center h-full p-8">
+          <div className="text-center text-white space-y-8 max-w-lg">
+            <div className="space-y-4">
+              <h2 className="text-8xl font-bold tracking-wider">BTM</h2>
+              <p className="text-xl opacity-90">Business Travel Management</p>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+                  <Users className="h-8 w-8" />
+                  <div className="text-left">
+                    <h3 className="font-semibold">Employee Management</h3>
+                    <p className="text-sm opacity-80">Comprehensive workforce management</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
-                <BarChart className="h-8 w-8" />
-                <div className="text-left">
-                  <h3 className="font-semibold">Analytics & Reports</h3>
-                  <p className="text-sm opacity-80">Data-driven insights and reporting</p>
+                <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+                  <BarChart className="h-8 w-8" />
+                  <div className="text-left">
+                    <h3 className="font-semibold">Analytics & Reports</h3>
+                    <p className="text-sm opacity-80">Data-driven insights and reporting</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
-                <Clock className="h-8 w-8" />
-                <div className="text-left">
-                  <h3 className="font-semibold">Time Tracking</h3>
-                  <p className="text-sm opacity-80">Efficient attendance management</p>
+                <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+                  <Clock className="h-8 w-8" />
+                  <div className="text-left">
+                    <h3 className="font-semibold">Time Tracking</h3>
+                    <p className="text-sm opacity-80">Efficient attendance management</p>
+                  </div>
                 </div>
               </div>
             </div>

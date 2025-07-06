@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Download, Eye, Calculator, DollarSign, Plus, Edit, Trash2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Download, Eye, Calculator, DollarSign, Plus, Edit, Trash2, Upload, Send, FileSpreadsheet } from 'lucide-react';
 import { PayrollRecord, SalaryStructure } from '@/types/payroll';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -57,13 +58,16 @@ const mockSalaryStructures: SalaryStructure[] = [
 
 const PayrollManagement: React.FC = () => {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(mockPayrollRecords);
   const [salaryStructures, setSalaryStructures] = useState<SalaryStructure[]>(mockSalaryStructures);
   const [selectedMonth, setSelectedMonth] = useState('January');
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedPayslip, setSelectedPayslip] = useState<PayrollRecord | null>(null);
+  const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isBulkSendDialogOpen, setIsBulkSendDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PayrollRecord | null>(null);
   
   // Form states for creating new payroll records
@@ -142,12 +146,87 @@ const PayrollManagement: React.FC = () => {
     setIsEditDialogOpen(true);
   };
 
+  const handleUpdateRecord = () => {
+    if (!editingRecord) return;
+
+    const grossSalary = editingRecord.basicSalary + editingRecord.allowances.reduce((sum, a) => sum + a.amount, 0);
+    const totalDeductions = editingRecord.deductions.reduce((sum, d) => sum + d.amount, 0);
+    const netSalary = grossSalary - totalDeductions;
+
+    const updatedRecord = {
+      ...editingRecord,
+      grossSalary,
+      tax: totalDeductions,
+      netSalary
+    };
+
+    setPayrollRecords(payrollRecords.map(r => r.id === editingRecord.id ? updatedRecord : r));
+    setIsEditDialogOpen(false);
+    setEditingRecord(null);
+
+    toast({
+      title: "Payroll Record Updated",
+      description: `Payroll record for ${updatedRecord.employeeName} has been updated successfully.`,
+    });
+  };
+
   const handleDeleteRecord = (recordId: string) => {
     setPayrollRecords(payrollRecords.filter(r => r.id !== recordId));
     toast({
       title: "Record Deleted",
       description: "Payroll record has been deleted successfully.",
     });
+  };
+
+  const handleExcelUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Simulate Excel processing
+    toast({
+      title: "Excel File Uploaded",
+      description: `Processing ${file.name}. This would parse the Excel file and create payroll records.`,
+    });
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleBulkSend = () => {
+    if (selectedRecords.length === 0) {
+      toast({
+        title: "No Records Selected",
+        description: "Please select payroll records to send.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Payslips Sent",
+      description: `${selectedRecords.length} payslips have been sent to employees via email.`,
+    });
+
+    setSelectedRecords([]);
+    setIsBulkSendDialogOpen(false);
+  };
+
+  const handleSelectRecord = (recordId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedRecords([...selectedRecords, recordId]);
+    } else {
+      setSelectedRecords(selectedRecords.filter(id => id !== recordId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedRecords(filteredRecords.map(r => r.id));
+    } else {
+      setSelectedRecords([]);
+    }
   };
 
   const addAllowanceField = () => {
@@ -161,6 +240,22 @@ const PayrollManagement: React.FC = () => {
     setNewRecord({
       ...newRecord,
       deductions: [...newRecord.deductions, { name: '', amount: 0 }]
+    });
+  };
+
+  const addEditAllowanceField = () => {
+    if (!editingRecord) return;
+    setEditingRecord({
+      ...editingRecord,
+      allowances: [...editingRecord.allowances, { name: '', amount: 0 }]
+    });
+  };
+
+  const addEditDeductionField = () => {
+    if (!editingRecord) return;
+    setEditingRecord({
+      ...editingRecord,
+      deductions: [...editingRecord.deductions, { name: '', amount: 0 }]
     });
   };
 
@@ -188,153 +283,170 @@ const PayrollManagement: React.FC = () => {
           <p className="text-gray-600">Manage salary records and payslips</p>
         </div>
         {canManagePayroll && (
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Create Payroll Record
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Payroll Record</DialogTitle>
-                <DialogDescription>Enter the payroll details for the employee</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="employeeName">Employee Name</Label>
-                    <Input
-                      id="employeeName"
-                      value={newRecord.employeeName}
-                      onChange={(e) => setNewRecord({...newRecord, employeeName: e.target.value})}
-                      placeholder="Enter employee name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="basicSalary">Basic Salary</Label>
-                    <Input
-                      id="basicSalary"
-                      type="number"
-                      value={newRecord.basicSalary}
-                      onChange={(e) => setNewRecord({...newRecord, basicSalary: Number(e.target.value)})}
-                      placeholder="Enter basic salary"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Month</Label>
-                    <Select 
-                      value={newRecord.month} 
-                      onValueChange={(value) => setNewRecord({...newRecord, month: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map(month => (
-                          <SelectItem key={month} value={month}>{month}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Year</Label>
-                    <Select 
-                      value={newRecord.year.toString()} 
-                      onValueChange={(value) => setNewRecord({...newRecord, year: Number(value)})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {years.map(year => (
-                          <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <Label>Allowances</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={addAllowanceField}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Allowance
-                    </Button>
-                  </div>
-                  {newRecord.allowances.map((allowance, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleExcelUpload}
+              className="hidden"
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Upload Excel
+            </Button>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Create Payroll Record
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Create New Payroll Record</DialogTitle>
+                  <DialogDescription>Enter the payroll details for the employee</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="employeeName">Employee Name</Label>
                       <Input
-                        placeholder="Allowance name"
-                        value={allowance.name}
-                        onChange={(e) => {
-                          const updated = [...newRecord.allowances];
-                          updated[index].name = e.target.value;
-                          setNewRecord({...newRecord, allowances: updated});
-                        }}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Amount"
-                        value={allowance.amount}
-                        onChange={(e) => {
-                          const updated = [...newRecord.allowances];
-                          updated[index].amount = Number(e.target.value);
-                          setNewRecord({...newRecord, allowances: updated});
-                        }}
+                        id="employeeName"
+                        value={newRecord.employeeName}
+                        onChange={(e) => setNewRecord({...newRecord, employeeName: e.target.value})}
+                        placeholder="Enter employee name"
                       />
                     </div>
-                  ))}
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <Label>Deductions</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={addDeductionField}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Deduction
-                    </Button>
-                  </div>
-                  {newRecord.deductions.map((deduction, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                      <Label htmlFor="basicSalary">Basic Salary</Label>
                       <Input
-                        placeholder="Deduction name"
-                        value={deduction.name}
-                        onChange={(e) => {
-                          const updated = [...newRecord.deductions];
-                          updated[index].name = e.target.value;
-                          setNewRecord({...newRecord, deductions: updated});
-                        }}
-                      />
-                      <Input
+                        id="basicSalary"
                         type="number"
-                        placeholder="Amount"
-                        value={deduction.amount}
-                        onChange={(e) => {
-                          const updated = [...newRecord.deductions];
-                          updated[index].amount = Number(e.target.value);
-                          setNewRecord({...newRecord, deductions: updated});
-                        }}
+                        value={newRecord.basicSalary}
+                        onChange={(e) => setNewRecord({...newRecord, basicSalary: Number(e.target.value)})}
+                        placeholder="Enter basic salary"
                       />
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateRecord}>
-                    Create Record
-                  </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Month</Label>
+                      <Select 
+                        value={newRecord.month} 
+                        onValueChange={(value) => setNewRecord({...newRecord, month: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {months.map(month => (
+                            <SelectItem key={month} value={month}>{month}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Year</Label>
+                      <Select 
+                        value={newRecord.year.toString()} 
+                        onValueChange={(value) => setNewRecord({...newRecord, year: Number(value)})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {years.map(year => (
+                            <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <Label>Allowances</Label>
+                      <Button type="button" variant="outline" size="sm" onClick={addAllowanceField}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Allowance
+                      </Button>
+                    </div>
+                    {newRecord.allowances.map((allowance, index) => (
+                      <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+                        <Input
+                          placeholder="Allowance name"
+                          value={allowance.name}
+                          onChange={(e) => {
+                            const updated = [...newRecord.allowances];
+                            updated[index].name = e.target.value;
+                            setNewRecord({...newRecord, allowances: updated});
+                          }}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Amount"
+                          value={allowance.amount}
+                          onChange={(e) => {
+                            const updated = [...newRecord.allowances];
+                            updated[index].amount = Number(e.target.value);
+                            setNewRecord({...newRecord, allowances: updated});
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <Label>Deductions</Label>
+                      <Button type="button" variant="outline" size="sm" onClick={addDeductionField}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Deduction
+                      </Button>
+                    </div>
+                    {newRecord.deductions.map((deduction, index) => (
+                      <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+                        <Input
+                          placeholder="Deduction name"
+                          value={deduction.name}
+                          onChange={(e) => {
+                            const updated = [...newRecord.deductions];
+                            updated[index].name = e.target.value;
+                            setNewRecord({...newRecord, deductions: updated});
+                          }}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Amount"
+                          value={deduction.amount}
+                          onChange={(e) => {
+                            const updated = [...newRecord.deductions];
+                            updated[index].amount = Number(e.target.value);
+                            setNewRecord({...newRecord, deductions: updated});
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCreateRecord}>
+                      Create Record
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
 
@@ -348,7 +460,35 @@ const PayrollManagement: React.FC = () => {
         <TabsContent value="payslips" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Payslip Records</CardTitle>
+              <CardTitle className="flex justify-between items-center">
+                <span>Payslip Records</span>
+                {canManagePayroll && selectedRecords.length > 0 && (
+                  <Dialog open={isBulkSendDialogOpen} onOpenChange={setIsBulkSendDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="flex items-center gap-2">
+                        <Send className="h-4 w-4" />
+                        Send Selected ({selectedRecords.length})
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Send Payslips</DialogTitle>
+                        <DialogDescription>
+                          Send {selectedRecords.length} selected payslips to employees via email?
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline" onClick={() => setIsBulkSendDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleBulkSend}>
+                          Send Payslips
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </CardTitle>
               <CardDescription>View and manage payslips</CardDescription>
             </CardHeader>
             <CardContent>
@@ -379,6 +519,14 @@ const PayrollManagement: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {canManagePayroll && (
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedRecords.length === filteredRecords.length && filteredRecords.length > 0}
+                          onCheckedChange={handleSelectAll}
+                        />
+                      </TableHead>
+                    )}
                     {canManagePayroll && <TableHead>Employee</TableHead>}
                     <TableHead>Period</TableHead>
                     <TableHead>Basic Salary</TableHead>
@@ -392,6 +540,14 @@ const PayrollManagement: React.FC = () => {
                 <TableBody>
                   {filteredRecords.map((record) => (
                     <TableRow key={record.id}>
+                      {canManagePayroll && (
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedRecords.includes(record.id)}
+                            onCheckedChange={(checked) => handleSelectRecord(record.id, checked as boolean)}
+                          />
+                        </TableCell>
+                      )}
                       {canManagePayroll && (
                         <TableCell className="font-medium">{record.employeeName}</TableCell>
                       )}
@@ -645,6 +801,116 @@ const PayrollManagement: React.FC = () => {
           </TabsContent>
         )}
       </Tabs>
+
+      {/* Edit Payroll Record Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Payroll Record</DialogTitle>
+            <DialogDescription>Update the payroll details</DialogDescription>
+          </DialogHeader>
+          {editingRecord && (
+            <div className="space-y-6 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="editEmployeeName">Employee Name</Label>
+                  <Input
+                    id="editEmployeeName"
+                    value={editingRecord.employeeName}
+                    onChange={(e) => setEditingRecord({...editingRecord, employeeName: e.target.value})}
+                    placeholder="Enter employee name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editBasicSalary">Basic Salary</Label>
+                  <Input
+                    id="editBasicSalary"
+                    type="number"
+                    value={editingRecord.basicSalary}
+                    onChange={(e) => setEditingRecord({...editingRecord, basicSalary: Number(e.target.value)})}
+                    placeholder="Enter basic salary"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <Label>Allowances</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addEditAllowanceField}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Allowance
+                  </Button>
+                </div>
+                {editingRecord.allowances.map((allowance, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+                    <Input
+                      placeholder="Allowance name"
+                      value={allowance.name}
+                      onChange={(e) => {
+                        const updated = [...editingRecord.allowances];
+                        updated[index].name = e.target.value;
+                        setEditingRecord({...editingRecord, allowances: updated});
+                      }}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Amount"
+                      value={allowance.amount}
+                      onChange={(e) => {
+                        const updated = [...editingRecord.allowances];
+                        updated[index].amount = Number(e.target.value);
+                        setEditingRecord({...editingRecord, allowances: updated});
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <Label>Deductions</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addEditDeductionField}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Deduction
+                  </Button>
+                </div>
+                {editingRecord.deductions.map((deduction, index) => (
+                  <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+                    <Input
+                      placeholder="Deduction name"
+                      value={deduction.name}
+                      onChange={(e) => {
+                        const updated = [...editingRecord.deductions];
+                        updated[index].name = e.target.value;
+                        setEditingRecord({...editingRecord, deductions: updated});
+                      }}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Amount"
+                      value={deduction.amount}
+                      onChange={(e) => {
+                        const updated = [...editingRecord.deductions];
+                        updated[index].amount = Number(e.target.value);
+                        setEditingRecord({...editingRecord, deductions: updated});
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdateRecord}>
+                  Update Record
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Payslip Detail Dialog */}
       <Dialog open={!!selectedPayslip} onOpenChange={() => setSelectedPayslip(null)}>
