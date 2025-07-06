@@ -24,10 +24,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface StickyHeaderProps {
   onMobileMenuToggle?: () => void;
-  onTabChange?: (tab: string) => void;
 }
 
-const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onTabChange }) => {
+const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle }) => {
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -55,18 +54,6 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onTabCh
       case 'manager': return 'bg-green-100 text-green-800';
       case 'employee': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const handleProfileClick = () => {
-    if (onTabChange) {
-      onTabChange('profile');
-    }
-  };
-
-  const handleSettingsClick = () => {
-    if (onTabChange) {
-      onTabChange('settings');
     }
   };
 
@@ -140,11 +127,11 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onTabCh
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleProfileClick}>
+              <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSettingsClick}>
+              <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Settings</span>
               </DropdownMenuItem>
