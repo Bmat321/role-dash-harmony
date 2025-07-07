@@ -85,7 +85,7 @@ const DepartmentManagement: React.FC = () => {
               name: formData.name,
               description: formData.description,
               managerId: formData.managerId || undefined,
-              budget: formData.budget ? parseInt(formData.budget) : undefined,
+              budget: formData.budget ? parseInt(formData.budget, 10) : undefined,
               updatedAt: new Date().toISOString().split('T')[0]
             }
           : dept
@@ -103,7 +103,7 @@ const DepartmentManagement: React.FC = () => {
         managerId: formData.managerId || undefined,
         managerName: formData.managerId ? 'Manager Name' : undefined,
         employeeCount: 0,
-        budget: formData.budget ? parseInt(formData.budget) : undefined,
+        budget: formData.budget ? parseInt(formData.budget, 10) : undefined,
         status: 'active',
         createdAt: new Date().toISOString().split('T')[0],
         updatedAt: new Date().toISOString().split('T')[0]
