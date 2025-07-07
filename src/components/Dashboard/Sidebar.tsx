@@ -1,111 +1,122 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Home, 
   Users, 
-  BarChart, 
+  Clock, 
   Calendar, 
+  DollarSign, 
+  TrendingUp, 
+  UserPlus, 
   FileText, 
+  Briefcase,
+  ClipboardList,
+  Timer,
+  BarChart3,
+  FileBarChart,
   Settings,
-  User,
-  Clock,
-  DollarSign
+  Star,
+  HandHeart,
+  CreditCard
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeItem: string;
+  onItemClick: (item: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
   const { user } = useAuth();
 
-  if (!user) return null;
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'employees', label: 'Employees', icon: Users, roles: ['admin', 'hr', 'manager'] },
+    { id: 'attendance', label: 'Attendance', icon: Clock, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'leave', label: 'Leave Management', icon: Calendar, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'loan', label: 'Loan Management', icon: CreditCard, roles: ['admin', 'hr', 'employee'] },
+    { id: 'appraisal', label: 'Appraisal', icon: Star, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardList, roles: ['admin', 'hr', 'manager'], badge: '3' },
+    { id: 'payroll', label: 'Payroll', icon: DollarSign, roles: ['admin', 'hr'] },
+    { id: 'performance', label: 'Performance', icon: TrendingUp, roles: ['admin', 'hr', 'manager'] },
+    { id: 'recruitment', label: 'Recruitment', icon: UserPlus, roles: ['admin', 'hr'] },
+    { id: 'documents', label: 'Documents', icon: FileText, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'handover', label: 'Handover', icon: HandHeart, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'handover-approval', label: 'Handover Approval', icon: Briefcase, roles: ['admin', 'hr', 'manager'], badge: '2' },
+    { id: 'time-tracking', label: 'Time Tracking', icon: Timer, roles: ['admin', 'hr', 'manager', 'employee'] },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3, roles: ['admin', 'hr', 'manager'] },
+    { id: 'reports', label: 'Reports', icon: FileBarChart, roles: ['admin', 'hr', 'manager'] },
+    { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin', 'hr'] },
+  ];
 
-  const getMenuItems = () => {
-    const baseItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: Home },
-    ];
-
-    switch (user.role) {
-      case 'admin':
-        return [
-          ...baseItems,
-          { id: 'employees', label: 'Employee Management', icon: Users },
-          { id: 'analytics', label: 'Analytics', icon: BarChart },
-          { id: 'reports', label: 'Reports', icon: FileText },
-          { id: 'settings', label: 'System Settings', icon: Settings },
-        ];
-      
-      case 'hr':
-        return [
-          ...baseItems,
-          { id: 'employees', label: 'Employees', icon: Users },
-          { id: 'attendance', label: 'Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Management', icon: Calendar },
-          { id: 'reports', label: 'HR Reports', icon: FileText },
-        ];
-      
-      case 'manager':
-        return [
-          ...baseItems,
-          { id: 'team', label: 'My Team', icon: Users },
-          { id: 'attendance', label: 'Team Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Requests', icon: Calendar },
-          { id: 'reports', label: 'Team Reports', icon: FileText },
-        ];
-      
-      case 'employee':
-        return [
-          ...baseItems,
-          { id: 'profile', label: 'My Profile', icon: User },
-          { id: 'attendance', label: 'My Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Balance', icon: Calendar },
-          { id: 'payroll', label: 'Payroll', icon: DollarSign },
-        ];
-      
-      default:
-        return baseItems;
-    }
-  };
-
-  const menuItems = getMenuItems();
+  const filteredMenuItems = menuItems.filter(item => 
+    item.roles.includes(user?.role || '')
+  );
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full">
-      <div className="p-6">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">H</span>
+    <div className="w-64 bg-gray-800 text-white h-full flex flex-col">
+      {/* Logo/Brand */}
+      <div className="p-6 border-b border-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="bg-blue-600 p-2 rounded-lg">
+            <Briefcase className="h-8 w-8 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">HRIS</span>
+          <div>
+            <h1 className="text-xl font-bold text-white">BTM HRIS</h1>
+            <p className="text-sm text-gray-400">Business Management</p>
+          </div>
         </div>
       </div>
-      
-      <nav className="px-4 pb-4">
-        <div className="space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Button
-                key={item.id}
-                variant={activeTab === item.id ? "secondary" : "ghost"}
-                className={`w-full justify-start ${
-                  activeTab === item.id 
-                    ? 'bg-primary-50 text-primary-700 border-primary-200' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-                onClick={() => setActiveTab(item.id)}
-              >
-                <Icon className="mr-3 h-4 w-4" />
-                {item.label}
-              </Button>
-            );
-          })}
-        </div>
+
+      {/* Navigation Menu */}
+      <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        {filteredMenuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeItem === item.id;
+          
+          return (
+            <Button
+              key={item.id}
+              variant="ghost"
+              className={`w-full justify-start text-left h-12 px-4 ${
+                isActive 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+              onClick={() => onItemClick(item.id)}
+            >
+              <Icon className="mr-3 h-5 w-5" />
+              <span className="flex-1">{item.label}</span>
+              {item.badge && (
+                <Badge className="bg-red-500 text-white hover:bg-red-600 ml-2">
+                  {item.badge}
+                </Badge>
+              )}
+            </Button>
+          );
+        })}
       </nav>
+
+      {/* User Info */}
+      <div className="p-4 border-t border-gray-700">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+            <span className="text-sm font-medium text-white">
+              {user?.firstName?.charAt(0) || user?.email?.charAt(0) || 'U'}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">
+              {user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}` 
+                : user?.email || 'User'}
+            </p>
+            <p className="text-xs text-gray-400 capitalize">{user?.role}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

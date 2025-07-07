@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SetPasswordProps {
@@ -13,9 +13,12 @@ interface SetPasswordProps {
   email?: string;
 }
 
-const SetPassword: React.FC<SetPasswordProps> = ({ token, email }) => {
+const SetPassword: React.FC<SetPasswordProps> = ({ token, email: initialEmail }) => {
+  const [email, setEmail] = useState(initialEmail || '');
+  const [tempPassword, setTempPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showTempPassword, setShowTempPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +46,15 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email }) => {
   const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
   const handleSetPassword = async () => {
+    if (!email || !tempPassword) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!passwordValidation.isValid) {
       toast({
         title: "Invalid Password",
@@ -97,12 +109,52 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email }) => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Set Your Password</CardTitle>
           <CardDescription>
-            Welcome! Please create a secure password for your account.
-            {email && <span className="block mt-1 font-medium">{email}</span>}
+            Please verify your email and temporary password, then create a new secure password.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tempPassword">Temporary Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="tempPassword"
+                  type={showTempPassword ? "text" : "password"}
+                  value={tempPassword}
+                  onChange={(e) => setTempPassword(e.target.value)}
+                  placeholder="Enter temporary password"
+                  className="pl-10 pr-10"
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowTempPassword(!showTempPassword)}
+                >
+                  {showTempPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">New Password</Label>
               <div className="relative">
@@ -111,7 +163,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email }) => {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Enter your new password"
                 />
                 <Button
                   type="button"
@@ -126,14 +178,14 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email }) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your password"
+                  placeholder="Confirm your new password"
                 />
                 <Button
                   type="button"
@@ -185,7 +237,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email }) => {
           <Button 
             className="w-full" 
             onClick={handleSetPassword}
-            disabled={!passwordValidation.isValid || !passwordsMatch || isLoading}
+            disabled={!email || !tempPassword || !passwordValidation.isValid || !passwordsMatch || isLoading}
           >
             {isLoading ? "Setting Password..." : "Set My Password"}
           </Button>
