@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -19,18 +19,60 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [countdown, setCountdown] = useState(0);
   const { toast } = useToast();
   
 
+<<<<<<< HEAD
 const handleVerify = async () => {
   if (code.length !== 6) {
     setError('Please enter a complete 6-digit code');
     return;
   }
+=======
+  // Start countdown when modal opens
+  useEffect(() => {
+    if (isOpen && countdown === 0) {
+      setCountdown(60);
+    }
+  }, [isOpen]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  // Reset states when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCode('');
+      setError('');
+      setCountdown(0);
+    }
+  }, [isOpen]);
+
+  const maskEmail = (email: string) => {
+    const [username, domain] = email.split('@');
+    if (username.length <= 2) return email;
+    
+    const maskedUsername = username.charAt(0) + '*'.repeat(username.length - 2) + username.charAt(username.length - 1);
+    return `${maskedUsername}@${domain}`;
+  };
+
+  const handleVerify = async () => {
+    if (code.length !== 6) {
+      setError('Please enter a complete 6-digit code');
+      return;
+    }
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   setIsLoading(true);
   setError('');
 
+<<<<<<< HEAD
   try {
     await onVerify(email, code); // ✅ This now runs real backend call
     onClose();
@@ -40,8 +82,25 @@ const handleVerify = async () => {
     setIsLoading(false);
   }
 };
+=======
+    try {
+      await onVerify(code);
+      toast({
+        title: "Verification Successful",
+        description: "You have been logged in successfully",
+      });
+    } catch (err) {
+      setError('Invalid verification code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   const handleResendCode = () => {
+    if (countdown > 0) return;
+    
+    setCountdown(60);
     toast({
       title: "Code Resent",
       description: "A new verification code has been sent to your email",
@@ -60,7 +119,7 @@ const handleVerify = async () => {
           <DialogTitle className="text-2xl">Two-Factor Authentication</DialogTitle>
           <DialogDescription className="text-gray-600">
             We've sent a 6-digit verification code to<br />
-            <span className="font-medium">{email}</span>
+            <span className="font-medium">{maskEmail(email)}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -110,10 +169,14 @@ const handleVerify = async () => {
             <div className="text-center">
               <Button 
                 variant="link" 
-                className="text-sm text-gray-600 hover:text-gray-800"
+                className={`text-sm ${countdown > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
                 onClick={handleResendCode}
+                disabled={countdown > 0}
               >
-                Didn't receive the code? Resend
+                {countdown > 0 
+                  ? `Resend code in ${countdown}s`
+                  : "Didn't receive the code? Resend"
+                }
               </Button>
             </div>
           </div>

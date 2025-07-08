@@ -5,17 +5,31 @@ import Login from '@/components/Login';
 import Dashboard from '@/components/Dashboard/Dashboard';
 
 const Index = () => {
-  const { user, isLoading } = useAuth();
+  try {
+    const { user, isLoading } = useAuth();
 
-  if (isLoading) {
+    console.log('Index page - user:', user, 'isLoading:', isLoading);
+
+    if (isLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      );
+    }
+
+    return user ? <Dashboard /> : <Login />;
+  } catch (error) {
+    console.error('Error in Index component:', error);
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h1>
+          <p className="text-gray-600">Please refresh the page to try again.</p>
+        </div>
       </div>
     );
   }
-
-  return user ? <Dashboard /> : <Login />;
 };
 
 export default Index;

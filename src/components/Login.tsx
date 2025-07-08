@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
 import TwoFactorModal from './Auth/TwoFactorModal';
+<<<<<<< HEAD
 import { RootState } from '@/redux/store';
 import { useSelector } from 'react-redux';
 import { useLoginMutation, useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
@@ -24,10 +25,21 @@ const Login = () => {
   const [verify2fa, {isLoading: isVerifying}] = useVerify2FAMutation();
 
   // const { login, isLoading } = useAuth();
+=======
+import { useReduxAuth } from '@/hooks/useReduxAuth';
+
+const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [show2FA, setShow2FA] = useState(false);
+  const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
+  const { login, isLoading } = useReduxAuth();
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+<<<<<<< HEAD
 
 
     const loginResponse =  await login({email, password}).unwrap() as LoginResponse;
@@ -41,6 +53,41 @@ const Login = () => {
     }
   };
 
+=======
+    // Simulate 2FA requirement for all accounts
+    setPendingLogin({ email, password });
+    setShow2FA(true);
+  };
+
+  const handle2FAVerification = async (code: string) => {
+    if (!pendingLogin) return;
+    
+    // Simulate 2FA verification - accept code '123456' for all users
+    if (code === '123456') {
+      const success = await login(pendingLogin.email, pendingLogin.password);
+      if (success) {
+        setShow2FA(false);
+        setPendingLogin(null);
+        // The routing will be handled automatically by the Index component
+        // when the user state changes
+      }
+    } else {
+      throw new Error('Invalid verification code');
+    }
+  };
+
+  const handleClose2FA = () => {
+    setShow2FA(false);
+    setPendingLogin(null);
+  };
+
+  const demoAccounts = [
+    { role: 'Admin', email: 'admin@hris.com', password: 'Admin@123', color: 'bg-red-500' },
+    { role: 'HR', email: 'hr@hris.com', password: 'hr123', color: 'bg-blue-500' },
+    { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
+    { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
+  ];
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
 
 const handle2FAVerification = async (email: string, code: string) => {
@@ -152,7 +199,7 @@ const handle2FAVerification = async (email: string, code: string) => {
             {/* <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-center">Demo Accounts</CardTitle>
-                <CardDescription className="text-center">Click to use demo credentials</CardDescription>
+                <CardDescription className="text-center">Click to use demo credentials (2FA code: 123456)</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-3">
@@ -230,9 +277,9 @@ const handle2FAVerification = async (email: string, code: string) => {
 
       <TwoFactorModal
         isOpen={show2FA}
-        onClose={() => setShow2FA(false)}
+        onClose={handleClose2FA}
         onVerify={handle2FAVerification}
-        email={email}
+        email={pendingLogin?.email || email}
       />
     </>
   );

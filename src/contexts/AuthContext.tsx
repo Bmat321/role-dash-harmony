@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { AuthContextType, User } from '@/types/auth';
 import { toast } from '@/hooks/use-toast';
@@ -46,30 +47,24 @@ const mockUsers: Record<string, { password: string; user: User }> = {
   },
 };
 
+=======
+import React, { createContext, useContext } from 'react';
+import { AuthContextType } from '@/types/auth';
+import { useReduxAuth } from '@/hooks/useReduxAuth';
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Admin login using SOAP API
-  // const { user: soapUser, login: soapLogin, logout: soapLogout, isLoading: isSoapLoading } = useSoapAuth();
-  
-  // Separate state for mock (non-admin) users
-  const [isLoading, setIsLoading] = useState(false);
-  const [mockUser, setMockUser] = useState<User | null>(null);  // Store mock or non-admin user here
-  const [mockToken, setMockToken] = useState<string | null>(null);  // Store mock or non-admin token here
-  
-  // State for loading and error
-  const [error, setError] = useState<string | null>(null);
+  const reduxAuth = useReduxAuth();
 
-  // Initialize session from localStorage for non-admin users (mock)
-  useEffect(() => {
-    const storedMockToken = localStorage.getItem('hris_mock_token');
-    const storedMockUser = localStorage.getItem('hris_mock_user');
-    
-    if (storedMockToken && storedMockUser) {
-      setMockUser(JSON.parse(storedMockUser));
-      setMockToken(storedMockToken);
-    }
-    setIsLoading(false);
-  }, []);
+  // Add error boundary to prevent crashes
+  if (!reduxAuth) {
+    console.error('useReduxAuth returned undefined');
+    return <div>Loading authentication...</div>;
+  }
 
+<<<<<<< HEAD
   // Login method: Handles Admin and Non-Admin (Mock) separately
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -182,15 +177,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Return Auth context with separate user states
+=======
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
   return (
-    <AuthContext.Provider value={{
-      user: mockUser,  // Use mock user or SOAP user (for admin)
-      token: mockToken,   // Use mock token or SOAP token (for admin)
-      login,
-      logout: logoutHandler,
-      isLoading,
-      error
-    }}>
+    <AuthContext.Provider value={reduxAuth}>
       {children}
     </AuthContext.Provider>
   );
@@ -198,6 +188,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
   return context;
 };

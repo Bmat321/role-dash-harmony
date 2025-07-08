@@ -58,14 +58,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
   return (
     <div className="w-64 bg-gray-800 text-white h-full flex flex-col">
       {/* Logo/Brand */}
-      <div className="p-6 border-b border-gray-700">
+      <div className="p-6 border-b border-gray-600">
         <div className="flex items-center space-x-3">
           <div className="bg-blue-600 p-2 rounded-lg">
             <Briefcase className="h-8 w-8 text-white" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">BTM HRIS</h1>
-            <p className="text-sm text-gray-400">Business Management</p>
+            <p className="text-sm text-gray-300">Business Management</p>
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
               className={`w-full justify-start text-left h-12 px-4 ${
                 isActive 
                   ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  : 'text-gray-200 hover:bg-gray-700 hover:text-white'
               }`}
               onClick={() => onItemClick(item.id)}
             >
@@ -100,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
       </nav>
 
       {/* User Info */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4 border-t border-gray-600">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
             <span className="text-sm font-medium text-white">
@@ -113,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
                 ? `${user.firstName} ${user.lastName}` 
                 : user?.email || 'User'}
             </p>
-            <p className="text-xs text-gray-400 capitalize">{user?.role}</p>
+            <p className="text-xs text-gray-300 capitalize">{user?.role}</p>
           </div>
         </div>
       </div>
