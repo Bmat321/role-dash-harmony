@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,12 +6,13 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
 import TwoFactorModal from './Auth/TwoFactorModal';
+import { useReduxAuth } from '@/hooks/useReduxAuth';
 
-const Login = () => {
+const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show2FA, setShow2FA] = useState(false);
-  const { login, isLoading } = useAuth();
+  const { login, isLoading } = useReduxAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

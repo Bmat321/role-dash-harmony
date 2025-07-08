@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
   );
 
   return (
-    <div className="w-64 bg-gray-800 text-white h-full flex flex-col">
+    <div className="w-64 bg-gray-900 text-white h-full flex flex-col">
       {/* Logo/Brand */}
       <div className="p-6 border-b border-gray-700">
         <div className="flex items-center space-x-3">
@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
               className={`w-full justify-start text-left h-12 px-4 ${
                 isActive 
                   ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
               }`}
               onClick={() => onItemClick(item.id)}
             >
