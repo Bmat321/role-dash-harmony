@@ -6,12 +6,11 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
 
 interface TwoFactorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onVerify: (eamil: string, code: string) => Promise<void>;
+  onVerify: (code: string) => Promise<void>;
   email: string;
 }
 
@@ -21,7 +20,6 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
   const { toast } = useToast();
-  
 
   // Start countdown when modal opens
   useEffect(() => {
@@ -61,11 +59,11 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
       return;
     }
 
-  setIsLoading(true);
-  setError('');
+    setIsLoading(true);
+    setError('');
 
     try {
-      await onVerify(email,code);
+      await onVerify(code);
       toast({
         title: "Verification Successful",
         description: "You have been logged in successfully",
