@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
 import TwoFactorModal from './Auth/TwoFactorModal';
 import { useReduxAuth } from '@/hooks/useReduxAuth';
+import { toast } from '@/hooks/use-toast';
+import { useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +18,10 @@ const Login: React.FC = () => {
   const [show2FA, setShow2FA] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
   const { login, isLoading } = useReduxAuth();
+  
+
+  const [verify2fa, {isLoading: isVerifying}] = useVerify2FAMutation();
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,22 +31,22 @@ const Login: React.FC = () => {
     setShow2FA(true);
   };
 
-  const handle2FAVerification = async (code: string) => {
-    if (!pendingLogin) return;
+  // const handle2FAVerification = async (code: string) => {
+  //   if (!pendingLogin) return;
     
-    // Simulate 2FA verification - accept code '123456' for all users
-    if (code === '123456') {
-      const success = await login(pendingLogin.email, pendingLogin.password);
-      if (success) {
-        setShow2FA(false);
-        setPendingLogin(null);
-        // The routing will be handled automatically by the Index component
-        // when the user state changes
-      }
-    } else {
-      throw new Error('Invalid verification code');
-    }
-  };
+  //   // Simulate 2FA verification - accept code '123456' for all users
+  //   if (code === '123456') {
+  //     const success = await login(pendingLogin.email, pendingLogin.password);
+  //     if (success) {
+  //       setShow2FA(false);
+  //       setPendingLogin(null);
+  //       // The routing will be handled automatically by the Index component
+  //       // when the user state changes
+  //     }
+  //   } else {
+  //     throw new Error('Invalid verification code');
+  //   }
+  // };
 
   const handleClose2FA = () => {
     setShow2FA(false);
@@ -53,10 +60,41 @@ const Login: React.FC = () => {
     { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
   ];
 
-  const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-  };
+
+const handle2FAVerification = async (email: string, code: string) => {
+  console.log("email", email, "code", code)
+  try {
+    await verify2fa({ email, code }).unwrap();
+
+    toast({
+      title: "Verification Successful",
+      description: "You have been logged in successfully",
+    });
+
+    setShow2FA(false);
+  } catch (error: any) {
+    toast({
+      title: "Verification failed",
+      description:
+        error?.data?.message || "Invalid verification code. Please try again.",
+    });
+
+    throw error; // to let modal catch and show error state
+  }
+};
+
+
+  // const demoAccounts = [
+  //   { role: 'Admin', email: 'admin@hris.com', password: 'Admin@123', color: 'bg-red-500' },
+  //   { role: 'HR', email: 'hr@hris.com', password: 'hr123', color: 'bg-blue-500' },
+  //   { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
+  //   { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
+  // ];
+
+  // const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
+  //   setEmail(demoEmail);
+  //   setPassword(demoPassword);
+  // };
 
   return (
     <>
@@ -129,7 +167,7 @@ const Login: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            {/* <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-center">Demo Accounts</CardTitle>
                 <CardDescription className="text-center">Click to use demo credentials (2FA code: 123456)</CardDescription>
@@ -149,7 +187,7 @@ const Login: React.FC = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
 
