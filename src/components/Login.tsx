@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,28 +13,37 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show2FA, setShow2FA] = useState(false);
+  const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
   const { login, isLoading } = useReduxAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simulate 2FA requirement for certain accounts (admin@hris.com)
-    if (email === 'admin@hris.com') {
-      setShow2FA(true);
-      return;
-    }
-    
-    await login(email, password);
+    // Simulate 2FA requirement for all accounts
+    setPendingLogin({ email, password });
+    setShow2FA(true);
   };
 
   const handle2FAVerification = async (code: string) => {
-    // Simulate 2FA verification
+    if (!pendingLogin) return;
+    
+    // Simulate 2FA verification - accept code '123456' for all users
     if (code === '123456') {
-      await login(email, password);
-      setShow2FA(false);
+      const success = await login(pendingLogin.email, pendingLogin.password);
+      if (success) {
+        setShow2FA(false);
+        setPendingLogin(null);
+        // The routing will be handled automatically by the Index component
+        // when the user state changes
+      }
     } else {
-      throw new Error('Invalid code');
+      throw new Error('Invalid verification code');
     }
+  };
+
+  const handleClose2FA = () => {
+    setShow2FA(false);
+    setPendingLogin(null);
   };
 
   const demoAccounts = [
@@ -122,7 +132,7 @@ const Login: React.FC = () => {
             <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-center">Demo Accounts</CardTitle>
-                <CardDescription className="text-center">Click to use demo credentials</CardDescription>
+                <CardDescription className="text-center">Click to use demo credentials (2FA code: 123456)</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-3">
@@ -200,9 +210,9 @@ const Login: React.FC = () => {
 
       <TwoFactorModal
         isOpen={show2FA}
-        onClose={() => setShow2FA(false)}
+        onClose={handleClose2FA}
         onVerify={handle2FAVerification}
-        email={email}
+        email={pendingLogin?.email || email}
       />
     </>
   );
