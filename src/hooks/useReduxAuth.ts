@@ -24,7 +24,11 @@ export const useReduxAuth = () => {
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
-    dispatch(initializeFromStorage());
+    try {
+      dispatch(initializeFromStorage());
+    } catch (error) {
+      console.error('Error initializing auth from storage:', error);
+    }
   }, [dispatch]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -107,6 +111,7 @@ export const useReduxAuth = () => {
       });
       return true;
     } catch (error) {
+      console.error('Login error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
       toast({
         title: 'Login Error',
@@ -130,6 +135,7 @@ export const useReduxAuth = () => {
       });
       return true;
     } catch (error) {
+      console.error('Registration error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Registration failed';
       toast({
         title: 'Registration Error',
@@ -149,6 +155,7 @@ export const useReduxAuth = () => {
       });
       return true;
     } catch (error) {
+      console.error('Password reset error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Password reset failed';
       toast({
         title: 'Password Reset Error',
@@ -160,11 +167,15 @@ export const useReduxAuth = () => {
   };
 
   const logout = () => {
-    dispatch(logoutAction());
-    toast({
-      title: 'Logged Out',
-      description: 'You have been successfully logged out.',
-    });
+    try {
+      dispatch(logoutAction());
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const hasRole = (requiredRoles: string[]) => {
@@ -176,7 +187,7 @@ export const useReduxAuth = () => {
     user,
     token,
     isLoading,
-    error,
+    error: error || '',
     login,
     register,
     resetPassword,
