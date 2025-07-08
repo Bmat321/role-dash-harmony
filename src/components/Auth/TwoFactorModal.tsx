@@ -6,11 +6,12 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
 
 interface TwoFactorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onVerify: (code: string) => Promise<void>;
+  onVerify: (eamil: string, code: string) => Promise<void>;
   email: string;
 }
 
@@ -19,29 +20,26 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { toast } = useToast();
+  
 
-  const handleVerify = async () => {
-    if (code.length !== 6) {
-      setError('Please enter a complete 6-digit code');
-      return;
-    }
+const handleVerify = async () => {
+  if (code.length !== 6) {
+    setError('Please enter a complete 6-digit code');
+    return;
+  }
 
-    setIsLoading(true);
-    setError('');
+  setIsLoading(true);
+  setError('');
 
-    try {
-      await onVerify(code);
-      toast({
-        title: "Verification Successful",
-        description: "You have been logged in successfully",
-      });
-      onClose();
-    } catch (err) {
-      setError('Invalid verification code. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    await onVerify(email, code); // ✅ This now runs real backend call
+    onClose();
+  } catch (err) {
+    setError('Invalid verification code. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleResendCode = () => {
     toast({
