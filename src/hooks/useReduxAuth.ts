@@ -36,7 +36,7 @@ export const useReduxAuth = () => {
       // Check if it's a mock user first
       const mockUsers: Record<string, { password: string; user: any }> = {
         'admin@hris.com': {
-          password: 'hr123',
+          password: 'Admin@123', // Fixed: was 'hr123', should be 'Admin@123'
           user: { 
             id: '1', 
             email: 'admin@hris.com', 

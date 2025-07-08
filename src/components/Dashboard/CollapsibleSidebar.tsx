@@ -125,22 +125,22 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   const menuItems = getMenuItems();
 
   const sidebarContent = (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gray-800 text-white">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-gray-600">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">H</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">HRIS</span>
+            <span className="text-xl font-bold text-white">HRIS</span>
           </div>
           {/* Mobile close button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onMobileToggle}
-            className="lg:hidden"
+            className="lg:hidden text-white hover:bg-gray-700"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -155,11 +155,11 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             return (
               <Button
                 key={item.id}
-                variant={activeTab === item.id ? "secondary" : "ghost"}
+                variant="ghost"
                 className={`w-full justify-start text-left ${
                   activeTab === item.id 
-                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                    : 'text-gray-200 hover:bg-gray-700 hover:text-white'
                 }`}
                 onClick={() => {
                   setActiveTab(item.id);
@@ -188,7 +188,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 
+        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-600 
         transform transition-transform duration-300 ease-in-out lg:translate-x-0
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
