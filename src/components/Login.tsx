@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,24 +7,6 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
 import TwoFactorModal from './Auth/TwoFactorModal';
-<<<<<<< HEAD
-import { RootState } from '@/redux/store';
-import { useSelector } from 'react-redux';
-import { useLoginMutation, useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
-import { toast } from '@/hooks/use-toast';
-import { LoginResponse } from '@/types/auth';
-
-const Login = () => {
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [show2FA, setShow2FA] = useState(false);
-
-  const [login, {isLoading}] = useLoginMutation();
-  const [verify2fa, {isLoading: isVerifying}] = useVerify2FAMutation();
-
-  // const { login, isLoading } = useAuth();
-=======
 import { useReduxAuth } from '@/hooks/useReduxAuth';
 
 const Login: React.FC = () => {
@@ -34,26 +15,10 @@ const Login: React.FC = () => {
   const [show2FA, setShow2FA] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
   const { login, isLoading } = useReduxAuth();
->>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-<<<<<<< HEAD
-
-
-    const loginResponse =  await login({email, password}).unwrap() as LoginResponse;
-    if(loginResponse && loginResponse.success){
-      toast({
-        title: loginResponse.message,
-      });
-        setShow2FA(true);
-        setEmail('');
-        setPassword('')
-    }
-  };
-
-=======
     // Simulate 2FA requirement for all accounts
     setPendingLogin({ email, password });
     setShow2FA(true);
@@ -87,43 +52,11 @@ const Login: React.FC = () => {
     { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
     { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
   ];
->>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
-
-const handle2FAVerification = async (email: string, code: string) => {
-  console.log("email", email, "code", code)
-  try {
-    await verify2fa({ email, code }).unwrap();
-
-    toast({
-      title: "Verification Successful",
-      description: "You have been logged in successfully",
-    });
-
-    setShow2FA(false);
-  } catch (error: any) {
-    toast({
-      title: "Verification failed",
-      description:
-        error?.data?.message || "Invalid verification code. Please try again.",
-    });
-
-    throw error; // to let modal catch and show error state
-  }
-};
-
-
-  // const demoAccounts = [
-  //   { role: 'Admin', email: 'admin@hris.com', password: 'Admin@123', color: 'bg-red-500' },
-  //   { role: 'HR', email: 'hr@hris.com', password: 'hr123', color: 'bg-blue-500' },
-  //   { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
-  //   { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
-  // ];
-
-  // const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
-  //   setEmail(demoEmail);
-  //   setPassword(demoPassword);
-  // };
+  const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+  };
 
   return (
     <>
@@ -196,7 +129,7 @@ const handle2FAVerification = async (email: string, code: string) => {
               </CardContent>
             </Card>
 
-            {/* <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-center">Demo Accounts</CardTitle>
                 <CardDescription className="text-center">Click to use demo credentials (2FA code: 123456)</CardDescription>
@@ -216,7 +149,7 @@ const handle2FAVerification = async (email: string, code: string) => {
                   ))}
                 </div>
               </CardContent>
-            </Card> */}
+            </Card>
           </div>
         </div>
 
