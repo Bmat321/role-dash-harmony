@@ -23,6 +23,13 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
   const { toast } = useToast();
   
 
+<<<<<<< HEAD
+const handleVerify = async () => {
+  if (code.length !== 6) {
+    setError('Please enter a complete 6-digit code');
+    return;
+  }
+=======
   // Start countdown when modal opens
   useEffect(() => {
     if (isOpen && countdown === 0) {
@@ -60,12 +67,24 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
       setError('Please enter a complete 6-digit code');
       return;
     }
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   setIsLoading(true);
   setError('');
 
+<<<<<<< HEAD
+  try {
+    await onVerify(email, code); // ✅ This now runs real backend call
+    onClose();
+  } catch (err) {
+    setError('Invalid verification code. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+=======
     try {
-      await onVerify(email,code);
+      await onVerify(code);
       toast({
         title: "Verification Successful",
         description: "You have been logged in successfully",
@@ -76,6 +95,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
       setIsLoading(false);
     }
   };
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   const handleResendCode = () => {
     if (countdown > 0) return;

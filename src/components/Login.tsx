@@ -8,9 +8,25 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
 import TwoFactorModal from './Auth/TwoFactorModal';
-import { useReduxAuth } from '@/hooks/useReduxAuth';
+<<<<<<< HEAD
+import { RootState } from '@/redux/store';
+import { useSelector } from 'react-redux';
+import { useLoginMutation, useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
 import { toast } from '@/hooks/use-toast';
-import { useVerify2FAMutation } from '@/redux/features/api/auth/authApi';
+import { LoginResponse } from '@/types/auth';
+
+const Login = () => {
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [show2FA, setShow2FA] = useState(false);
+
+  const [login, {isLoading}] = useLoginMutation();
+  const [verify2fa, {isLoading: isVerifying}] = useVerify2FAMutation();
+
+  // const { login, isLoading } = useAuth();
+=======
+import { useReduxAuth } from '@/hooks/useReduxAuth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,35 +34,47 @@ const Login: React.FC = () => {
   const [show2FA, setShow2FA] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
   const { login, isLoading } = useReduxAuth();
-  
-
-  const [verify2fa, {isLoading: isVerifying}] = useVerify2FAMutation();
-
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+<<<<<<< HEAD
+
+
+    const loginResponse =  await login({email, password}).unwrap() as LoginResponse;
+    if(loginResponse && loginResponse.success){
+      toast({
+        title: loginResponse.message,
+      });
+        setShow2FA(true);
+        setEmail('');
+        setPassword('')
+    }
+  };
+
+=======
     // Simulate 2FA requirement for all accounts
     setPendingLogin({ email, password });
     setShow2FA(true);
   };
 
-  // const handle2FAVerification = async (code: string) => {
-  //   if (!pendingLogin) return;
+  const handle2FAVerification = async (code: string) => {
+    if (!pendingLogin) return;
     
-  //   // Simulate 2FA verification - accept code '123456' for all users
-  //   if (code === '123456') {
-  //     const success = await login(pendingLogin.email, pendingLogin.password);
-  //     if (success) {
-  //       setShow2FA(false);
-  //       setPendingLogin(null);
-  //       // The routing will be handled automatically by the Index component
-  //       // when the user state changes
-  //     }
-  //   } else {
-  //     throw new Error('Invalid verification code');
-  //   }
-  // };
+    // Simulate 2FA verification - accept code '123456' for all users
+    if (code === '123456') {
+      const success = await login(pendingLogin.email, pendingLogin.password);
+      if (success) {
+        setShow2FA(false);
+        setPendingLogin(null);
+        // The routing will be handled automatically by the Index component
+        // when the user state changes
+      }
+    } else {
+      throw new Error('Invalid verification code');
+    }
+  };
 
   const handleClose2FA = () => {
     setShow2FA(false);
@@ -59,6 +87,7 @@ const Login: React.FC = () => {
     { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
     { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
   ];
+>>>>>>> 5aa0faabc1d67921d25488d096652884c1bd8e7c
 
 
 const handle2FAVerification = async (email: string, code: string) => {
