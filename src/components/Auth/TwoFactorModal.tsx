@@ -12,17 +12,11 @@ interface TwoFactorModalProps {
   onClose: () => void;
   onVerify: (code: string) => Promise<void>;
   email: string;
-  isLoading?: boolean;
 }
 
-const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  onVerify, 
-  email, 
-  isLoading = false 
-}) => {
+const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVerify, email }) => {
   const [code, setCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
   const { toast } = useToast();
@@ -65,6 +59,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
       return;
     }
 
+    setIsLoading(true);
     setError('');
 
     try {
@@ -75,6 +70,8 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
       });
     } catch (err) {
       setError('Invalid verification code. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,7 +110,6 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
                 setCode(value);
                 setError('');
               }}
-              disabled={isLoading}
             >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
@@ -141,7 +137,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Authenticating...
+                  Verifying...
                 </>
               ) : (
                 'Verify Code'
@@ -151,9 +147,9 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({
             <div className="text-center">
               <Button 
                 variant="link" 
-                className={`text-sm ${countdown > 0 || isLoading ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                className={`text-sm ${countdown > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
                 onClick={handleResendCode}
-                disabled={countdown > 0 || isLoading}
+                disabled={countdown > 0}
               >
                 {countdown > 0 
                   ? `Resend code in ${countdown}s`
