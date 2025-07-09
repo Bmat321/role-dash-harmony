@@ -18,10 +18,18 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    try {
+        const success = await login(email, password);
+        console.log("success", success)
+        
+    } catch (error) {
+      console.log("error", error);
+    }
     
-    // Simulate 2FA requirement for all accounts
-    setPendingLogin({ email, password });
-    setShow2FA(true);
+    // // Simulate 2FA requirement for all accounts
+    // setPendingLogin({ email, password });
+    // setShow2FA(true);
   };
 
   const handle2FAVerification = async (code: string) => {

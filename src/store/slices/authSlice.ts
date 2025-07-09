@@ -1,6 +1,5 @@
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '@/types/auth';
+import { User, UserState } from '@/types/auth';
 import { authApi } from './authApi';
 
 export interface AuthState {
@@ -8,6 +7,7 @@ export interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  code?: string | null; // Optional 2FA code or similar field
 }
 
 const initialState: AuthState = {
@@ -15,6 +15,7 @@ const initialState: AuthState = {
   token: null,
   isLoading: false,
   error: null,
+  code: null,
 };
 
 const authSlice = createSlice({
@@ -35,12 +36,11 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       localStorage.setItem('hris_mock_token', action.payload.token);
-      localStorage.setItem('hris_mock_user', JSON.stringify(action.payload.user));
     },
     initializeFromStorage: (state) => {
       const token = localStorage.getItem('hris_mock_token');
       const userData = localStorage.getItem('hris_mock_user');
-      
+
       if (token && userData) {
         try {
           const user = JSON.parse(userData);
@@ -54,6 +54,7 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Login matchers
     builder
       .addMatcher(authApi.endpoints.login.matchPending, (state) => {
         state.isLoading = true;
@@ -61,14 +62,32 @@ const authSlice = createSlice({
       })
       .addMatcher(authApi.endpoints.login.matchFulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem('hris_mock_token', action.payload.token);
-        localStorage.setItem('hris_mock_user', JSON.stringify(action.payload.user));
+        // Optionally store user:
+        // localStorage.setItem('hris_mock_user', JSON.stringify(action.payload.user));
       })
       .addMatcher(authApi.endpoints.login.matchRejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.error.message || 'Login failed';
+        state.error = action.error?.message || 'Login failed';
+      });
+
+    // 2FA matchers
+    builder
+      .addMatcher(authApi.endpoints.verify2fa?.matchPending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addMatcher(authApi.endpoints.verify2fa?.matchFulfilled, (state, action) => {
+        state.isLoading = false;
+        state.token = action.payload.token;
+        localStorage.setItem('hris_mock_token', action.payload.token);
+        // Optionally store user:
+        // localStorage.setItem('hris_mock_user', JSON.stringify(action.payload.user));
+      })
+      .addMatcher(authApi.endpoints.verify2fa?.matchRejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error?.message || '2FA verification failed';
       });
   },
 });
