@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
 import TwoFactorModal from './Auth/TwoFactorModal';
+import RequestPassword from './Auth/RequestPassword';
 import { useReduxAuth } from '@/hooks/useReduxAuth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show2FA, setShow2FA] = useState(false);
+  const [showRequestPassword, setShowRequestPassword] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
   const { login, isLoading } = useReduxAuth();
 
@@ -119,6 +121,19 @@ const Login: React.FC = () => {
                       required
                     />
                   </div>
+                  
+                  {/* Forgot Password Link */}
+                  <div className="text-right">
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto"
+                      onClick={() => setShowRequestPassword(true)}
+                    >
+                      Forgot password?
+                    </Button>
+                  </div>
+
                   <Button 
                     type="submit" 
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg font-semibold" 
@@ -222,6 +237,15 @@ const Login: React.FC = () => {
         onVerify={handle2FAVerification}
         email={pendingLogin?.email || email}
       />
+
+      {/* Request Password Modal */}
+      {showRequestPassword && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            <RequestPassword onBack={() => setShowRequestPassword(false)} />
+          </div>
+        </div>
+      )}
     </>
   );
 };

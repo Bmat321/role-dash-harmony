@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RequestPasswordProps {
@@ -42,71 +42,85 @@ const RequestPassword: React.FC<RequestPasswordProps> = ({ onBack }) => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Request Sent!</h2>
-            <p className="text-gray-600 mb-6">
-              We've sent password reset instructions to your email address. 
-              Please check your inbox and follow the instructions.
-            </p>
-            <Button className="w-full" onClick={() => window.location.href = '/login'}>
-              Back to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="w-full border-0 shadow-none">
+        <CardHeader className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="absolute right-0 top-0 h-8 w-8 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="pt-0 text-center">
+          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Request Sent!</h2>
+          <p className="text-gray-600 mb-6">
+            We've sent password reset instructions to your email address. 
+            Please check your inbox and follow the instructions.
+          </p>
+          <Button className="w-full" onClick={onBack}>
+            Close
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
-          <CardDescription>
-            Enter your email address and we'll send you instructions to reset your password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="pl-10"
-                required
-              />
-            </div>
+    <Card className="w-full border-0 shadow-none">
+      <CardHeader className="relative text-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="absolute right-0 top-0 h-8 w-8 p-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        <CardTitle className="text-2xl">Reset Password</CardTitle>
+        <CardDescription>
+          Enter your email address and we'll send you instructions to reset your password.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email Address</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              className="pl-10"
+              required
+            />
           </div>
+        </div>
 
+        <Button 
+          className="w-full" 
+          onClick={handleRequestPassword}
+          disabled={isLoading}
+        >
+          {isLoading ? "Sending Request..." : "Send Reset Instructions"}
+        </Button>
+
+        {onBack && (
           <Button 
+            variant="ghost" 
             className="w-full" 
-            onClick={handleRequestPassword}
-            disabled={isLoading}
+            onClick={onBack}
           >
-            {isLoading ? "Sending Request..." : "Send Reset Instructions"}
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Login
           </Button>
-
-          {onBack && (
-            <Button 
-              variant="ghost" 
-              className="w-full" 
-              onClick={onBack}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Login
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

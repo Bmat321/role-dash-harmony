@@ -70,6 +70,9 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onNavig
     }
   };
 
+  // Check if user can see settings (only admin and hr)
+  const canAccessSettings = user.role === 'admin' || user.role === 'hr';
+
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-3 lg:px-6 py-3 lg:py-4">
       <div className="flex items-center justify-between">
@@ -144,10 +147,12 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onNavig
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSettingsClick}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
+              {canAccessSettings && (
+                <DropdownMenuItem onClick={handleSettingsClick}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={logout}
