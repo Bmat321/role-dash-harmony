@@ -1,9 +1,11 @@
+
 /* eslint-disable react-hooks/rules-of-hooks */
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Login from '@/components/Login';
 import Dashboard from '@/components/Dashboard/Dashboard';
+import DashboardSkeleton from '@/components/Dashboard/DashboardSkeleton';
 
 const Index = () => {
   try {
@@ -11,7 +13,13 @@ const Index = () => {
 
     console.log('Index page - user:', user, 'isLoading:', isLoading);
 
-    if (isLoading) {
+    if (isLoading && user) {
+      // Show skeleton when user is authenticated but dashboard data is loading
+      return <DashboardSkeleton />;
+    }
+
+    if (isLoading && !user) {
+      // Show simple spinner when checking authentication
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>

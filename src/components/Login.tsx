@@ -16,10 +16,12 @@ const Login: React.FC = () => {
   const [show2FA, setShow2FA] = useState(false);
   const [showRequestPassword, setShowRequestPassword] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
-  const { login, isLoading } = useReduxAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useReduxAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
         const success = await login(email, password);
@@ -27,6 +29,8 @@ const Login: React.FC = () => {
         
     } catch (error) {
       console.log("error", error);
+    } finally {
+      setIsSubmitting(false);
     }
     
     // // Simulate 2FA requirement for all accounts
@@ -137,12 +141,12 @@ const Login: React.FC = () => {
                   <Button 
                     type="submit" 
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg font-semibold" 
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
-                    {isLoading ? (
+                    {isSubmitting ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Signing In...
+                        Sign In
+                        <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                       </>
                     ) : (
                       'Sign In'
