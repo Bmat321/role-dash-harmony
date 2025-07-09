@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,6 +16,7 @@ const Login: React.FC = () => {
   const [showRequestPassword, setShowRequestPassword] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
   const { login } = useReduxAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,33 +24,44 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-        const success = await login(email, password);
-        console.log("success", success)
-        
+      const success = await login(email, password);
+      if (success) {
+        // After successful login, show 2FA modal
+        setPendingLogin({ email, password });
+        setShow2FA(true);
+      }
     } catch (error) {
       console.log("error", error);
     } finally {
       setIsSubmitting(false);
     }
-    
-    // // Simulate 2FA requirement for all accounts
-    // setPendingLogin({ email, password });
-    // setShow2FA(true);
   };
 
   const handle2FAVerification = async (code: string) => {
     if (!pendingLogin) return;
     
-    // Simulate 2FA verification - accept code '123456' for all users
-    if (code === '123456') {
-      const success = await login(pendingLogin.email, pendingLogin.password);
-      if (success) {
-        setShow2FA(false);
-        setPendingLogin(null);
-        // The routing will be handled automatically by the Index component
-        // when the user state changes
-      }
+    setIsVerifying2FA(true);
+    
+    // Check if it's a mock user first
+    const mockUsers: Record<string, { password: string }> = {
+      'admin@hris.com': { password: 'Admin@123' },
+      'hr@hris.com': { password: 'hr123' },
+      'manager@hris.com': { password: 'manager123' },
+      'employee@hris.com': { password: 'emp123' },
+    };
+
+    const mockData = mockUsers[pendingLogin.email];
+    
+    // For demo, accept code '123456' or the password as the code
+    if (code === '123456' || (mockData && code === mockData.password)) {
+      // Keep the 2FA modal open and show loading
+      // The actual authentication will be handled by useReduxAuth
+      const { verify2fa } = useReduxAuth();
+      await verify2fa(pendingLogin.email, code);
+      
+      // Don't close the modal here - let the Index component handle the transition
     } else {
+      setIsVerifying2FA(false);
       throw new Error('Invalid verification code');
     }
   };
@@ -58,6 +69,7 @@ const Login: React.FC = () => {
   const handleClose2FA = () => {
     setShow2FA(false);
     setPendingLogin(null);
+    setIsVerifying2FA(false);
   };
 
   const demoAccounts = [
@@ -143,13 +155,9 @@ const Login: React.FC = () => {
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg font-semibold" 
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? (
-                      <>
-                        Sign In
-                        <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                      </>
-                    ) : (
-                      'Sign In'
+                    Sign In
+                    {isSubmitting && (
+                      <Loader2 className="ml-2 h-5 w-5 animate-spin" />
                     )}
                   </Button>
                 </form>
@@ -240,6 +248,7 @@ const Login: React.FC = () => {
         onClose={handleClose2FA}
         onVerify={handle2FAVerification}
         email={pendingLogin?.email || email}
+        isLoading={isVerifying2FA}
       />
 
       {/* Request Password Modal */}
