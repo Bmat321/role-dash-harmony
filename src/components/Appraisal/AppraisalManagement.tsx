@@ -25,7 +25,7 @@ const AppraisalManagement: React.FC = () => {
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const isTeamLead = user?.role === 'manager' || user?.role === 'team_lead' || user?.role === 'admin';
+  const isTeamLead = user?.role === 'manager' || user?.role === 'teamlead' || user?.role === 'admin';
   const isEmployee = user?.role === 'employee';
   const isHR = user?.role === 'hr' || user?.role === 'admin';
 

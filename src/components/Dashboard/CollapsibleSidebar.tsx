@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -88,7 +89,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         ];
       
       case 'manager':
-      case 'team_lead':
+      case 'teamlead':
         return [
           ...baseItems,
           { id: 'employees', label: 'My Team', icon: Users },

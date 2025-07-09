@@ -10,8 +10,18 @@ const DashboardHeader: React.FC = () => {
   const { user, logout } = useAuth();
   if (!user) return null;
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (firstName: string, lastName?: string) => {
+    if (lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    }
+    return firstName.charAt(0).toUpperCase();
+  };
+
+  const getFullName = () => {
+    if (user.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    return user.firstName || user.email;
   };
 
   return (
@@ -25,7 +35,7 @@ const DashboardHeader: React.FC = () => {
             {user.role === 'employee' && 'Employee Portal'}
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Welcome back, {user.name}
+            Welcome back, {getFullName()}
           </p>
         </div>
         
@@ -39,14 +49,14 @@ const DashboardHeader: React.FC = () => {
           
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{user.name}</p>
+              <p className="text-sm font-medium text-gray-900">{getFullName()}</p>
               <div className="flex items-center justify-end space-x-2">
                 <RoleBadge role={user.role} size="sm" />
               </div>
             </div>
             <Avatar>
               <AvatarFallback className="bg-primary-100 text-primary-700">
-                {getInitials(user.firstName)}
+                {getInitials(user.firstName, user.lastName)}
               </AvatarFallback>
             </Avatar>
           </div>

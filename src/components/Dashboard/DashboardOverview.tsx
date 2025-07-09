@@ -22,7 +22,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate }) => 
         ];
       
       case 'manager':
-      case 'team_lead':
+      case 'teamlead':
         return [
           { icon: Users, label: 'View Team', color: 'text-blue-500', action: 'employees' },
           { icon: Calendar, label: 'Leave Requests', color: 'text-green-500', action: 'leave' },
@@ -59,7 +59,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate }) => 
         return `Welcome back, ${firstName}! Manage your HR operations efficiently.`;
       case 'manager':
         return `Welcome back, ${firstName}! Keep track of your team's progress.`;
-      case 'team_lead':
+      case 'teamlead':
         return `Welcome back, ${firstName}! Lead your team to success.`;
       case 'employee':
         return `Welcome back, ${firstName}! Your personal dashboard is ready.`;
