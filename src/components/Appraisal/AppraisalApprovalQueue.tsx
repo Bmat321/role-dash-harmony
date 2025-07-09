@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,7 +48,7 @@ const AppraisalApprovalQueue: React.FC = () => {
   const [pendingAppraisals, setPendingAppraisals] = useState<Appraisal[]>(mockPendingAppraisals);
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
 
-  const isTeamLead = user?.role === 'manager' || user?.role === 'team_lead' || user?.role === 'admin';
+  const isTeamLead = user?.role === 'manager' || user?.role === 'teamlead' || user?.role === 'admin';
 
   const handleViewAppraisal = (appraisal: Appraisal) => {
     setSelectedAppraisal(appraisal);
