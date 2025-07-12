@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Eye, Clock, CheckCircle, AlertTriangle, Users } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import AppraisalScoring from './AppraisalScoring';
 import AppraisalTargetSelection from './AppraisalTargetSelection';
 import { Appraisal } from '@/types/appraisal';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 // Mock data
 const mockEmployees = [
@@ -20,14 +20,16 @@ const mockEmployees = [
 ];
 
 const AppraisalManagement: React.FC = () => {
-  const { user } = useAuth();
+           const {user: userAppraisalManagement,  profile } = useCombinedContext();
+          const { user} = userAppraisalManagement
+          console.log("userAppraisalManagement", user)
   const [appraisals, setAppraisals] = useState<Appraisal[]>([]);
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const isTeamLead = user?.role === 'manager' || user?.role === 'teamlead' || user?.role === 'admin';
-  const isEmployee = user?.role === 'employee';
-  const isHR = user?.role === 'hr' || user?.role === 'admin';
+  const isTeamLead = user?.role.toLowerCase() === 'manager' || user?.role.toLowerCase() === 'teamlead' || user?.role.toLowerCase() === 'admin';
+  const isEmployee = user?.role.toLowerCase() === 'employee';
+  const isHR = user?.role.toLowerCase() === 'hr' || user?.role.toLowerCase() === 'admin';
 
   const handleCreateAppraisal = (newAppraisal: Appraisal) => {
     setAppraisals(prev => [newAppraisal, ...prev]);

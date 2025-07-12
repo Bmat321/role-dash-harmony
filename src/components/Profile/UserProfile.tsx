@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/contexts/AuthContext';
+import {useCombinedContext } from '@/contexts/AuthContext';
 import { 
-  User, 
   Mail, 
   Phone, 
   MapPin, 
@@ -22,65 +21,66 @@ import {
   X,
   Shield,
   Users,
-  Settings
+  Settings,
+  Loader2
 } from 'lucide-react';
 import ProfilePictureUpload from './ProfilePictureUpload';
+import { useDispatch } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { AppDispatch } from '@/store/store';
+import { setFormData, setIsEditing, setLoading } from '@/store/slices/profile/profileSlice';
+import { formatDateTime } from '@/utils/date';
+import { getEditableFields, getRoleColor, getRoleIcon } from '@/utils/getEditableFields';
+import { useReduxProfile } from '@/hooks/user/useReduxProfile';
+import { ProfileResponse, ProfileState } from '@/types/user';
+import { toast } from '@/hooks/use-toast';
 
 const UserProfile: React.FC = () => {
-  const { user } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: '',
-    address: '',
-    dateOfBirth: '',
-    emergencyContact: '',
-    skills: '',
-    education: '',
-    experience: '',
-    department: user?.department || '',
-    position: '',
-    startDate: ''
-  });
+    const {user: userUserProfile , profile: userProfile } = useCombinedContext();
 
-  const handleSave = () => {
-    // Save profile logic here
-    setIsEditing(false);
+    const {profile:user,  isProfileLoading } = userProfile
+  const {editProfile} = useReduxProfile()
+  const dispatch = useAppDispatch()
+  const {formData, isEditing, isLoading } = useAppSelector((state) => state.profile);  
+
+
+  // Sync user data with Redux formData when the component first mounts
+  // useEffect(() => {
+  //   if (user && !isEditing) {
+  //     dispatch(setFormData({
+  //       firstName: user.firstName,
+  //       lastName: user.lastName,
+  //       email: user.email,
+  //       phoneNumber: user.phoneNumber,
+  //       dateOfBirth: user.dateOfBirth,
+  //       address: user.address,
+  //       department: user.department,
+  //       position: user.position,
+  //       skills: user.skills,
+  //       education: user.education,
+  //       experience: user.experience,
+  //       emergencyContact: user.emergencyContact,
+  //     }));
+  //   }
+  // }, [user, isEditing, dispatch]);
+
+    // Create a map of which fields are editable for each role
+  const editableFields = getEditableFields(user?.role);
+
+
+const handleSave = async () => {
+  dispatch(setIsEditing(false))
+  await editProfile(formData) as unknown as ProfileResponse;
+
+};
+
+   const handleEdit = () => {
+    dispatch(setIsEditing(!isEditing)); // Enable editing
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return Shield;
-      case 'hr':
-        return Users;
-      case 'manager':
-      case 'team_lead':
-        return Briefcase;
-      default:
-        return User;
-    }
-  };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'text-red-700 bg-red-100 border-red-300';
-      case 'hr':
-        return 'text-blue-700 bg-blue-100 border-blue-300';
-      case 'manager':
-        return 'text-green-700 bg-green-100 border-green-300';
-      case 'team_lead':
-        return 'text-purple-700 bg-purple-100 border-purple-300';
-      default:
-        return 'text-gray-700 bg-gray-100 border-gray-300';
-    }
-  };
-
-  const RoleIcon = getRoleIcon(user?.role || '');
-
+  const RoleIcon = getRoleIcon(user?.role.toLowerCase() || '');
+  const canEditAll = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'hr';
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -89,13 +89,14 @@ const UserProfile: React.FC = () => {
           <p className="text-gray-600">Manage your personal information</p>
         </div>
         <Button 
-          onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+          onClick={() => isEditing ? handleSave() : handleEdit()}
           className="flex items-center gap-2"
         >
           {isEditing ? (
             <>
               <Save className="h-4 w-4" />
               Save Changes
+                {isProfileLoading && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
             </>
           ) : (
             <>
@@ -124,7 +125,7 @@ const UserProfile: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="text-center">
                 <h3 className="text-xl font-semibold">{user?.firstName} {user?.lastName}</h3>
-                <Badge className={`mt-2 ${getRoleColor(user?.role || '')}`}>
+                <Badge className={`mt-2 ${getRoleColor(user?.role.toLowerCase() || '')}`}>
                   {user?.role?.toUpperCase().replace('_', ' ')}
                 </Badge>
               </div>
@@ -140,7 +141,7 @@ const UserProfile: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <span>Joined: January 2024</span>
+                  <span>Joined: {formatDateTime(user.createdAt)} </span>
                 </div>
                 {(user?.role === 'admin' || user?.role === 'hr') && (
                   <div className="flex items-center gap-2 text-sm">
@@ -175,17 +176,19 @@ const UserProfile: React.FC = () => {
                       <Input
                         id="firstName"
                         value={formData.firstName}
-                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                        disabled={!isEditing}
+                        onChange={(e) => dispatch(setFormData({ ...formData, firstName: e.target.value }))}
+                         disabled={!(isEditing && editableFields.includes('firstName'))}
+
                       />
                     </div>
                     <div>
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                        disabled={!isEditing}
+                        value={formData?.lastName}
+                        onChange={(e) => dispatch(setFormData({ ...formData, lastName: e.target.value }))}
+                                                disabled={!(isEditing && editableFields.includes('lastName'))}
+
                       />
                     </div>
                   </div>
@@ -195,9 +198,10 @@ const UserProfile: React.FC = () => {
                     <Input
                       id="email"
                       type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      disabled={!isEditing}
+                      value={formData?.email}
+                      onChange={(e) => dispatch(setFormData({ ...formData, email: e.target.value }))}
+                                            disabled={!(isEditing && editableFields.includes('email'))}
+
                     />
                   </div>
                   
@@ -206,9 +210,11 @@ const UserProfile: React.FC = () => {
                       <Label htmlFor="phone">Phone Number</Label>
                       <Input
                         id="phone"
-                        value={formData.phone}
+                        value={formData?.phoneNumber}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        disabled={!isEditing}
+                        disabled={!(isEditing && editableFields.includes('phone'))}
+                                        
+
                         placeholder="+1 (555) 000-0000"
                       />
                     </div>
@@ -217,9 +223,11 @@ const UserProfile: React.FC = () => {
                       <Input
                         id="dateOfBirth"
                         type="date"
-                        value={formData.dateOfBirth}
-                        onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                        disabled={!isEditing}
+                        value={formData?.dateOfBirth}
+                        onChange={(e) => dispatch(setFormData({ ...formData, dateOfBirth: e.target.value }))}
+                        disabled={!(isEditing && editableFields.includes('dateOfBirth'))}
+
+
                       />
                     </div>
                   </div>
@@ -228,9 +236,11 @@ const UserProfile: React.FC = () => {
                     <Label htmlFor="address">Address</Label>
                     <Textarea
                       id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      disabled={!isEditing}
+                      value={formData?.address}
+                      onChange={(e) => dispatch(setFormData({ ...formData, address: e.target.value }))}
+                       disabled={!(isEditing && editableFields.includes('address'))}
+
+
                       placeholder="Enter your full address"
                     />
                   </div>
@@ -250,9 +260,11 @@ const UserProfile: React.FC = () => {
                       <Label htmlFor="department">Department</Label>
                       <Input
                         id="department"
-                        value={formData.department}
-                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                        disabled={!isEditing}
+                        value={formData?.department}
+                        onChange={(e) => dispatch(setFormData({ ...formData, department: e.target.value }))}
+                                                                                          disabled={!(isEditing && editableFields.includes('department'))}
+
+
                         placeholder="Your department"
                       />
                     </div>
@@ -260,9 +272,11 @@ const UserProfile: React.FC = () => {
                       <Label htmlFor="position">Position</Label>
                       <Input
                         id="position"
-                        value={formData.position}
-                        onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                        disabled={!isEditing}
+                        value={formData?.position}
+                        onChange={(e) => dispatch(setFormData({ ...formData, position: e.target.value }))}
+                                                                                          disabled={!(isEditing && editableFields.includes('position'))}
+
+
                         placeholder="Your job position"
                       />
                     </div>
@@ -273,9 +287,11 @@ const UserProfile: React.FC = () => {
                     <Input
                       id="startDate"
                       type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      disabled={!isEditing}
+                      value={formatDateTime(formData?.createdAt)}
+                      onChange={(e) => dispatch(setFormData({ ...formData, startDate: e.target.value }))}
+                                                                                       disabled={!(isEditing && editableFields.includes('startDate'))}
+
+
                     />
                   </div>
                   
@@ -283,9 +299,11 @@ const UserProfile: React.FC = () => {
                     <Label htmlFor="skills">Skills & Competencies</Label>
                     <Textarea
                       id="skills"
-                      value={formData.skills}
-                      onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                      disabled={!isEditing}
+                      value={formData?.skills}
+                      onChange={(e) => dispatch(setFormData({ ...formData, skills: e.target.value }))}
+                                                                                       disabled={!(isEditing && editableFields.includes('skills'))}
+
+
                       placeholder="List your key skills and competencies"
                     />
                   </div>
@@ -294,9 +312,11 @@ const UserProfile: React.FC = () => {
                     <Label htmlFor="education">Education</Label>
                     <Textarea
                       id="education"
-                      value={formData.education}
-                      onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-                      disabled={!isEditing}
+                      value={formData?.education}
+                      onChange={(e) => dispatch(setFormData({ ...formData, education: e.target.value }))}
+                                                                                       disabled={!(isEditing && editableFields.includes('education'))}
+
+
                       placeholder="Your educational background"
                     />
                   </div>
@@ -305,9 +325,11 @@ const UserProfile: React.FC = () => {
                     <Label htmlFor="experience">Work Experience</Label>
                     <Textarea
                       id="experience"
-                      value={formData.experience}
-                      onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                      disabled={!isEditing}
+                      value={formData?.experience}
+                      onChange={(e) => dispatch(setFormData({ ...formData, experience: e.target.value }))}
+                                                                                       disabled={!(isEditing && editableFields.includes('experience'))}
+
+
                       placeholder="Previous work experience"
                     />
                   </div>
@@ -326,9 +348,11 @@ const UserProfile: React.FC = () => {
                     <Label htmlFor="emergencyContact">Emergency Contact Details</Label>
                     <Textarea
                       id="emergencyContact"
-                      value={formData.emergencyContact}
-                      onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                      disabled={!isEditing}
+                      value={formData?.emergencyContact.phone}
+                      onChange={(e) => dispatch(setFormData({ ...formData, emergencyContact: e.target.value }))}
+                                                                                        disabled={!(isEditing && editableFields.includes('emergencyContact'))}
+
+
                       placeholder="Name, relationship, phone number, and address of emergency contact"
                     />
                   </div>

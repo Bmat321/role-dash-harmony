@@ -1,30 +1,38 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { 
   useLoginMutation, 
+  useLogoutUserMutation, 
+  useResendPasswordMutation, 
   // useRegisterMutation, 
   useResetPasswordMutation,
-  useVerify2FAMutation,
+  useVerify2faMutation,
 } from '@/store/slices/authApi';
 import { 
   logout as logoutAction, 
   clearError, 
   setCredentials,
-  initializeFromStorage 
+  initializeFromStorage, 
+  setIsLoading
 } from '@/store/slices/authSlice';
 import { toast } from '@/hooks/use-toast';
 import { AuthContextType, User } from '@/types/auth';
+import { setFormData } from '@/store/slices/profile/profileSlice';
+import { set } from 'date-fns';
 
 export const useReduxAuth = (): AuthContextType => {
   const dispatch = useAppDispatch();
-  const { user, isLoading, error } = useAppSelector((state) => state.auth);
-  console.log("User", user)
-  
+  const { user, isLoading, error , isAuthenticated} = useAppSelector((state) => state.auth);  
   const [loginMutation] = useLoginMutation();
   // const [registerMutation] = useRegisterMutation();
   const [resetPasswordMutation] = useResetPasswordMutation();
-  const [verify2FA] = useVerify2FAMutation()
+  const [verify2FA] = useVerify2faMutation()
+  const [logoutUser] = useLogoutUserMutation();
+  const [resendPassword] =  useResendPasswordMutation()
+  
+  
 
   // Initialize auth state from localStorage on mount
   useEffect(() => {
@@ -36,10 +44,9 @@ export const useReduxAuth = (): AuthContextType => {
   }, [dispatch]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    dispatch(setIsLoading(true));
     try {
-      // For non-mock users, use the SOAP API
-      const result = await loginMutation({ email, password }).unwrap();
-      console.log("result", result)
+      const result = await loginMutation({ email, password }).unwrap();      
       toast({
         title: '2FA code sent to your email',
       });
@@ -53,127 +60,45 @@ export const useReduxAuth = (): AuthContextType => {
         variant: 'destructive',
       });
       return false;
+    }finally{
+      dispatch(setIsLoading(false))
     }
   };
 
-  const verify2fa = async (email: string, code: string): Promise<boolean> => {
-    try {
-      // Check if it's a mock user first
-      const mockUsers: Record<string, { password: string; user: User }> = {
-        'admin@hris.com': {
-          password: 'Admin@123', // Fixed: was 'hr123', should be 'Admin@123'
-          user: {
-            id: '1',
-            email: 'admin@hris.com',
-            firstName: 'Admin',
-            lastName: 'Admin',
-            role: 'admin',
-            department: 'Admin',
-            position: 'Admin',
-            status: 'active',
-            token: `admin_token_${Date.now()}`,
-            companyId: ''
-          },
-        },
-        'hr@hris.com': {
-          password: 'hr123',
-          user: {
-            id: '2',
-            email: 'hr@hris.com',
-            firstName: 'Sarah',
-            lastName: 'Johnson',
-            role: 'hr',
-            department: 'HR',
-            position: 'HR Manager',
-            status: 'active',
-            token: `hr_token_${Date.now()}`,
-            companyId: ''
-          },
-        },
-        'manager@hris.com': {
-          password: 'manager123',
-          user: {
-            id: '3',
-            email: 'manager@hris.com',
-            firstName: 'Mike',
-            lastName: 'Wilson',
-            role: 'manager',
-            department: 'Engineering',
-            position: 'Lead',
-            status: 'active',
-            token: `manager_token_${Date.now()}`,
-            companyId: ''
-          },
-        },
-        'employee@hris.com': {
-          password: 'emp123',
-          user: {
-            id: '4',
-            email: 'employee@hris.com',
-            firstName: 'Jane',
-            lastName: 'Doe',
-            role: 'employee',
-            department: 'Engineering',
-            position: 'Developer',
-            status: 'active',
-            token: `emp_token_${Date.now()}`,
-            companyId: ''
-          },
-        },
-      };
+const verify2fa = async (email: string, code: string): Promise<boolean> => {
+  dispatch(setIsLoading(true));
 
-      const mockData = mockUsers[email];
-      if (mockData && mockData.password === code) {
-        dispatch(setCredentials({ user: mockData.user, token: mockData.user.token }));
-        toast({
-          title: 'Login Successful',
-          description: `Welcome, ${mockData.user.firstName}!`,
-        });
-        return true;
-      }
+  try {
+    const result = await verify2FA({ email, code }).unwrap();
+    console.log("result", result)
 
-      // For non-mock users, use the SOAP API
-      const result = await verify2FA({ email, code }).unwrap();
-      toast({
-        title: 'Login Successful',
-        description: `Welcome, ${result.user.firstName}!`,
-      });
-      return true;
-    } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
-      toast({
-        title: 'Login Error',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      return false;
-    }
-  };
+    dispatch(setCredentials({ user: result.data.user, token: result.data.token }));
+    dispatch(setFormData(result.data.user));
 
-  // const register = async (userData: {
-  //   username: string;
-  //   email: string;
-  //   password: string;
-  // }): Promise<boolean> => {
-  //   try {
-  //     await registerMutation(userData).unwrap();
-  //     toast({
-  //       title: 'Registration Successful',
-  //       description: 'You can now login with your credentials',
-  //     });
-  //     return true;
-  //   } catch (error) {
-  //     console.error('Registration error:', error);
-  //     const errorMessage = error instanceof Error ? error.message : 'Registration failed';
-  //     toast({
-  //       title: 'Registration Error',
-  //       description: errorMessage,
-  //       variant: 'destructive',
-  //     });
-  //     return false;
-  //   }
-  // };
+    toast({
+      title: 'Login Successful',
+      description: `Welcome, ${result.data.user.firstName}!`,
+    });
+
+    return true;
+  } catch (error: any) {
+    // Extract the backend error message
+    const errorMessage =
+      error?.data?.message || // <-- most likely from RTK Query
+      error?.error ||         // RTK fallback (e.g., FetchBaseQueryError)
+      error?.message ||       // JS error
+      'Login failed';         // Fallback
+
+    toast({
+      title: 'Login Error',
+      variant: 'destructive',
+    });
+
+    return false;
+  } finally {
+    dispatch(setIsLoading(false));
+  }
+};
 
   const resetPassword = async (email: string): Promise<boolean> => {
     try {
@@ -195,17 +120,52 @@ export const useReduxAuth = (): AuthContextType => {
     }
   };
 
-  const logout = () => {
+  const resend2fa = async (email: string): Promise<boolean> => {
     try {
-      dispatch(logoutAction());
+      await resendPassword({ email }).unwrap();
       toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
+        title: 'Password Reset Initiated',
+        description: 'Check your email for further instructions',
       });
+      return true;
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Password reset error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Password reset failed';
+      toast({
+        title: 'Password Reset Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return false;
     }
   };
+
+const logout = async () => {
+  console.log("HIITING")
+  try {
+    // Call backend logout endpoint and wait for it to finish
+    const response = await logoutUser({}).unwrap();
+
+    // Now update the client-side state
+    dispatch(logoutAction());
+
+    // Show feedback only after successful logout
+    toast({
+      title: 'Logged Out',
+      description: response?.message || 'You have been successfully logged out.',
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Logout failed';
+    toast({
+      title: 'Logout Error',
+      description: errorMessage,
+      variant: 'destructive',
+    });
+    console.error('Logout error:', error);
+  }
+};
+
 
   const hasRole = (requiredRoles: string[]) => {
     if (!user) return false;
@@ -217,11 +177,13 @@ export const useReduxAuth = (): AuthContextType => {
     token: user?.token,
     isLoading,
     error: error || '',
+    isAuthenticated,
     login,
     // register,
     resetPassword,
+    resend2fa,
     verify2fa,
-    logout,
+    logout,    
     hasRole,
     clearError: () => dispatch(clearError()),
   };

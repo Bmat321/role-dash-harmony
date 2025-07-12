@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Users } from 'lucide-react';
 import { Department } from '@/types/department';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { toast } from '@/hooks/use-toast';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 const mockDepartments: Department[] = [
   {
@@ -52,7 +53,8 @@ const mockDepartments: Department[] = [
 ];
 
 const DepartmentManagement: React.FC = () => {
-  const { user } = useAuth();
+      const {user: userDepartmentManagement,  profile } = useCombinedContext();
+      const { user} = userDepartmentManagement
   const [departments, setDepartments] = useState<Department[]>(mockDepartments);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);

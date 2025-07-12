@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Info } from 'lucide-react';
 import { LeaveRequest, LeaveBalance } from '@/types/leave';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { toast } from '@/hooks/use-toast';
 import { calculateWorkingDays, getHolidaysInRange } from '@/utils/holidays';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 // Mock team leads data
 const mockTeamLeads = [
@@ -62,7 +64,8 @@ const mockLeaveBalance: LeaveBalance = {
 };
 
 const LeaveManagement: React.FC = () => {
-  const { user } = useAuth();
+const {user: userLeaveManagement,  profile } = useCombinedContext();
+  const { user} = userLeaveManagement
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
   const [leaveBalance] = useState<LeaveBalance>(mockLeaveBalance);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

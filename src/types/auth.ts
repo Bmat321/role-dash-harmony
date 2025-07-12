@@ -4,12 +4,12 @@ export interface User {
   middleName?: string;
   lastName: string;
   email: string;
-  phoneNumber?: string;
-  dateOfBirth?: Date;
+  phoneNumber?:string;
+  dateOfBirth?: string;
   address?: string;
   profileImage?: string; 
   position?: string;
-  startDate?: Date;
+  createdAt?: string;
   skills?: string[];
   education?: string;
   workExperience?: string;
@@ -21,6 +21,7 @@ export interface User {
   role: 'admin' | 'hr' | 'hod' | 'manager' | 'employee' | 'teamlead';
   biometryId?: string;
   department: string;
+  experience?: string;
   companyId: string; // flattened from mongoose ObjectId
   status: 'active' | 'inactive' | 'terminated';
   token: string
@@ -32,6 +33,7 @@ export interface UserState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
   code: string | null;  
 }
 
@@ -55,9 +57,11 @@ export interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
   verify2fa: (email: string,code: string) => Promise<boolean>;
+  resend2fa: (email: string) => Promise<boolean>;
   logout: () => void;
   hasRole: (roles: string[]) => boolean;
   clearError: () => void;

@@ -13,7 +13,7 @@ import TimeTrackingManagement from '../TimeTracking/TimeTrackingManagement';
 import Reports from './Reports';
 import Analytics from './Analytics';
 import SystemSettings from '../Settings/SystemSettings';
-import { useAuth } from '@/contexts/AuthContext';
+
 import LoanManagement from '../Loan/LoanManagement';
 import AppraisalManagement from '../Appraisal/AppraisalManagement';
 import UserProfile from '../Profile/UserProfile';
@@ -25,7 +25,6 @@ interface DashboardContentProps {
 }
 
 const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem, onNavigate }) => {
-  const { user } = useAuth();
 
   switch (activeItem) {
     case 'dashboard':

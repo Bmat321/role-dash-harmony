@@ -1,14 +1,16 @@
 
-import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Shield, Building2, Users, BarChart, Clock } from 'lucide-react';
-import TwoFactorModal from './Auth/TwoFactorModal';
-import RequestPassword from './Auth/RequestPassword';
+import { toast } from '@/hooks/use-toast';
 import { useReduxAuth } from '@/hooks/useReduxAuth';
+import { LoginResponse } from '@/types/auth';
+import { BarChart, Clock, Loader2, Shield, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import RequestPassword from './Auth/RequestPassword';
+import TwoFactorModal from './Auth/TwoFactorModal';
+import { useAppSelector } from '@/store/hooks';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,61 +18,57 @@ const Login: React.FC = () => {
   const [show2FA, setShow2FA] = useState(false);
   const [showRequestPassword, setShowRequestPassword] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useReduxAuth();
+   const { isLoading, error } = useAppSelector((state) => state.auth);
+  
+  // const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { login, verify2fa } = useReduxAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
 
-    try {
-        const success = await login(email, password);
-        console.log("success", success)
-        
-    } catch (error) {
-      console.log("error", error);
-    } finally {
-      setIsSubmitting(false);
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();  
+    const result = await login(email, password) as unknown as LoginResponse;
+    if (result) {    
+      setShow2FA(true);
     }
-    
-    // // Simulate 2FA requirement for all accounts
-    // setPendingLogin({ email, password });
-    // setShow2FA(true);
-  };
+ 
+};
 
   const handle2FAVerification = async (code: string) => {
-    if (!pendingLogin) return;
-    
-    // Simulate 2FA verification - accept code '123456' for all users
-    if (code === '123456') {
-      const success = await login(pendingLogin.email, pendingLogin.password);
-      if (success) {
-        setShow2FA(false);
-        setPendingLogin(null);
-        // The routing will be handled automatically by the Index component
-        // when the user state changes
-      }
+  try {
+    const success = await verify2fa(email, code);
+    if (success) {
+      setShow2FA(false);
     } else {
-      throw new Error('Invalid verification code');
-    }
-  };
+      toast({
+        title: 'Invalid verification code',
+      });
+         }
+  } catch (error) {
+
+          toast({
+        title: 'Verification failed. Please try again.',
+      });
+  }
+};
 
   const handleClose2FA = () => {
     setShow2FA(false);
     setPendingLogin(null);
   };
 
-  const demoAccounts = [
-    { role: 'Admin', email: 'admin@hris.com', password: 'Admin@123', color: 'bg-red-500' },
-    { role: 'HR', email: 'hr@hris.com', password: 'hr123', color: 'bg-blue-500' },
-    { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
-    { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
-  ];
+  // const demoAccounts = [
+  //   { role: 'Admin', email: 'admin@hris.com', password: 'Admin@123', color: 'bg-red-500' },
+  //   { role: 'HR', email: 'hr@hris.com', password: 'hr123', color: 'bg-blue-500' },
+  //   { role: 'Manager', email: 'manager@hris.com', password: 'manager123', color: 'bg-green-500' },
+  //   { role: 'Employee', email: 'employee@hris.com', password: 'emp123', color: 'bg-gray-500' },
+  // ];
 
-  const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-  };
+  // const fillDemoCredentials = (demoEmail: string, demoPassword: string) => {
+  //   setEmail(demoEmail);
+  //   setPassword(demoPassword);
+  // };
 
   return (
     <>
@@ -141,9 +139,9 @@ const Login: React.FC = () => {
                   <Button 
                     type="submit" 
                     className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg font-semibold" 
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                   >
-                    {isSubmitting ? (
+                    {isLoading ? (
                       <>
                         Sign In
                         <Loader2 className="ml-2 h-5 w-5 animate-spin" />
@@ -156,7 +154,7 @@ const Login: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            {/* <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-center">Demo Accounts</CardTitle>
                 <CardDescription className="text-center">Click to use demo credentials (2FA code: 123456)</CardDescription>
@@ -176,7 +174,7 @@ const Login: React.FC = () => {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
 

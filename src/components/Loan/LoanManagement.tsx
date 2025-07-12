@@ -12,8 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Check, X, DollarSign, AlertCircle, Info } from 'lucide-react';
 import { LoanRequest, LoanBalance } from '@/types/loan';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { toast } from '@/hooks/use-toast';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 // Mock team leads data
 const mockTeamLeads = [
@@ -51,7 +52,8 @@ const mockLoanBalance: LoanBalance = {
 };
 
 const LoanManagement: React.FC = () => {
-  const { user } = useAuth();
+         const {user: userLoanManagement,  profile } = useCombinedContext();
+        const { user} = userLoanManagement
   const [loanRequests, setLoanRequests] = useState<LoanRequest[]>(mockLoanRequests);
   const [loanBalance] = useState<LoanBalance>(mockLoanBalance);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

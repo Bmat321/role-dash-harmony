@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Camera, Upload, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useReduxProfile } from '@/hooks/user/useReduxProfile';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 interface ProfilePictureUploadProps {
   currentAvatar?: string;
@@ -19,12 +21,18 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   hasUploadedBefore = false 
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatar || null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+      const { profile } = useCombinedContext();
+
+  const {uploadProfile, uploadIsLoading} = useReduxProfile();
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
+
+  console.log("file", selectedFile)
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -59,6 +67,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       return;
     }
 
+    setSelectedFile(file);
     // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -69,17 +78,15 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
   const handleUpload = async () => {
     if (!previewUrl || hasUploadedBefore) return;
+ 
 
     setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append('file', selectedFile); 
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsUploading(false);
-      toast({
-        title: "Profile Picture Updated",
-        description: "Your profile picture has been updated successfully",
-      });
-    }, 2000);
+    await uploadProfile(formData);
+    
   };
 
   return (
@@ -95,12 +102,24 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col items-center space-y-4">
-          <Avatar className="w-24 h-24">
+          {/* <Avatar className="w-24 h-24">
             <AvatarImage src={previewUrl || undefined} alt={userName} />
             <AvatarFallback className="text-2xl bg-primary-100 text-primary-700">
               {getInitials(userName)}
             </AvatarFallback>
-          </Avatar>
+          </Avatar> */}
+          <Avatar className="w-24 h-24">
+  {/* Check if there's a profile image */}
+  <AvatarImage 
+    src={profile.profile?.profileImage || previewUrl || undefined}  // Use profileImage if available, then previewUrl
+    alt={profile.profile?.firstName || userName} // Use user name or fallback
+  />
+  {/* Fallback if there is no profile image */}
+  <AvatarFallback className="text-2xl bg-primary-100 text-primary-700">
+      {getInitials(userName)}
+  </AvatarFallback>
+</Avatar>
+
 
           {hasUploadedBefore ? (
             <Alert>
@@ -133,7 +152,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
                   disabled={isUploading}
                   className="w-full max-w-xs"
                 >
-                  {isUploading ? "Uploading..." : "Save Profile Picture"}
+                  {uploadIsLoading ? "Uploading..." : "Save Profile Picture"}
                 </Button>
               )}
 

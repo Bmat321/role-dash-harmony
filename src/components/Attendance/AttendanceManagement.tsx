@@ -6,73 +6,69 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Sun, Moon, Calendar, Users, TrendingUp, CheckCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Clock, Sun, Moon, Calendar, Users, TrendingUp, CheckCircle, Loader2 } from 'lucide-react';
+// import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCombinedContext } from '@/contexts/AuthContext';
+import { AttendanceRecord } from '@/types/attendance';
+import { useReduxAttendance } from '@/hooks/attendance/useReduxAttendance';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setActiveTab, setCurrentSession, setIsCheckedIn, setIsClocking, setSelectedShift } from '@/store/slices/attendance/attendanceSlice';
 
-interface AttendanceRecord {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  date: string;
-  shift: 'day' | 'night';
-  checkIn?: string;
-  checkOut?: string;
-  status: 'present' | 'absent' | 'late' | 'checked-in';
-  hoursWorked?: number;
-}
+
 
 const AttendanceManagement: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const dispatch = useAppDispatch();  
+  const {user: userAttendanceManagement,  profile, attendance } = useCombinedContext();
+  const { user} = userAttendanceManagement
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('clock-in');
-  const [selectedShift, setSelectedShift] = useState<'day' | 'night'>('day');
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
-  const [currentSession, setCurrentSession] = useState<{
-    shift: 'day' | 'night';
-    checkInTime: string;
-  } | null>(null);
+  const { activeTab, error, currentSession, isCheckedIn, records, companySummary, selectedShift, isLoading , isClocking } = useAppSelector((state) => state.attendance);
 
-  const [attendanceRecords] = useState<AttendanceRecord[]>([
-    {
-      id: '1',
-      employeeId: '4',
-      employeeName: 'Jane Doe',
-      date: '2024-01-15',
-      shift: 'day',
-      checkIn: '08:30',
-      checkOut: '17:00',
-      status: 'present',
-      hoursWorked: 8.5
-    },
-    {
-      id: '2',
-      employeeId: '5',
-      employeeName: 'Alice Smith',
-      date: '2024-01-15',
-      shift: 'night',
-      checkIn: '20:00',
-      checkOut: '04:00',
-      status: 'present',
-      hoursWorked: 8
-    }
-  ]);
 
-  const handleClockIn = () => {
-    const now = new Date();
-    const timeString = now.toTimeString().slice(0, 5);
+
+
+
+
+  const {handleManualCheckIn} = useReduxAttendance()
+  
+
+ 
+  // const handleClockIn = async () => {
+  //   const now = new Date();
+  //   const timeString = now.toTimeString().slice(0, 5);
+  
+  //   dispatch(setCurrentSession({
+  //     shift: selectedShift,
+  //     checkInTime: timeString
+  //   }));
     
-    setIsCheckedIn(true);
-    setCurrentSession({
-      shift: selectedShift,
-      checkInTime: timeString
-    });
+  //   await handleManualCheckIn({
+  //     shift: selectedShift,
+  //     checkInTime: timeString,
+  //   })
 
-    toast({
-      title: "Clocked In",
-      description: `Successfully clocked in for ${selectedShift} shift at ${timeString}`,
-    });
-  };
+  // };
+
+  const handleClockIn = async () => {
+  const now = new Date();
+  const timeString = now.toTimeString().slice(0, 5);
+
+  dispatch(setIsClocking(true));
+
+  dispatch(setCurrentSession({
+    shift: selectedShift,
+    checkInTime: timeString
+  }));
+
+  const success = await handleManualCheckIn({
+    shift: selectedShift,
+    checkInTime: timeString,
+  });
+
+  dispatch(setIsClocking(false));
+};
+
 
   const handleClockOut = () => {
     if (!currentSession) return;
@@ -80,8 +76,8 @@ const AttendanceManagement: React.FC = () => {
     const now = new Date();
     const timeString = now.toTimeString().slice(0, 5);
 
-    setIsCheckedIn(false);
-    setCurrentSession(null);
+    dispatch(setIsCheckedIn(false));
+    dispatch(setCurrentSession(null));
 
     toast({
       title: "Clocked Out",
@@ -92,9 +88,12 @@ const AttendanceManagement: React.FC = () => {
   const getShiftInfo = (shift: 'day' | 'night') => {
     return shift === 'day' 
       ? { time: '8:30 AM - 5:00 PM', icon: Sun, color: 'bg-yellow-100 text-yellow-800' }
-      : { time: '8:00 PM - 4:00 AM', icon: Moon, color: 'bg-purple-100 text-purple-800' };
+      : { time: '4:00 PM - 5:00 AM', icon: Moon, color: 'bg-purple-100 text-purple-800' };
   };
 
+
+
+  
   const getStatusColor = (status: AttendanceRecord['status']) => {
     switch (status) {
       case 'present': return 'bg-green-100 text-green-800';
@@ -105,7 +104,7 @@ const AttendanceManagement: React.FC = () => {
     }
   };
 
-  const canViewAllAttendance = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
+  // const canViewAllAttendance = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'hr' || user?.role.toLowerCase() === 'manager';
 
   return (
     <div className="space-y-6">
@@ -116,11 +115,11 @@ const AttendanceManagement: React.FC = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs value={activeTab} onValueChange={(val) => dispatch(setActiveTab(val))}>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="clock-in">Clock In/Out</TabsTrigger>
           <TabsTrigger value="my-attendance">My Attendance</TabsTrigger>
-          {canViewAllAttendance && <TabsTrigger value="team-attendance">Team Attendance</TabsTrigger>}
+          {/* {canViewAllAttendance && <TabsTrigger value="team-attendance">Team Attendance</TabsTrigger>} */}
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
@@ -128,7 +127,7 @@ const AttendanceManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Day Shift Card */}
             <Card className={`cursor-pointer transition-all ${selectedShift === 'day' ? 'ring-2 ring-yellow-500 bg-yellow-50' : ''}`}
-                  onClick={() => setSelectedShift('day')}>
+                  onClick={() => dispatch(setSelectedShift('day'))}>
               <CardHeader>
                 <CardTitle className="flex items-center text-yellow-700">
                   <Sun className="h-6 w-6 mr-2" />
@@ -146,17 +145,17 @@ const AttendanceManagement: React.FC = () => {
 
             {/* Night Shift Card */}
             <Card className={`cursor-pointer transition-all ${selectedShift === 'night' ? 'ring-2 ring-purple-500 bg-purple-50' : ''}`}
-                  onClick={() => setSelectedShift('night')}>
+                  onClick={() => dispatch(setSelectedShift('night'))}>
               <CardHeader>
                 <CardTitle className="flex items-center text-purple-700">
                   <Moon className="h-6 w-6 mr-2" />
                   Night Shift
                 </CardTitle>
-                <CardDescription>8:00 PM - 4:00 AM</CardDescription>
+                <CardDescription>4:00 PM - 5:00 AM</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center space-y-2">
-                  <div className="text-2xl font-bold">8 hours</div>
+                  <div className="text-2xl font-bold">13 hours</div>
                   <p className="text-sm text-gray-600">Night working hours</p>
                 </div>
               </CardContent>
@@ -187,7 +186,7 @@ const AttendanceManagement: React.FC = () => {
                 })}
               </div>
               
-              {currentSession && (
+              {currentSession && isCheckedIn && (
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <p className="text-sm text-blue-600">
                     Checked in for {currentSession.shift} shift at {currentSession.checkInTime}
@@ -195,125 +194,97 @@ const AttendanceManagement: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex justify-center space-x-4">
-                {!isCheckedIn ? (
-                  <Button onClick={handleClockIn} size="lg" className="px-8">
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Clock In ({selectedShift} shift)
-                  </Button>
-                ) : (
-                  <Button onClick={handleClockOut} size="lg" variant="destructive" className="px-8">
-                    <Clock className="h-5 w-5 mr-2" />
-                    Clock Out
-                  </Button>
+          <div className="flex justify-center space-x-4">
+        {!isCheckedIn ? (
+          <Button onClick={handleClockIn} size="lg" className="px-8" disabled={isLoading}>
+            <CheckCircle className="h-5 w-5 mr-2" />
+            Clock In ({selectedShift.charAt(0).toUpperCase() + selectedShift.slice(1)} shift)
+            {isClocking && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
+          </Button>
+        ) : (
+          <Button onClick={handleClockOut} size="lg" variant="destructive" className="px-8" disabled={isLoading}>
+            <Clock className="h-5 w-5 mr-2" />
+            Clock Out
+            {isClocking && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
+          </Button>
                 )}
-              </div>
+        </div>
+
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="my-attendance">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Attendance History</CardTitle>
-              <CardDescription>View your attendance records</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Shift</TableHead>
-                    <TableHead>Check In</TableHead>
-                    <TableHead>Check Out</TableHead>
-                    <TableHead>Hours</TableHead>
-                    <TableHead>Status</TableHead>
+<TabsContent value="my-attendance">
+  <Card>
+    <CardHeader>
+      <CardTitle>My Attendance History</CardTitle>
+      <CardDescription>View your attendance records</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Shift</TableHead>
+            <TableHead>Check In</TableHead>
+            <TableHead>Check Out</TableHead>
+            <TableHead>Hours</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {/* Safety check: ensure attendance.attendanceRecords is available */}
+          {records?.length ? (
+            records
+              // .filter((record) => !canViewAllAttendance || record.employeeId === user?.id)
+              .map((record) => {
+                const shiftInfo = getShiftInfo(record.shift);
+                const ShiftIcon = shiftInfo.icon;
+                return (
+                  <TableRow key={record.id}>
+                    <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Badge className={shiftInfo.color}>
+                        <ShiftIcon className="h-3 w-3 mr-1" />
+                        {record.shift}
+                      </Badge>
+                    </TableCell>
+                      <TableCell>
+            {record.checkIn
+              ? new Date(record.checkIn).toLocaleTimeString([], { hour12: true })
+              : '-'}
+          </TableCell>
+                    <TableCell>{record.checkOut || '-'}</TableCell>
+                    <TableCell>
+  {record.checkOut
+    ? new Date(record.checkOut).toLocaleTimeString([], { hour12: true })
+    : '-'}
+</TableCell>
+
+                    <TableCell>
+                      <Badge className={getStatusColor(record.status)}>
+                        {record.status}
+                      </Badge>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {attendanceRecords
-                    .filter(record => !canViewAllAttendance || record.employeeId === user?.id)
-                    .map((record) => {
-                      const shiftInfo = getShiftInfo(record.shift);
-                      const ShiftIcon = shiftInfo.icon;
-                      return (
-                        <TableRow key={record.id}>
-                          <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <Badge className={shiftInfo.color}>
-                              <ShiftIcon className="h-3 w-3 mr-1" />
-                              {record.shift}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{record.checkIn || '-'}</TableCell>
-                          <TableCell>{record.checkOut || '-'}</TableCell>
-                          <TableCell>{record.hoursWorked || '-'}</TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(record.status)}>
-                              {record.status}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                );
+              })
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} align="center">
+                No attendance records available.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </CardContent>
+  </Card>
+</TabsContent>
 
-        {canViewAllAttendance && (
-          <TabsContent value="team-attendance">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Attendance</CardTitle>
-                <CardDescription>Monitor team attendance across all shifts</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Employee</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Shift</TableHead>
-                      <TableHead>Check In</TableHead>
-                      <TableHead>Check Out</TableHead>
-                      <TableHead>Hours</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {attendanceRecords.map((record) => {
-                      const shiftInfo = getShiftInfo(record.shift);
-                      const ShiftIcon = shiftInfo.icon;
-                      return (
-                        <TableRow key={record.id}>
-                          <TableCell className="font-medium">{record.employeeName}</TableCell>
-                          <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                          <TableCell>
-                            <Badge className={shiftInfo.color}>
-                              <ShiftIcon className="h-3 w-3 mr-1" />
-                              {record.shift}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{record.checkIn || '-'}</TableCell>
-                          <TableCell>{record.checkOut || '-'}</TableCell>
-                          <TableCell>{record.hoursWorked || '-'}</TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(record.status)}>
-                              {record.status}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
 
+{/* TODO canViewAllAttendance */}
+       
         <TabsContent value="reports">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card>
@@ -324,7 +295,8 @@ const AttendanceManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">45</div>
+                <div className="text-2xl font-bold">{companySummary?.totalEmployees
+}</div>
                 <p className="text-xs text-gray-500">Active employees</p>
               </CardContent>
             </Card>
@@ -337,7 +309,9 @@ const AttendanceManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">28</div>
+                <div className="text-2xl font-bold">{companySummary?.dayShift
+
+}</div>
                 <p className="text-xs text-gray-500">Present today</p>
               </CardContent>
             </Card>
@@ -350,7 +324,9 @@ const AttendanceManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">17</div>
+                <div className="text-2xl font-bold">{companySummary?.nightShift
+
+}</div>
                 <p className="text-xs text-gray-500">Present today</p>
               </CardContent>
             </Card>
@@ -363,7 +339,7 @@ const AttendanceManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">94%</div>
+                <div className="text-2xl font-bold text-green-600">{`${companySummary?.attendanceRate}%`}</div>
                 <p className="text-xs text-gray-500">This month</p>
               </CardContent>
             </Card>
@@ -375,3 +351,68 @@ const AttendanceManagement: React.FC = () => {
 };
 
 export default AttendanceManagement;
+
+
+
+
+
+// {canViewAllAttendance && (
+//   <TabsContent value="team-attendance">
+//     <Card>
+//       <CardHeader>
+//         <CardTitle>Team Attendance</CardTitle>
+//         <CardDescription>Monitor team attendance across all shifts</CardDescription>
+//       </CardHeader>
+//       <CardContent>
+//         <Table>
+//           <TableHeader>
+//             <TableRow>
+//               <TableHead>Employee</TableHead>
+//               <TableHead>Date</TableHead>
+//               <TableHead>Shift</TableHead>
+//               <TableHead>Check In</TableHead>
+//               <TableHead>Check Out</TableHead>
+//               <TableHead>Hours</TableHead>
+//               <TableHead>Status</TableHead>
+//             </TableRow>
+//           </TableHeader>
+//           <TableBody>
+//             {/* Safety check: ensure attendance.attendanceRecords is available */}
+//             {records?.length ? (
+//               records.map((record) => {
+//                 const shiftInfo = getShiftInfo(record.shift);
+//                 const ShiftIcon = shiftInfo.icon;
+//                 return (
+//                   <TableRow key={record.id}>
+//                     <TableCell className="font-medium">{record.employeeName}</TableCell>
+//                     <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
+//                     <TableCell>
+//                       <Badge className={shiftInfo.color}>
+//                         <ShiftIcon className="h-3 w-3 mr-1" />
+//                         {record.shift}
+//                       </Badge>
+//                     </TableCell>
+//                     <TableCell>{record.checkIn || '-'}</TableCell>
+//                     <TableCell>{record.checkOut || '-'}</TableCell>
+//                     <TableCell>{record.hoursWorked || '-'}</TableCell>
+//                     <TableCell>
+//                       <Badge className={getStatusColor(record.status)}>
+//                         {record.status}
+//                       </Badge>
+//                     </TableCell>
+//                   </TableRow>
+//                 );
+//               })
+//             ) : (
+//               <TableRow>
+//                 <TableCell colSpan={7} align="center">
+//                   No attendance records available for the team.
+//                 </TableCell>
+//               </TableRow>
+//             )}
+//           </TableBody>
+//         </Table>
+//       </CardContent>
+//     </Card>
+//   </TabsContent>
+// )}

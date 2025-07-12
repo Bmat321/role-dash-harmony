@@ -12,13 +12,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit, Trash2, Upload, FileText, Search } from 'lucide-react';
 import { Employee } from '@/types/employee';
-import { useAuth } from '@/contexts/AuthContext';
+import {  useCombinedContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import RoleBadge from '@/components/RoleBadge';
 import StatusBadge from '@/components/StatusBadge';
 
 const EmployeeManagement: React.FC = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+    const {user: userEmployeeManagement,  profile } = useCombinedContext();
+    const {user} = userEmployeeManagement
   const [employees, setEmployees] = useState<Employee[]>([
     {
       id: '1',

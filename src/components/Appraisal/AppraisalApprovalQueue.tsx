@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import AppraisalScoring from './AppraisalScoring';
 import { Appraisal } from '@/types/appraisal';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 // Mock data for pending appraisals
 const mockPendingAppraisals: Appraisal[] = [
@@ -44,11 +44,12 @@ const mockPendingAppraisals: Appraisal[] = [
 ];
 
 const AppraisalApprovalQueue: React.FC = () => {
-  const { user } = useAuth();
+            const {user: userAppraisalApprovalQueue,  profile } = useCombinedContext();
+           const { user} = userAppraisalApprovalQueue
   const [pendingAppraisals, setPendingAppraisals] = useState<Appraisal[]>(mockPendingAppraisals);
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
 
-  const isTeamLead = user?.role === 'manager' || user?.role === 'teamlead' || user?.role === 'admin';
+  const isTeamLead = user?.role.toLowerCase() === 'manager' || user?.role.toLowerCase() === 'teamlead' || user?.role.toLowerCase() === 'admin';
 
   const handleViewAppraisal = (appraisal: Appraisal) => {
     setSelectedAppraisal(appraisal);

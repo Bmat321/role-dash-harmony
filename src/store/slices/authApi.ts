@@ -94,19 +94,17 @@ export const authApi = apiSlice.injectEndpoints({
       }),
     }),
 
-   
-
-    verify2FA: builder.mutation({
-      query: ({ code, secret }) => ({
-        url: '/api/auth/verify2fa',
+    resendPassword: builder.mutation({
+      query: ({ email }: ResetPasswordData) => ({
+        url: '/api/auth/resend-password',
         method: 'POST',
-        body: { code, secret },
+        body: { email },
         credentials: 'include' as const,
       }),
-    }),
+    }),  
 
  
-    logout: builder.mutation({
+    logoutUser: builder.mutation({
       query: () => ({
         url: '/api/auth/logout',
         method: 'POST',
@@ -122,6 +120,7 @@ export const {
   useLoginMutation,
   useRequestPasswordMutation,
   useResetPasswordMutation,
-  useVerify2FAMutation,
-  useLogoutMutation,
+  useVerify2faMutation,
+  useResendPasswordMutation,
+  useLogoutUserMutation
 } = authApi;

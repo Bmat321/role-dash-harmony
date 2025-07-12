@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Download, Eye, Calculator, DollarSign, Plus, Edit, Trash2, Upload, Send, FileSpreadsheet } from 'lucide-react';
 import { PayrollRecord, SalaryStructure } from '@/types/payroll';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { toast } from '@/hooks/use-toast';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 const mockPayrollRecords: PayrollRecord[] = [
   {
@@ -57,7 +58,8 @@ const mockSalaryStructures: SalaryStructure[] = [
 ];
 
 const PayrollManagement: React.FC = () => {
-  const { user } = useAuth();
+  const {user: userPayrollManagement,  profile } = useCombinedContext();
+  const { user} = userPayrollManagement
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(mockPayrollRecords);
   const [salaryStructures, setSalaryStructures] = useState<SalaryStructure[]>(mockSalaryStructures);

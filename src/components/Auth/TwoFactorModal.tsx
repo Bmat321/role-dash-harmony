@@ -1,11 +1,14 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/use-toast';
+import { useReduxAuth } from '@/hooks/useReduxAuth';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setError } from '@/store/slices/authSlice';
+import { Loader2, Shield } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface TwoFactorModalProps {
   isOpen: boolean;
@@ -16,15 +19,18 @@ interface TwoFactorModalProps {
 
 const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVerify, email }) => {
   const [code, setCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  // const [isLoading, setIsLoading] = useState(false);
+ const { isLoading, error } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();  
+  // const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
   const { toast } = useToast();
+  const {resend2fa} =  useReduxAuth()
 
   // Start countdown when modal opens
   useEffect(() => {
     if (isOpen && countdown === 0) {
-      setCountdown(60);
+      setCountdown(10);
     }
   }, [isOpen]);
 
@@ -40,7 +46,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
   useEffect(() => {
     if (!isOpen) {
       setCode('');
-      setError('');
+      dispatch(setError(''));
       setCountdown(0);
     }
   }, [isOpen]);
@@ -55,35 +61,24 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
 
   const handleVerify = async () => {
     if (code.length !== 6) {
-      setError('Please enter a complete 6-digit code');
+      dispatch(setError('Please enter a complete 6-digit code'));
       return;
     }
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      await onVerify(code);
-      toast({
-        title: "Verification Successful",
-        description: "You have been logged in successfully",
-      });
-    } catch (err) {
-      setError('Invalid verification code. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    await onVerify(code); 
   };
 
-  const handleResendCode = () => {
-    if (countdown > 0) return;
-    
-    setCountdown(60);
+ const handleResendCode = async () => {
+  if (countdown > 0) return;
+
+  const success = await resend2fa(email);
+  if (success) {
+    setCountdown(10);
     toast({
-      title: "Code Resent",
-      description: "A new verification code has been sent to your email",
+      title: 'Code Resent',
+      description: 'A new verification code has been sent to your email',
     });
-  };
+  }
+};
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -108,7 +103,7 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
               value={code}
               onChange={(value) => {
                 setCode(value);
-                setError('');
+                dispatch(setError(''));
               }}
             >
               <InputOTPGroup>
@@ -122,11 +117,11 @@ const TwoFactorModal: React.FC<TwoFactorModalProps> = ({ isOpen, onClose, onVeri
             </InputOTP>
           </div>
 
-          {error && (
+          {/* {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          )}
+          )} */}
 
           <div className="space-y-3">
             <Button 

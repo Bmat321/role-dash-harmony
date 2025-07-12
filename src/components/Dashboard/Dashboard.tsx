@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCombinedContext } from '@/contexts/AuthContext';
 import StickyHeader from './StickyHeader';
 import CollapsibleSidebar from './CollapsibleSidebar';
 import DashboardContent from './DashboardContent';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+       const {user: userDashboard,  profile } = useCombinedContext();
+             const { user} = userDashboard
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -30,7 +31,10 @@ const Dashboard: React.FC = () => {
       />
       
       <div className="flex-1 flex flex-col min-w-0">
-        <StickyHeader onMobileMenuToggle={handleMobileMenuToggle} />
+       <StickyHeader 
+  onMobileMenuToggle={handleMobileMenuToggle} 
+  onNavigate={handleNavigate} 
+/>
         <main className="flex-1 overflow-auto p-6">
           <DashboardContent activeItem={activeTab} onNavigate={handleNavigate} />
         </main>

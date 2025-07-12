@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import NotificationCenter from './NotificationCenter';
 import { 
@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 interface StickyHeaderProps {
   onMobileMenuToggle?: () => void;
@@ -28,7 +29,9 @@ interface StickyHeaderProps {
 }
 
 const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onNavigate }) => {
-  const { user, logout } = useAuth();
+  // const { user, logout } = useAuth();
+  const {user:userStickyHeader,  } = useCombinedContext();
+  const {user} = userStickyHeader
   const isMobile = useIsMobile();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -155,7 +158,7 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({ onMobileMenuToggle, onNavig
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={logout}
+                onClick={userStickyHeader?.logout}
                 className="text-red-600 focus:text-red-600"
               >
                 <LogOut className="mr-2 h-4 w-4" />

@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User, UserState } from '@/types/auth';
 import { authApi } from './authApi';
+import { tokenUtils } from '@/utils/tokenUtils';
+import { set } from 'date-fns';
 
 export interface AuthState {
   user: User | null;
@@ -8,6 +10,7 @@ export interface AuthState {
   isLoading: boolean;
   error: string | null;
   code?: string | null; // Optional 2FA code or similar field
+  isAuthenticated: boolean
 }
 
 const initialState: AuthState = {
@@ -15,6 +18,7 @@ const initialState: AuthState = {
   token: null,
   isLoading: false,
   error: null,
+  isAuthenticated: false,
   code: null,
 };
 
@@ -22,33 +26,43 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout: (state) => {
+      logout: (state) => {
       state.user = null;
       state.token = null;
-      state.error = null;
-      localStorage.removeItem('hris_mock_token');
-      localStorage.removeItem('hris_mock_user');
+      tokenUtils.clearAll();
     },
+    
+    setError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
+    },
+
+    setIsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+    
+
     clearError: (state) => {
       state.error = null;
     },
     setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
-      localStorage.setItem('hris_mock_token', action.payload.token);
+      tokenUtils.setToken(action.payload.token);
+      tokenUtils.setUser(JSON.stringify(action.payload.user));
     },
-    initializeFromStorage: (state) => {
-      const token = localStorage.getItem('hris_mock_token');
-      const userData = localStorage.getItem('hris_mock_user');
-
+      initializeFromStorage: (state) => {
+      const token = tokenUtils.getToken();
+      const userData = tokenUtils.getUser();
       if (token && userData) {
         try {
-          const user = JSON.parse(userData);
-          state.user = user;
+          state.user = JSON.parse(userData);
           state.token = token;
+          state.isAuthenticated = true;
         } catch {
-          localStorage.removeItem('hris_mock_token');
-          localStorage.removeItem('hris_mock_user');
+          tokenUtils.clearAll();
+          state.user = null;
+          state.token = null;
+          state.isAuthenticated = false;
         }
       }
     },
@@ -63,7 +77,8 @@ const authSlice = createSlice({
       .addMatcher(authApi.endpoints.login.matchFulfilled, (state, action) => {
         state.isLoading = false;
         state.token = action.payload.token;
-        localStorage.setItem('hris_mock_token', action.payload.token);
+        tokenUtils.setToken(action.payload.token);
+        state.user = null;
         // Optionally store user:
         // localStorage.setItem('hris_mock_user', JSON.stringify(action.payload.user));
       })
@@ -81,7 +96,10 @@ const authSlice = createSlice({
       .addMatcher(authApi.endpoints.verify2fa?.matchFulfilled, (state, action) => {
         state.isLoading = false;
         state.token = action.payload.token;
-        localStorage.setItem('hris_mock_token', action.payload.token);
+        state.user = action.payload.user;
+        tokenUtils.setToken(action.payload.token);
+        tokenUtils.setUser(JSON.stringify(action.payload.user));
+       
         // Optionally store user:
         // localStorage.setItem('hris_mock_user', JSON.stringify(action.payload.user));
       })
@@ -92,5 +110,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError, setCredentials, initializeFromStorage } = authSlice.actions;
+export const { logout, clearError,setIsLoading, setError, setCredentials, initializeFromStorage } = authSlice.actions;
 export default authSlice.reducer;

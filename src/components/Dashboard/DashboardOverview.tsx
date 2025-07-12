@@ -1,14 +1,17 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Calendar, TrendingUp, CheckCircle, Clock, DollarSign, FileText, UserPlus } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCombinedContext } from '@/contexts/AuthContext';
+
 
 interface DashboardOverviewProps {
   onNavigate?: (section: string) => void;
 }
 
 const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const {user:useDashboardOverview,  profile } = useCombinedContext();
+  const {user} = useDashboardOverview
 
   const getQuickActionsForRole = () => {
     switch (user?.role) {

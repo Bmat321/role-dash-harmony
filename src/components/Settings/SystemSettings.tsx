@@ -4,11 +4,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DepartmentManagement from './DepartmentManagement';
 import GeneralSettings from './GeneralSettings';
 import SecuritySettings from './SecuritySettings';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { Card, CardContent } from '@/components/ui/card';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 export const SystemSettings: React.FC = () => {
-  const { user } = useAuth();
+       const {user: userSystemSettings,  profile } = useCombinedContext();
+      const { user} = userSystemSettings
 
   if (user?.role !== 'admin') {
     return (

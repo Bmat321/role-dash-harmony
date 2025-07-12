@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, FileUp, Download, Eye, Calendar } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { toast } from '@/hooks/use-toast';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 interface HandoverReport {
   id: string;
@@ -59,7 +60,8 @@ const mockHandoverReports: HandoverReport[] = [
 ];
 
 const HandoverManagement: React.FC = () => {
-  const { user } = useAuth();
+    const {user: userHandoverManagement,  profile } = useCombinedContext();
+    const { user} = userHandoverManagement
   const [handoverReports, setHandoverReports] = useState<HandoverReport[]>(mockHandoverReports);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
