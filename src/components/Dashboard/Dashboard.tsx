@@ -6,15 +6,20 @@ import CollapsibleSidebar from './CollapsibleSidebar';
 import DashboardContent from './DashboardContent';
 
 const Dashboard: React.FC = () => {
-       const {user: userDashboard,  profile } = useCombinedContext();
-             const { user} = userDashboard
+  const {user: userDashboard,  profile } = useCombinedContext();
+  const { user} = userDashboard
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   if (!user) return null;
 
   const handleMobileMenuToggle = () => {
     setIsMobileSidebarOpen(!isMobileSidebarOpen);
+  };
+
+  const handleSidebarToggle = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   const handleNavigate = (section: string) => {
@@ -28,13 +33,15 @@ const Dashboard: React.FC = () => {
         setActiveTab={setActiveTab}
         isMobileOpen={isMobileSidebarOpen}
         onMobileToggle={handleMobileMenuToggle}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleSidebarToggle}
       />
       
       <div className="flex-1 flex flex-col min-w-0">
-       <StickyHeader 
-  onMobileMenuToggle={handleMobileMenuToggle} 
-  onNavigate={handleNavigate} 
-/>
+        <StickyHeader 
+          onMobileMenuToggle={handleMobileMenuToggle} 
+          onNavigate={handleNavigate} 
+        />
         <main className="flex-1 overflow-auto p-6">
           <DashboardContent activeItem={activeTab} onNavigate={handleNavigate} />
         </main>

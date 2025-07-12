@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,17 +9,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, Upload, FileText, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, FileText, Search, Eye } from 'lucide-react';
 import { Employee } from '@/types/employee';
 import {  useCombinedContext } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import RoleBadge from '@/components/RoleBadge';
 import StatusBadge from '@/components/StatusBadge';
+import EmployeeDetailView from './EmployeeDetailView';
 
 const EmployeeManagement: React.FC = () => {
-  // const { user } = useAuth();
-    const {user: userEmployeeManagement,  profile } = useCombinedContext();
-    const {user} = userEmployeeManagement
+  const {user: userEmployeeManagement,  profile } = useCombinedContext();
+  const {user} = userEmployeeManagement
+
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [showDetailView, setShowDetailView] = useState(false);
+
   const [employees, setEmployees] = useState<Employee[]>([
     {
       id: '1',
@@ -46,6 +49,42 @@ const EmployeeManagement: React.FC = () => {
       hireDate: '2021-03-20',
       salary: 75000,
       phone: '+1-555-0102'
+    },
+    {
+      id: '3',
+      name: 'Mike Wilson',
+      email: 'manager@hris.com',
+      role: 'manager',
+      department: 'Engineering',
+      position: 'Team Lead',
+      status: 'active',
+      hireDate: '2019-08-10',
+      salary: 85000,
+      phone: '+1-555-0103'
+    },
+    {
+      id: '4',
+      name: 'Jane Smith',
+      email: 'jane@hris.com',
+      role: 'employee',
+      department: 'Engineering',
+      position: 'Software Developer',
+      status: 'active',
+      hireDate: '2022-06-15',
+      salary: 70000,
+      phone: '+1-555-0104'
+    },
+    {
+      id: '5',
+      name: 'Alice Johnson',
+      email: 'alice@hris.com',
+      role: 'employee',
+      department: 'Marketing',
+      position: 'Marketing Specialist',
+      status: 'active',
+      hireDate: '2023-01-10',
+      salary: 55000,
+      phone: '+1-555-0105'
     }
   ]);
 
@@ -65,6 +104,7 @@ const EmployeeManagement: React.FC = () => {
   });
 
   const canManageEmployees = user?.role === 'admin' || user?.role === 'hr';
+  const canViewAllEmployees = user?.role === 'admin' || user?.role === 'hr';
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,13 +182,19 @@ const EmployeeManagement: React.FC = () => {
     });
   };
 
-  const handleFileUpload = (employeeId: string, type: 'photo' | 'document') => {
-    // In a real app, this would handle file upload to cloud storage
-    toast({
-      title: `${type === 'photo' ? 'Photo' : 'Document'} Upload`,
-      description: `${type === 'photo' ? 'Profile photo' : 'Document'} upload functionality would be implemented here.`,
-    });
+  const handleViewDetails = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setShowDetailView(true);
   };
+
+  const handleBackToList = () => {
+    setShowDetailView(false);
+    setSelectedEmployee(null);
+  };
+
+  if (showDetailView && selectedEmployee) {
+    return <EmployeeDetailView employee={selectedEmployee} onBack={handleBackToList} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -324,7 +370,7 @@ const EmployeeManagement: React.FC = () => {
                 <TableHead>Department</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Hire Date</TableHead>
-                {canManageEmployees && <TableHead>Salary</TableHead>}
+                {canViewAllEmployees && <TableHead>Salary</TableHead>}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -363,42 +409,35 @@ const EmployeeManagement: React.FC = () => {
                   <TableCell className="text-sm">
                     {new Date(employee.hireDate).toLocaleDateString()}
                   </TableCell>
-                  {canManageEmployees && (
+                  {canViewAllEmployees && (
                     <TableCell className="font-medium">
                       {employee.salary ? `$${employee.salary.toLocaleString()}` : 'Not set'}
                     </TableCell>
                   )}
                   <TableCell>
                     <div className="flex space-x-2">
+                      {canViewAllEmployees && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleViewDetails(employee)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
                       {canManageEmployees && (
                         <>
                           <Button variant="outline" size="sm" onClick={() => handleEdit(employee)}>
                             <Edit className="h-4 w-4" />
                           </Button>
                           {user?.role === 'admin' && (
-                            <>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleFileUpload(employee.id, 'photo')}
-                              >
-                                <Upload className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleFileUpload(employee.id, 'document')}
-                              >
-                                <FileText className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={() => handleDelete(employee.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleDelete(employee.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           )}
                         </>
                       )}

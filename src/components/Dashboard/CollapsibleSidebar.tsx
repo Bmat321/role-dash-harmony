@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -23,7 +22,9 @@ import {
   MapPin,
   CreditCard,
   Award,
-  ClipboardCheck
+  ClipboardCheck,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useCombinedContext } from '@/contexts/AuthContext';
 
@@ -32,107 +33,107 @@ interface CollapsibleSidebarProps {
   setActiveTab: (tab: string) => void;
   isMobileOpen: boolean;
   onMobileToggle: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
 const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({ 
   activeTab, 
   setActiveTab, 
   isMobileOpen, 
-  onMobileToggle 
+  onMobileToggle,
+  isCollapsed,
+  onToggleCollapse
 }) => {
-  // const { user } = useAuth();
-    const {user:userCollapsibleSidebar,  profile } = useCombinedContext();
-    const {user}= userCollapsibleSidebar
-
-  
+  const {user:userCollapsibleSidebar,  profile } = useCombinedContext();
+  const {user}= userCollapsibleSidebar
 
   if (!user) return null;
 
-const getMenuItems = () => {
-  const baseItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-  ];
+  const getMenuItems = () => {
+    const baseItems = [
+      { id: 'dashboard', label: 'Dashboard', icon: Home },
+    ];
 
-  const role = user.role?.toLowerCase(); 
+    const role = user.role?.toLowerCase(); 
 
-  switch (role) {
-    case 'admin':
-      return [
-        ...baseItems,
-        { id: 'profile', label: 'My Profile', icon: User },
-        { id: 'employees', label: 'Employee Management', icon: Users },
-        { id: 'attendance', label: 'Attendance', icon: Clock },
-        { id: 'leave', label: 'Leave Management', icon: Calendar },
-        { id: 'loan', label: 'Loan Management', icon: CreditCard },
-        { id: 'appraisal', label: 'Appraisal Management', icon: Award },
-        { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardCheck },
-        { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
-        { id: 'performance', label: 'Performance Management', icon: TrendingUp },
-        { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
-        { id: 'documents', label: 'Document Management', icon: FolderOpen },
-        { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-        { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
-        { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
-        { id: 'analytics', label: 'Analytics', icon: BarChart },
-        { id: 'reports', label: 'Reports', icon: FileText },
-        { id: 'settings', label: 'System Settings', icon: Settings },
-      ];
+    switch (role) {
+      case 'admin':
+        return [
+          ...baseItems,
+          { id: 'profile', label: 'My Profile', icon: User },
+          { id: 'employees', label: 'Employee Management', icon: Users },
+          { id: 'attendance', label: 'Attendance', icon: Clock },
+          { id: 'leave', label: 'Leave Management', icon: Calendar },
+          { id: 'loan', label: 'Loan Management', icon: CreditCard },
+          { id: 'appraisal', label: 'Appraisal Management', icon: Award },
+          { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardCheck },
+          { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
+          { id: 'performance', label: 'Performance Management', icon: TrendingUp },
+          { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
+          { id: 'documents', label: 'Document Management', icon: FolderOpen },
+          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+          { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
+          { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
+          { id: 'analytics', label: 'Analytics', icon: BarChart },
+          { id: 'reports', label: 'Reports', icon: FileText },
+          { id: 'settings', label: 'System Settings', icon: Settings },
+        ];
 
-    case 'hr':
-      return [
-        ...baseItems,
-        { id: 'profile', label: 'My Profile', icon: User },
-        { id: 'employees', label: 'Employees', icon: Users },
-        { id: 'attendance', label: 'Attendance', icon: Clock },
-        { id: 'leave', label: 'Leave Management', icon: Calendar },
-        { id: 'loan', label: 'Loan Management', icon: CreditCard },
-        { id: 'appraisal', label: 'Appraisal Management', icon: Award },
-        { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
-        { id: 'performance', label: 'Performance Management', icon: TrendingUp },
-        { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
-        { id: 'documents', label: 'Document Management', icon: FolderOpen },
-        { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-        { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
-        { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
-        { id: 'reports', label: 'HR Reports', icon: FileText },
-      ];
+      case 'hr':
+        return [
+          ...baseItems,
+          { id: 'profile', label: 'My Profile', icon: User },
+          { id: 'employees', label: 'Employees', icon: Users },
+          { id: 'attendance', label: 'Attendance', icon: Clock },
+          { id: 'leave', label: 'Leave Management', icon: Calendar },
+          { id: 'loan', label: 'Loan Management', icon: CreditCard },
+          { id: 'appraisal', label: 'Appraisal Management', icon: Award },
+          { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
+          { id: 'performance', label: 'Performance Management', icon: TrendingUp },
+          { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
+          { id: 'documents', label: 'Document Management', icon: FolderOpen },
+          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+          { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
+          { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
+          { id: 'reports', label: 'HR Reports', icon: FileText },
+        ];
 
-    case 'manager':
-    case 'teamlead':
-      return [
-        ...baseItems,
-        { id: 'profile', label: 'My Profile', icon: User },
-        { id: 'employees', label: 'My Team', icon: Users },
-        { id: 'attendance', label: 'Team Attendance', icon: Clock },
-        { id: 'leave', label: 'Leave Requests', icon: Calendar },
-        { id: 'loan', label: 'Loan Requests', icon: CreditCard },
-        { id: 'appraisal', label: 'Appraisal Management', icon: Award },
-        { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardCheck },
-        { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-        { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
-        { id: 'time-tracking', label: 'Team Time Tracking', icon: MapPin },
-        { id: 'reports', label: 'Team Reports', icon: FileText },
-      ];
+      case 'manager':
+      case 'teamlead':
+        return [
+          ...baseItems,
+          { id: 'profile', label: 'My Profile', icon: User },
+          { id: 'employees', label: 'My Team', icon: Users },
+          { id: 'attendance', label: 'Team Attendance', icon: Clock },
+          { id: 'leave', label: 'Leave Requests', icon: Calendar },
+          { id: 'loan', label: 'Loan Requests', icon: CreditCard },
+          { id: 'appraisal', label: 'Appraisal Management', icon: Award },
+          { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardCheck },
+          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+          { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
+          { id: 'time-tracking', label: 'Team Time Tracking', icon: MapPin },
+          { id: 'reports', label: 'Team Reports', icon: FileText },
+        ];
 
-    case 'employee':
-      return [
-        ...baseItems,
-        { id: 'profile', label: 'My Profile', icon: User },
-        { id: 'attendance', label: 'My Attendance', icon: Clock },
-        { id: 'leave', label: 'Leave Balance', icon: Calendar },
-        { id: 'loan', label: 'My Loans', icon: CreditCard },
-        { id: 'appraisal', label: 'My Appraisals', icon: Award },
-        { id: 'payroll', label: 'Payroll', icon: DollarSign },
-        { id: 'documents', label: 'My Documents', icon: FolderOpen },
-        { id: 'handover', label: 'Handover Tasks', icon: ArrowRightLeft },
-        { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
-      ];
+      case 'employee':
+        return [
+          ...baseItems,
+          { id: 'profile', label: 'My Profile', icon: User },
+          { id: 'attendance', label: 'My Attendance', icon: Clock },
+          { id: 'leave', label: 'Leave Balance', icon: Calendar },
+          { id: 'loan', label: 'My Loans', icon: CreditCard },
+          { id: 'appraisal', label: 'My Appraisals', icon: Award },
+          { id: 'payroll', label: 'Payroll', icon: DollarSign },
+          { id: 'documents', label: 'My Documents', icon: FolderOpen },
+          { id: 'handover', label: 'Handover Tasks', icon: ArrowRightLeft },
+          { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
+        ];
 
-    default:
-      return baseItems;
-  }
-};
-
+      default:
+        return baseItems;
+    }
+  };
 
   const menuItems = getMenuItems();
 
@@ -145,8 +146,17 @@ const getMenuItems = () => {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">H</span>
             </div>
-            <span className="text-xl font-bold text-white">HRIS</span>
+            {!isCollapsed && <span className="text-xl font-bold text-white">HRIS</span>}
           </div>
+          {/* Desktop collapse toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
+            className="hidden lg:flex text-white hover:bg-gray-700"
+          >
+            {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+          </Button>
           {/* Mobile close button */}
           <Button
             variant="ghost"
@@ -168,7 +178,7 @@ const getMenuItems = () => {
               <Button
                 key={item.id}
                 variant="ghost"
-                className={`w-full justify-start text-left ${
+                className={`w-full ${isCollapsed ? 'justify-center px-2' : 'justify-start'} text-left ${
                   activeTab === item.id 
                     ? 'bg-blue-600 text-white hover:bg-blue-700' 
                     : 'text-gray-200 hover:bg-gray-700 hover:text-white'
@@ -177,9 +187,10 @@ const getMenuItems = () => {
                   setActiveTab(item.id);
                   onMobileToggle(); // Close mobile sidebar when item is selected
                 }}
+                title={isCollapsed ? item.label : undefined}
               >
-                <Icon className="mr-3 h-4 w-4" />
-                {item.label}
+                <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'}`} />
+                {!isCollapsed && <span>{item.label}</span>}
               </Button>
             );
           })}
@@ -200,9 +211,11 @@ const getMenuItems = () => {
       
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-800 border-r border-gray-600 
-        transform transition-transform duration-300 ease-in-out lg:translate-x-0
+        fixed lg:static inset-y-0 left-0 z-50 bg-gray-800 border-r border-gray-600 
+        transform transition-all duration-300 ease-in-out lg:translate-x-0
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${isCollapsed ? 'lg:w-16' : 'lg:w-64'}
+        w-64
       `}>
         {sidebarContent}
       </div>
