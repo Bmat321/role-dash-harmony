@@ -7,14 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Employee } from '@/types/employee';
 import RoleBadge from '@/components/RoleBadge';
 import StatusBadge from '@/components/StatusBadge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 interface EmployeeTableProps {
   employees: Employee[];
 }
 
 const EmployeeTable: React.FC<EmployeeTableProps> = ({ employees }) => {
-  const { user } = useAuth();
+  const { user: userContext } = useCombinedContext();
+  const { user } = userContext;
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();

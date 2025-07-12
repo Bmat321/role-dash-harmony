@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCombinedContext } from '@/contexts/AuthContext';
 import { 
   Home, 
   Users, 
@@ -29,7 +29,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeItem, onItemClick }) => {
-  const { user } = useAuth();
+  const { user: userContext } = useCombinedContext();
+  const { user } = userContext;
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, roles: ['admin', 'hr', 'manager', 'employee'] },

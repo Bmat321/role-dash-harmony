@@ -2,12 +2,14 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCombinedContext } from '@/contexts/AuthContext';
 import RoleBadge from '@/components/RoleBadge';
 import { LogOut, Bell, Settings } from 'lucide-react';
 
 const DashboardHeader: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user: userContext } = useCombinedContext();
+  const { user, logout } = userContext;
+  
   if (!user) return null;
 
   const getInitials = (firstName: string, lastName?: string) => {

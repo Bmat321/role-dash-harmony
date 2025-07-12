@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, User, MapPin } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useCombinedContext } from '@/contexts/AuthContext';
 
 interface UpcomingLeaveItem {
   id: string;
@@ -49,7 +49,8 @@ const mockUpcomingLeave: UpcomingLeaveItem[] = [
 ];
 
 const UpcomingLeave: React.FC = () => {
-  const { user } = useAuth();
+  const { user: userContext } = useCombinedContext();
+  const { user } = userContext;
 
   const getLeaveTypeColor = (type: string) => {
     switch (type) {
