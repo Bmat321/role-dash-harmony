@@ -57,7 +57,7 @@ const profileSlice = createSlice({
   extraReducers: (builder) => {
     // Get Profile matchers
     builder
-      .addMatcher(profileApi.endpoints.getProfile.matchPending, (state) => {
+      .addMatcher(profileApi.endpoints.getProfile.matchPending, (state) => { 
         state.isLoading = true;
         state.error = null;
       })

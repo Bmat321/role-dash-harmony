@@ -54,7 +54,7 @@ const EmployeeManagement: React.FC = () => {
       id: '3',
       name: 'Mike Wilson',
       email: 'manager@hris.com',
-      role: 'manager',
+      role: 'md',
       department: 'Engineering',
       position: 'Team Lead',
       status: 'active',
@@ -103,8 +103,8 @@ const EmployeeManagement: React.FC = () => {
     managerId: ''
   });
 
-  const canManageEmployees = user?.role === 'admin' || user?.role === 'hr';
-  const canViewAllEmployees = user?.role === 'admin' || user?.role === 'hr';
+  const canManageEmployees = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'hr';
+  const canViewAllEmployees = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'hr';
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -261,7 +261,7 @@ const EmployeeManagement: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="role">Role</Label>
-                        <Select value={formData.role} onValueChange={(value: Employee['role']) => setFormData(prev => ({ ...prev, role: value }))}>
+                        <Select value={formData.role.toLowerCase()} onValueChange={(value: Employee['role']) => setFormData(prev => ({ ...prev, role: value }))}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -269,7 +269,7 @@ const EmployeeManagement: React.FC = () => {
                             <SelectItem value="employee">Employee</SelectItem>
                             <SelectItem value="manager">Manager</SelectItem>
                             <SelectItem value="hr">HR</SelectItem>
-                            {user?.role === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
+                            {user?.role.toLowerCase() === 'admin' && <SelectItem value="admin">Admin</SelectItem>}
                           </SelectContent>
                         </Select>
                       </div>
@@ -430,7 +430,7 @@ const EmployeeManagement: React.FC = () => {
                           <Button variant="outline" size="sm" onClick={() => handleEdit(employee)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {user?.role === 'admin' && (
+                          {user?.role.toLowerCase() === 'admin' && (
                             <Button 
                               variant="outline" 
                               size="sm" 

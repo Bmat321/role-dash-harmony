@@ -65,7 +65,7 @@ const LoanManagement: React.FC = () => {
     teamLeadId: ''
   });
 
-  const canApproveLoan = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
+  const canApproveLoan = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'md';
 
   const calculateMonthlyDeduction = (amount: number, period: number): number => {
     return Math.round(amount / period);
@@ -90,7 +90,7 @@ const LoanManagement: React.FC = () => {
     
     const newRequest: LoanRequest = {
       id: Date.now().toString(),
-      employeeId: user?.id || '',
+      employeeId: user?._id || '',
       employeeName: user ? `${user.firstName} ${user.lastName}` : '',
       type: formData.type,
       amount: amount,
@@ -316,7 +316,7 @@ const LoanManagement: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {loanRequests
-                    .filter(req => !canApproveLoan || req.employeeId === user?.id)
+                    .filter(req => !canApproveLoan || req.employeeId === user?._id)
                     .map((request) => (
                     <TableRow key={request.id}>
                       <TableCell>
@@ -399,7 +399,7 @@ const LoanManagement: React.FC = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {['pending', 'approved', 'rejected', 'disbursed', 'completed'].map((status) => {
-                  const count = loanRequests.filter(req => req.status === status && (!canApproveLoan || req.employeeId === user?.id)).length;
+                  const count = loanRequests.filter(req => req.status === status && (!canApproveLoan || req.employeeId === user?._id)).length;
                   return (
                     <Card key={status}>
                       <CardContent className="p-4 text-center">
@@ -423,7 +423,7 @@ const LoanManagement: React.FC = () => {
             <CardContent>
               <div className="space-y-4">
                 {loanRequests
-                  .filter(req => !canApproveLoan || req.employeeId === user?.id)
+                  .filter(req => !canApproveLoan || req.employeeId === user?._id)
                   .slice(0, 5)
                   .map((request) => (
                   <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">

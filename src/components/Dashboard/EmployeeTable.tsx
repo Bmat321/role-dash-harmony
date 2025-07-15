@@ -28,11 +28,11 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ employees }) => {
       case 'admin':
       case 'hr':
         return employees;
-      case 'manager':
+      case 'md':
         // In a real app, filter by managerId or department
         return employees.filter(emp => emp.department === user.department);
       case 'employee':
-        return employees.filter(emp => emp.id === user.id);
+        return employees.filter(emp => emp.id === user._id);
       default:
         return [];
     }

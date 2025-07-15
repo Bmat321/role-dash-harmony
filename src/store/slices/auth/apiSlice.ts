@@ -29,7 +29,6 @@ const baseQuery = fetchBaseQuery({
 
     if (!excludedRoutes.some(route => currentUrl.includes(route))) {
       const token = tokenUtils.getToken();
-      console.log("token", token )
 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);

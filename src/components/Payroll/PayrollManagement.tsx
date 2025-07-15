@@ -273,7 +273,7 @@ const PayrollManagement: React.FC = () => {
   };
 
   const filteredRecords = payrollRecords.filter(record => {
-    if (!canManagePayroll && record.employeeId !== user?.id) return false;
+    if (!canManagePayroll && record.employeeId !== user?._id) return false;
     return record.month === selectedMonth && record.year.toString() === selectedYear;
   });
 

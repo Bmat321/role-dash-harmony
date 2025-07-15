@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,9 @@ import { useCombinedContext } from '@/contexts/AuthContext';
 import { AttendanceRecord } from '@/types/attendance';
 import { useReduxAttendance } from '@/hooks/attendance/useReduxAttendance';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setActiveTab, setCurrentSession, setIsCheckedIn, setIsClocking, setSelectedShift } from '@/store/slices/attendance/attendanceSlice';
+import { clearSelectedShift, setActiveTab, setCurrentSession, setIsCheckedIn, setIsClocking, setSelectedShift } from '@/store/slices/attendance/attendanceSlice';
+import { getShiftClockStatus, getShiftInfo, getStatusColor, shiftUtils } from '@/utils/attendanceHelpers';
+import { useShiftClockStatus } from '@/hooks/useShiftClockStatus';
 
 
 
@@ -25,15 +27,11 @@ const AttendanceManagement: React.FC = () => {
   const { toast } = useToast();
   const { activeTab, error, currentSession, isCheckedIn, records, companySummary, selectedShift, isLoading , isClocking } = useAppSelector((state) => state.attendance);
 
-
-
-
-
-
-  const {handleManualCheckIn} = useReduxAttendance()
+ const {handleManualCheckIn, handleManualCheckOut} = useReduxAttendance()
   
 
- 
+const { canClockIn } = useShiftClockStatus(records, selectedShift)
+
   // const handleClockIn = async () => {
   //   const now = new Date();
   //   const timeString = now.toTimeString().slice(0, 5);
@@ -49,6 +47,8 @@ const AttendanceManagement: React.FC = () => {
   //   })
 
   // };
+
+
 
   const handleClockIn = async () => {
   const now = new Date();
@@ -70,41 +70,33 @@ const AttendanceManagement: React.FC = () => {
 };
 
 
-  const handleClockOut = () => {
-    if (!currentSession) return;
-
+  const handleClockOut = async () => {
     const now = new Date();
     const timeString = now.toTimeString().slice(0, 5);
+    dispatch(setIsClocking(true));
+      const success = await handleManualCheckOut({
+    shift: selectedShift,
+    checkInTime: timeString,
+  });
 
-    dispatch(setIsCheckedIn(false));
-    dispatch(setCurrentSession(null));
+  dispatch(setIsClocking(false));
+  dispatch(clearSelectedShift());
+  shiftUtils.clear();
+  dispatch(setSelectedShift('day'));
+  dispatch(setActiveTab('clock-in'));
 
-    toast({
-      title: "Clocked Out",
-      description: `Successfully clocked out at ${timeString}`,
-    });
+
   };
-
-  const getShiftInfo = (shift: 'day' | 'night') => {
-    return shift === 'day' 
-      ? { time: '8:30 AM - 5:00 PM', icon: Sun, color: 'bg-yellow-100 text-yellow-800' }
-      : { time: '4:00 PM - 5:00 AM', icon: Moon, color: 'bg-purple-100 text-purple-800' };
-  };
-
-
 
   
-  const getStatusColor = (status: AttendanceRecord['status']) => {
-    switch (status) {
-      case 'present': return 'bg-green-100 text-green-800';
-      case 'absent': return 'bg-red-100 text-red-800';
-      case 'late': return 'bg-orange-100 text-orange-800';
-      case 'checked-in': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+useEffect(() => {
+  const storedShift = shiftUtils.get();
+  dispatch(setSelectedShift(storedShift));
+}, [dispatch]);
+
 
   // const canViewAllAttendance = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'hr' || user?.role.toLowerCase() === 'manager';
+
 
   return (
     <div className="space-y-6">
@@ -127,7 +119,13 @@ const AttendanceManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Day Shift Card */}
             <Card className={`cursor-pointer transition-all ${selectedShift === 'day' ? 'ring-2 ring-yellow-500 bg-yellow-50' : ''}`}
-                  onClick={() => dispatch(setSelectedShift('day'))}>
+                  onClick={() => {
+  if (!isCheckedIn) {
+    dispatch(setSelectedShift('day'));
+    shiftUtils.set('day');
+  }
+}}
+                  >
               <CardHeader>
                 <CardTitle className="flex items-center text-yellow-700">
                   <Sun className="h-6 w-6 mr-2" />
@@ -145,7 +143,14 @@ const AttendanceManagement: React.FC = () => {
 
             {/* Night Shift Card */}
             <Card className={`cursor-pointer transition-all ${selectedShift === 'night' ? 'ring-2 ring-purple-500 bg-purple-50' : ''}`}
-                  onClick={() => dispatch(setSelectedShift('night'))}>
+                  onClick={() => {
+  if (!isCheckedIn) {
+    dispatch(setSelectedShift('night'));
+    shiftUtils.set('night');
+  }
+}}
+
+                  >
               <CardHeader>
                 <CardTitle className="flex items-center text-purple-700">
                   <Moon className="h-6 w-6 mr-2" />
@@ -196,7 +201,7 @@ const AttendanceManagement: React.FC = () => {
 
           <div className="flex justify-center space-x-4">
         {!isCheckedIn ? (
-          <Button onClick={handleClockIn} size="lg" className="px-8" disabled={isLoading}>
+          <Button onClick={handleClockIn} size="lg" className="px-8" disabled={isLoading ||  !canClockIn}>
             <CheckCircle className="h-5 w-5 mr-2" />
             Clock In ({selectedShift.charAt(0).toUpperCase() + selectedShift.slice(1)} shift)
             {isClocking && <Loader2 className="ml-2 h-5 w-5 animate-spin" />}
@@ -232,51 +237,52 @@ const AttendanceManagement: React.FC = () => {
             <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {/* Safety check: ensure attendance.attendanceRecords is available */}
-          {records?.length ? (
-            records
-              // .filter((record) => !canViewAllAttendance || record.employeeId === user?.id)
-              .map((record) => {
-                const shiftInfo = getShiftInfo(record.shift);
-                const ShiftIcon = shiftInfo.icon;
-                return (
-                  <TableRow key={record.id}>
-                    <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Badge className={shiftInfo.color}>
-                        <ShiftIcon className="h-3 w-3 mr-1" />
-                        {record.shift}
-                      </Badge>
-                    </TableCell>
-                      <TableCell>
-            {record.checkIn
-              ? new Date(record.checkIn).toLocaleTimeString([], { hour12: true })
-              : '-'}
-          </TableCell>
-                    <TableCell>{record.checkOut || '-'}</TableCell>
-                    <TableCell>
-  {record.checkOut
-    ? new Date(record.checkOut).toLocaleTimeString([], { hour12: true })
-    : '-'}
-</TableCell>
+       <TableBody>
+  {records?.length ? (
+    [...records]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // 🔁 Sort by latest first
+      .map((record) => {
+        const shiftInfo = getShiftInfo(record.shift);
+        const ShiftIcon = shiftInfo.icon;
+        return (
+          <TableRow key={record.id}>
+            <TableCell>{new Date(record.date).toLocaleDateString()}</TableCell>
+            <TableCell>
+              <Badge className={shiftInfo.color}>
+                <ShiftIcon className="h-3 w-3 mr-1" />
+                {record.shift}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              {record.checkIn
+                ? new Date(record.checkIn).toLocaleTimeString([], { hour12: true })
+                : '-'}
+            </TableCell>
+            <TableCell>
+              {record.checkOut
+                ? new Date(record.checkOut).toLocaleTimeString([], { hour12: true })
+                : '-'}
+            </TableCell>
+            <TableCell>
+              {record.hoursWorked ? record.hoursWorked : '-'}
+            </TableCell>
+            <TableCell>
+              <Badge className={getStatusColor(record.status)}>
+                {record.status}
+              </Badge>
+            </TableCell>
+          </TableRow>
+        );
+      })
+  ) : (
+    <TableRow>
+      <TableCell colSpan={6} align="center">
+        No attendance records available.
+      </TableCell>
+    </TableRow>
+  )}
+</TableBody>
 
-                    <TableCell>
-                      <Badge className={getStatusColor(record.status)}>
-                        {record.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} align="center">
-                No attendance records available.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
       </Table>
     </CardContent>
   </Card>

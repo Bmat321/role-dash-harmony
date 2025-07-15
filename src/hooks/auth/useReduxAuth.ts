@@ -9,14 +9,14 @@ import {
   // useRegisterMutation, 
   useResetPasswordMutation,
   useVerify2faMutation,
-} from '@/store/slices/authApi';
+} from '@/store/slices/auth/authApi';
 import { 
   logout as logoutAction, 
   clearError, 
   setCredentials,
-  initializeFromStorage, 
+  // initializeFromStorage, 
   setIsLoading
-} from '@/store/slices/authSlice';
+} from '@/store/slices/auth/authSlice';
 import { toast } from '@/hooks/use-toast';
 import { AuthContextType, User } from '@/types/auth';
 import { setFormData } from '@/store/slices/profile/profileSlice';
@@ -35,13 +35,13 @@ export const useReduxAuth = (): AuthContextType => {
   
 
   // Initialize auth state from localStorage on mount
-  useEffect(() => {
-    try {
-      dispatch(initializeFromStorage());
-    } catch (error) {
-      console.error('Error initializing auth from storage:', error);
-    }
-  }, [dispatch]);
+  // useEffect(() => {
+  //   try {
+  //     dispatch(initializeFromStorage());
+  //   } catch (error) {
+  //     console.error('Error initializing auth from storage:', error);
+  //   }
+  // }, [dispatch]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     dispatch(setIsLoading(true));
@@ -82,12 +82,12 @@ const verify2fa = async (email: string, code: string): Promise<boolean> => {
 
     return true;
   } catch (error: any) {
-    // Extract the backend error message
+
     const errorMessage =
-      error?.data?.message || // <-- most likely from RTK Query
-      error?.error ||         // RTK fallback (e.g., FetchBaseQueryError)
-      error?.message ||       // JS error
-      'Login failed';         // Fallback
+      error?.data?.message || 
+      error?.error ||         
+      error?.message ||     
+      'Login failed';         
 
     toast({
       title: 'Login Error',

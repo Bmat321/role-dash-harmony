@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { apiSlice } from "../apiSlice";
+import { apiSlice } from "../auth/apiSlice";
+
+
 
 export const attendanceApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -63,14 +65,14 @@ export const attendanceApi = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Get My Attendance Stats
-    getMyAttendanceStats: builder.query({
-      query: () => ({
-        url: '/api/attendance/my-stats',
-        method: 'GET',
-        credentials: 'include' as const,
-      }),
-    }),
+    // // Get My Attendance Stats
+    // getMyAttendanceStats: builder.query({
+    //   query: () => ({
+    //     url: '/api/attendance/my-stats',
+    //     method: 'GET',
+    //     credentials: 'include' as const,
+    //   }),
+    // }),
 
     // Get Company Attendance Summary
     getCompanyAttendanceSummary: builder.query({
@@ -99,7 +101,7 @@ export const {
   useManualCheckOutMutation,
   useGetMyAttendanceHistoryQuery,
   useAdminAttendanceReportQuery,
-  useGetMyAttendanceStatsQuery,
+  // useGetMyAttendanceStatsQuery,
   useGetCompanyAttendanceSummaryQuery,
   useExportAttendanceExcelQuery,
 } = attendanceApi;

@@ -75,7 +75,7 @@ const HandoverManagement: React.FC = () => {
     teamLeadId: ''
   });
 
-  const canReviewHandovers = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
+  const canReviewHandovers = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'md';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -125,7 +125,7 @@ const HandoverManagement: React.FC = () => {
     
     const newReport: HandoverReport = {
       id: Date.now().toString(),
-      employeeId: user?.id || '',
+      employeeId: user?._id || '',
       employeeName: user ? `${user.firstName} ${user.lastName}` : '',
       date: formData.date,
       shift: formData.shift,
@@ -366,7 +366,7 @@ const HandoverManagement: React.FC = () => {
                 </TableHeader>
                 <TableBody>
                   {handoverReports
-                    .filter(report => !canReviewHandovers || report.employeeId === user?.id)
+                    .filter(report => !canReviewHandovers || report.employeeId === user?._id)
                     .map((report) => (
                     <TableRow key={report.id}>
                       <TableCell>{new Date(report.date).toLocaleDateString()}</TableCell>

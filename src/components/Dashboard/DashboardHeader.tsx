@@ -33,7 +33,7 @@ const DashboardHeader: React.FC = () => {
           <h1 className="text-2xl font-semibold text-gray-900">
             {user.role === 'admin' && 'System Administration'}
             {user.role === 'hr' && 'HR Dashboard'}
-            {user.role === 'manager' && 'Team Management'}
+            {user.role === 'md' && 'Team Management'}
             {user.role === 'employee' && 'Employee Portal'}
           </h1>
           <p className="text-sm text-gray-600 mt-1">

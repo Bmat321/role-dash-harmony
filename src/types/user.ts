@@ -50,6 +50,6 @@ export interface ProfileContextType {
   editProfile: (profile: ProfileFormData) => Promise<boolean>;  
   uploadProfile: (formData: FormData) => Promise<boolean>;  
   deleteProfile: (id: string) => Promise<boolean>; 
-  // refetchProfile:any; 
+  refetchProfile:any; 
 }
 

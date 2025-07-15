@@ -99,7 +99,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'reports', label: 'HR Reports', icon: FileText },
         ];
 
-      case 'manager':
+      case 'md':
       case 'teamlead':
         return [
           ...baseItems,

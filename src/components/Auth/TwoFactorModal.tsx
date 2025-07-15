@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useToast } from '@/hooks/use-toast';
-import { useReduxAuth } from '@/hooks/useReduxAuth';
+import { useReduxAuth } from '@/hooks/auth/useReduxAuth';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setError } from '@/store/slices/authSlice';
+import { setError } from '@/store/slices/auth/authSlice';
 import { Loader2, Shield } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 

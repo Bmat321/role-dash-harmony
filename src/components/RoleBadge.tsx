@@ -10,19 +10,19 @@ interface RoleBadgeProps {
 
 const roleConfig = {
   admin: {
-    label: 'Admin',
+    label: 'admin',
     className: 'bg-admin text-white hover:bg-admin/90',
   },
   hr: {
-    label: 'HR',
+    label: 'hr',
     className: 'bg-hr text-white hover:bg-hr/90',
   },
   manager: {
-    label: 'Manager',
+    label: 'md',
     className: 'bg-manager text-white hover:bg-manager/90',
   },
   employee: {
-    label: 'Employee',
+    label: 'employee',
     className: 'bg-employee text-white hover:bg-employee/90',
   },
 };

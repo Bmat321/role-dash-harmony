@@ -1,5 +1,5 @@
 export interface User {
-  id: string;
+  _id: string;
   firstName: string;
   middleName?: string;
   lastName: string;
@@ -18,7 +18,7 @@ export interface User {
     relationship: string;
     phone: string;
   };
-  role: 'admin' | 'hr' | 'hod' | 'manager' | 'employee' | 'teamlead';
+  role: 'admin' | 'hr' | 'hod' | 'md' | 'employee' | 'teamlead';
   biometryId?: string;
   department: string;
   experience?: string;

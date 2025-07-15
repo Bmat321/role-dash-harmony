@@ -1,119 +1,83 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar as CalendarIcon, Check, X, Clock, AlertCircle, Info } from 'lucide-react';
-import { LeaveRequest, LeaveBalance } from '@/types/leave';
-
-import { toast } from '@/hooks/use-toast';
-import { calculateWorkingDays, getHolidaysInRange } from '@/utils/holidays';
+import { Textarea } from '@/components/ui/textarea';
+import { LeaveBalance, LeaveRequest } from '@/types/leave';
+import { Check, Info, Loader2, Plus, X } from 'lucide-react';
+import React from 'react';
+import { motion } from "framer-motion";
 import { useCombinedContext } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { LeaveFormData, setDateCalculation,updateStatusOverview, setFormData, setIsDialogOpen, setRequests, setSelectedRequest, setRejectionNote, setCreateIsDialogOpen, resetLeaveState } from '@/store/slices/leave/leaveSlice';
+import { calculateWorkingDays, getHolidaysInRange } from '@/utils/holidays';
+import ApprovalSteps from './ApprovalSteps';
 
-// Mock team leads data
-const mockTeamLeads = [
-  { id: 'tl1', name: 'Sarah Johnson', department: 'IT', email: 'sarah.johnson@company.com' },
-  { id: 'tl2', name: 'Michael Brown', department: 'HR', email: 'michael.brown@company.com' },
-  { id: 'tl3', name: 'Emily Davis', department: 'Finance', email: 'emily.davis@company.com' },
-  { id: 'tl4', name: 'David Wilson', department: 'Marketing', email: 'david.wilson@company.com' }
-];
 
-const mockLeaveRequests: LeaveRequest[] = [
-  {
-    id: '1',
-    employeeId: '4',
-    employeeName: 'Jane Doe',
-    type: 'vacation',
-    startDate: '2024-02-15',
-    endDate: '2024-02-19',
-    days: 5,
-    reason: 'Family vacation',
-    status: 'pending',
-    appliedDate: '2024-01-27'
-  },
-  {
-    id: '2',
-    employeeId: '4',
-    employeeName: 'Jane Doe',
-    type: 'sick',
-    startDate: '2024-01-20',
-    endDate: '2024-01-20',
-    days: 1,
-    reason: 'Doctor appointment',
-    status: 'approved',
-    appliedDate: '2024-01-19',
-    approvedBy: 'Sarah Johnson',
-    approvedDate: '2024-01-19'
-  }
-];
+const  LeaveManagement: React.FC = () => {
+const {user: userLeaveManagement, leave } = useCombinedContext();
+  const { user} = userLeaveManagement
+  const { user:currentUser} = useAppSelector((state) => state.auth); 
+  console.log("currentUser", currentUser) 
+  
+  const {  handleCreateLeaveRequest, handleApproveLeaveRequest, handleRejectLeaveRequest } = leave
+  const {
+  isDialogOpen,
+  selectedDates,
+  formData,
+  requests,
+  dateCalculation,
+  teamLead,
+  isLoading,
+  activityFeed,
+  approvalQueue,
+  error,
+  statusOverview,
+  selectedRequest,
+  rejectionNote,
+  createIsDialogOpen
+} = useAppSelector(state => state.leave);
+const dispatch = useAppDispatch();
 
-const mockLeaveBalance: LeaveBalance = {
-  employeeId: '4',
-  vacation: { total: 20, used: 5, remaining: 15 },
-  sick: { total: 10, used: 1, remaining: 9 },
-  personal: { total: 5, used: 0, remaining: 5 },
-  maternity: { total: 90, used: 0, remaining: 90 }
+  const canApproveLeave = user?.role === 'teamlead' ||  user?.role === 'admin' || user?.role === 'hr' || user?.role.toLowerCase() === 'md';
+const calculateDays = (start: string, end: string) => {
+  if (!start || !end) return null;
+
+  const calculation = calculateWorkingDays(start, end);
+  const holidays = getHolidaysInRange(start, end);
+
+  return {
+    totalDays: calculation.totalDays,
+    workingDays: calculation.workingDays,
+    holidays,
+  };
 };
 
-const LeaveManagement: React.FC = () => {
-const {user: userLeaveManagement,  profile } = useCombinedContext();
-  const { user} = userLeaveManagement
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>(mockLeaveRequests);
-  const [leaveBalance] = useState<LeaveBalance>(mockLeaveBalance);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [formData, setFormData] = useState({
-    type: 'vacation' as LeaveRequest['type'],
-    startDate: '',
-    endDate: '',
-    reason: '',
-    teamLeadId: ''
-  });
-  const [dateCalculation, setDateCalculation] = useState<{
-    totalDays: number;
-    workingDays: number;
-    holidays: any[];
-  } | null>(null);
 
-  const canApproveLeave = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
-
-  const calculateDays = (start: string, end: string) => {
-    if (!start || !end) return null;
-    
-    const calculation = calculateWorkingDays(start, end);
-    const holidays = getHolidaysInRange(start, end);
-    
-    return {
-      totalDays: calculation.totalDays,
-      workingDays: calculation.workingDays,
-      holidays
-    };
-  };
 
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
     const newFormData = { ...formData, [field]: value };
-    setFormData(newFormData);
+    dispatch(setFormData(newFormData));
     
     if (newFormData.startDate && newFormData.endDate) {
       const calculation = calculateDays(newFormData.startDate, newFormData.endDate);
-      setDateCalculation(calculation);
+      dispatch(setDateCalculation(calculation));
     } else {
-      setDateCalculation(null);
+      dispatch(setDateCalculation(null));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.teamLeadId) {
+    if (!formData.teamleadId) {
       toast({
         title: "Team Lead Required",
         description: "Please select a team lead to review your leave request.",
@@ -122,7 +86,7 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
       return;
     }
 
-    const selectedTeamLead = mockTeamLeads.find(tl => tl.id === formData.teamLeadId);
+    // const selectedTeamLead = teamLead.data.find(tl => tl.id === formData.teamLeadId);
     const calculation = calculateDays(formData.startDate, formData.endDate);
     
     if (!calculation) {
@@ -134,53 +98,71 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
       return;
     }
     
-    const newRequest: LeaveRequest = {
-      id: Date.now().toString(),
-      employeeId: user?.id || '',
-      employeeName: user ? `${user.firstName} ${user.lastName}` : '',
-      type: formData.type,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      days: calculation.workingDays,
-      reason: formData.reason,
-      status: 'pending',
-      appliedDate: new Date().toISOString().split('T')[0],
-      teamLeadId: formData.teamLeadId,
-      teamLeadName: selectedTeamLead?.name || ''
-    };
-
-    setLeaveRequests(prev => [newRequest, ...prev]);
-    setIsDialogOpen(false);
-    setFormData({ type: 'vacation', startDate: '', endDate: '', reason: '', teamLeadId: '' });
-    setDateCalculation(null);
-    
-    toast({
-      title: "Leave Request Submitted",
-      description: `Your ${formData.type} request for ${calculation.workingDays} working day(s) has been submitted to ${selectedTeamLead?.name}.`,
-    });
+  const requestPayload: LeaveFormData = {
+    type: formData.type,
+    startDate: formData.startDate,
+    endDate: formData.endDate,
+    days: calculation.workingDays,
+    reason: formData.reason,
+    teamleadId: formData.teamleadId,
   };
 
-  const handleApproveReject = (requestId: string, approved: boolean) => {
-    setLeaveRequests(prev => prev.map(request => {
-      if (request.id === requestId) {
-        return {
-          ...request,
-          status: approved ? 'approved' : 'rejected',
-          approvedBy: user ? `${user.firstName} ${user.lastName}` : '',
-          approvedDate: new Date().toISOString().split('T')[0],
-          comments: approved ? 'Approved' : 'Rejected'
-        };
-      }
-      return request;
-    }));
 
-    toast({
-      title: `Leave Request ${approved ? 'Approved' : 'Rejected'}`,
-      description: `The leave request has been ${approved ? 'approved' : 'rejected'}.`,
-    });
+  const success = await handleCreateLeaveRequest(requestPayload);
+    if (success) {
+          dispatch(setCreateIsDialogOpen(false));
+          dispatch(setFormData({
+            type: 'annual',
+            startDate: '',
+            endDate: '',
+            reason: '',
+            teamleadId: '',
+            days: 0,
+          }));
+          
+          dispatch(setDateCalculation(null));
+
+        }
+
   };
 
-  const getStatusBadge = (status: LeaveRequest['status']) => {
+// const handleApproveReject =async (requestId: string, approved: boolean) => {
+//   // if (!user) return;
+
+//   // const updatedRequests: LeaveRequest[] = requests.map(request => {
+//   //   if (request.id === requestId) {
+//   //     return {
+//   //       ...request,
+//   //       status: approved ? 'approved' : 'rejected',
+//   //       approvedBy: `${user.firstName} ${user.lastName}`,
+//   //       approvedDate: new Date().toISOString().split('T')[0],
+//   //       comments: approved ? 'Approved' : 'Rejected',
+//   //     };
+//   //   }
+//   //   return request;
+//   // });
+
+//   // dispatch(setRequests(updatedRequests));
+
+//    const success = approved
+//     ? await handleApproveLeaveRequest(requestId)
+//     : await handleRejectLeaveRequest(requestId);
+
+// if (!success) return;
+
+// dispatch(updateStatusOverview({ approved, rejected: !approved }));
+
+ 
+// };
+
+const handleApproveLeaveRequestFlow = async (requestId: string) => {
+  const success = await handleApproveLeaveRequest(requestId);
+};
+
+const handleRejectLeaveRequestWithNote = async (id: string, note: string): Promise<boolean> => {
+  return handleRejectLeaveRequest(id, note);
+};
+const getStatusBadge = (status: LeaveRequest['status']) => {
     const variants = {
       pending: 'outline',
       approved: 'default',
@@ -194,30 +176,16 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
     );
   };
 
-  const getLeaveTypeColor = (type: LeaveRequest['type']) => {
-    const colors = {
-      vacation: 'bg-blue-100 text-blue-800',
-      sick: 'bg-red-100 text-red-800',
-      personal: 'bg-green-100 text-green-800',
-      maternity: 'bg-purple-100 text-purple-800',
-      emergency: 'bg-orange-100 text-orange-800'
-    };
-    return colors[type];
+ const getLeaveTypeColor = (type?: LeaveRequest['type']) => {
+  const colors: Record<string, string> = {
+    annual: 'bg-blue-100 text-blue-800',
+    sick: 'bg-red-100 text-red-800',
+    compensation: 'bg-green-100 text-green-800',
+    maternity: 'bg-purple-100 text-purple-800',
   };
 
-  // Calendar data for leave visualization
-  const leaveCalendarData = leaveRequests
-    .filter(req => req.status === 'approved')
-    .flatMap(req => {
-      const dates = [];
-      const start = new Date(req.startDate);
-      const end = new Date(req.endDate);
-      
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(new Date(d));
-      }
-      return dates;
-    });
+  return colors[type ?? ''] || 'bg-gray-100 text-gray-800';
+};
 
   return (
     <div className="space-y-6">
@@ -226,13 +194,19 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
           <h2 className="text-2xl font-bold">Leave Management</h2>
           <p className="text-gray-600">Manage leave requests and balances</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
+        <Dialog open={createIsDialogOpen} 
+            onOpenChange={(open: boolean) => dispatch(setCreateIsDialogOpen(open))}
+            >
+          {/* <DialogTrigger asChild>
+          </DialogTrigger> */}
+            <Button onClick={() => dispatch(setCreateIsDialogOpen(true))}>
               <Plus className="h-4 w-4 mr-2" />
               Request Leave
             </Button>
-          </DialogTrigger>
+            {/* <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Request Leave
+            </Button> */}
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Request Leave</DialogTitle>
@@ -245,29 +219,40 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="type">Leave Type</Label>
-                    <Select value={formData.type} onValueChange={(value: LeaveRequest['type']) => setFormData(prev => ({ ...prev, type: value }))}>
+                    <Select value={formData.type}
+                      onValueChange={(value: LeaveRequest['type']) =>
+                          dispatch(setFormData({ ...formData, type: value }))
+                        }
+                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="vacation">Vacation</SelectItem>
-                        <SelectItem value="sick">Sick Leave</SelectItem>
-                        <SelectItem value="personal">Personal</SelectItem>
+                        <SelectItem value="annual">Annual</SelectItem>
+                        <SelectItem value="sick">Sick</SelectItem>
+                        <SelectItem value="compensation">Compensation</SelectItem>
                         <SelectItem value="maternity">Maternity</SelectItem>
-                        <SelectItem value="emergency">Emergency</SelectItem>
+                        {/* <SelectItem value="emergency">Emergency</SelectItem> */}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label htmlFor="teamLead">Team Lead</Label>
-                    <Select value={formData.teamLeadId} onValueChange={(value) => setFormData(prev => ({ ...prev, teamLeadId: value }))}>
+                    <Select value={formData.teamleadId} 
+                                  onValueChange={(value) =>
+                      dispatch(setFormData({ ...formData, teamleadId: value }))
+                    }
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select team lead" />
+                        <SelectValue
+  placeholder={currentUser.role === 'employee' ? 'Select team lead' : 'Select reviewer'}
+/>
+
                       </SelectTrigger>
                       <SelectContent>
-                        {mockTeamLeads.map((lead) => (
+                        {teamLead?.data?.map((lead) => (
                           <SelectItem key={lead.id} value={lead.id}>
-                            {lead.name} - {lead.department}
+                            {lead.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -283,6 +268,7 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => handleDateChange('startDate', e.target.value)}
+                      min={new Date().toISOString().split('T')[0]} // disables past dates
                       required
                     />
                   </div>
@@ -299,73 +285,109 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                   </div>
                 </div>
 
-                {dateCalculation && (
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-2">
-                        <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <div className="space-y-2">
-                          <h4 className="font-medium text-blue-900">Leave Duration Calculation</h4>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Total Days:</span>
-                              <span className="ml-2 font-medium">{dateCalculation.totalDays}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Working Days:</span>
-                              <span className="ml-2 font-medium text-blue-600">{dateCalculation.workingDays}</span>
-                            </div>
-                          </div>
-                          {dateCalculation.holidays.length > 0 && (
-                            <div className="mt-3">
-                              <p className="text-sm font-medium text-gray-700 mb-2">Excluded Days:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {dateCalculation.holidays.map((holiday, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {holiday.name}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+              {dateCalculation && (
+  <Card className="bg-blue-50 border-blue-200">
+    <CardContent className="p-4">
+      <div className="flex items-start gap-2">
+        <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+        <div className="space-y-2">
+          <h4 className="font-medium text-blue-900">Leave Duration Calculation</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-600">Total Days:</span>
+              <span className="ml-2 font-medium">{dateCalculation.totalDays}</span>
+            </div>
+            <div>
+              <span className="text-gray-600">Working Days:</span>
+              <span className="ml-2 font-medium text-blue-600">
+                {dateCalculation.workingDays}
+              </span>
+            </div>
+          </div>
+          {dateCalculation.holidays.length > 0 && (
+            <div className="mt-3">
+              <p className="text-sm font-medium text-gray-700 mb-2">Excluded Days (Public Holidays):</p>
+              <div className="flex flex-wrap gap-1">
+                {dateCalculation.holidays.map((holiday, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {holiday.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
 
                 <div>
                   <Label htmlFor="reason">Reason</Label>
                   <Textarea
                     id="reason"
                     value={formData.reason}
-                    onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
+                    onChange={(e) =>
+                        dispatch(setFormData({ ...formData, reason: e.target.value }))
+                      }
                     placeholder="Please provide a reason for your leave request"
                     required
                   />
                 </div>
               </div>
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Submit Request</Button>
-              </DialogFooter>
+             <DialogFooter className="mt-6">
+<Button
+  type="button"
+  variant="outline"
+  onClick={() => {
+    dispatch(setCreateIsDialogOpen(false));
+    dispatch(setFormData({
+      type: 'sick',
+      startDate: '',
+      endDate: '',
+      reason: '',
+      teamleadId: '',
+      days: 0,
+    }));
+    dispatch(setDateCalculation(null)); // if applicable
+  }}
+  disabled={isLoading}
+>
+  Cancel
+</Button>
+
+
+  <Button type="submit" disabled={isLoading}>
+    {isLoading ? (
+      <>
+        Submitting
+        <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+      </>
+    ) : (
+      "Submit Request"
+    )}
+  </Button>
+</DialogFooter>
+
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Tabs defaultValue="requests" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="requests">My Requests</TabsTrigger>
-          <TabsTrigger value="balance">Leave Balance</TabsTrigger>
-          <TabsTrigger value="status">Status</TabsTrigger>
-          <TabsTrigger value="recent">Recent</TabsTrigger>
-          {canApproveLeave && <TabsTrigger value="approval">Approval Queue</TabsTrigger>}
-        </TabsList>
+      <Tabs defaultValue="requests" className="space-y-8">
+       <TabsList
+  className={`grid w-full ${currentUser.role !== 'employee' ? 'grid-cols-3' : 'grid-cols-2'}`}
+>
+  <TabsTrigger value="requests">My Requests</TabsTrigger>
+  <TabsTrigger value="status">Status</TabsTrigger>
+  {currentUser.role !== 'employee' && (
+    <TabsTrigger value="approval">Approval Queue</TabsTrigger>
+  )}
+</TabsList>
 
-        <TabsContent value="requests">
+
+        {/* <TabsContent value="requests">
           <Card>
             <CardHeader>
               <CardTitle>My Leave Requests</CardTitle>
@@ -384,34 +406,161 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leaveRequests
+                  {activityFeed
+                    .flat() 
                     .filter(req => !canApproveLeave || req.employeeId === user?.id)
-                    .map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell>
-                        <Badge className={getLeaveTypeColor(request.type)}>
-                          {request.type.charAt(0).toUpperCase() + request.type.slice(1)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>{new Date(request.startDate).toLocaleDateString()}</div>
-                          <div className="text-gray-500">to {new Date(request.endDate).toLocaleDateString()}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{request.days} day(s)</TableCell>
-                      <TableCell className="max-w-xs truncate">{request.reason}</TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>{new Date(request.appliedDate).toLocaleDateString()}</TableCell>
-                    </TableRow>
-                  ))}
+                    .map((request) =>{
+                      return (
+               <TableRow key={request.id}
+>
+  <TableCell>
+    <Badge className={getLeaveTypeColor(request.type)}>
+      {typeof request.type === 'string'
+        ? request.type.charAt(0).toUpperCase() + request.type.slice(1)
+        : 'Unknown'}
+    </Badge>
+  </TableCell>
+
+  <TableCell>
+    <div className="text-sm">
+      <div>{new Date(request.startDate).toLocaleDateString()}</div>
+      <div className="text-gray-500">
+        to {new Date(request.endDate).toLocaleDateString()}
+      </div>
+    </div>
+  </TableCell>
+
+  <TableCell>{request.days} day(s)</TableCell>
+  <TableCell className="max-w-xs truncate">{request.reason || '-'}</TableCell>
+  <TableCell>{getStatusBadge(request.status)}</TableCell>
+  <TableCell>{new Date(request.appliedDate).toLocaleDateString()}</TableCell>
+</TableRow>
+
+                      )
+                    })}
                 </TableBody>
               </Table>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="balance">
+        <TabsContent value="requests">
+  <Card>
+    <CardHeader>
+      <CardTitle>My Leave Requests</CardTitle>
+      <CardDescription>View and track your leave requests</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Type</TableHead>
+            <TableHead>Dates</TableHead>
+            <TableHead>Days</TableHead>
+            <TableHead>Reason</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Applied Date</TableHead>
+          </TableRow>
+        </TableHeader>
+          
+          
+<TableBody>
+ {activityFeed
+  .flat()
+  .map((request) => {
+    const latestReview = request.reviewTrail?.[request.reviewTrail.length - 1];
+
+    const rejectedReview = request.reviewTrail?.find(
+      (r) => r.action === "rejected"
+    );
+
+    const mdApproved = request.reviewTrail?.find(
+      (r) => r.role === "md" && r.action === "approved"
+    );
+
+    const finalStatus = rejectedReview
+      ? "rejected"
+      : mdApproved
+      ? "approved"
+      : "pending";
+
+    const latestFinalReview = rejectedReview || mdApproved || latestReview;
+
+    return (
+      <TableRow key={request.id}>
+        {/* Leave type */}
+        <TableCell>
+          <Badge className={getLeaveTypeColor(request.type)}>
+            {typeof request.type === "string"
+              ? request.type.charAt(0).toUpperCase() + request.type.slice(1)
+              : "Unknown"}
+          </Badge>
+        </TableCell>
+
+        {/* Dates */}
+        <TableCell>
+          <div className="text-sm">
+            <div>{new Date(request.startDate).toLocaleDateString()}</div>
+            <div className="text-gray-500">
+              to {new Date(request.endDate).toLocaleDateString()}
+            </div>
+          </div>
+        </TableCell>
+
+        <TableCell>{request.days} day(s)</TableCell>
+
+        <TableCell className="max-w-xs truncate">
+          {request.reason || "-"}
+        </TableCell>
+
+        <TableCell>
+          <motion.div
+            key={finalStatus}
+            initial={{ opacity: 0.6, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            {getStatusBadge(finalStatus as "approved" | "pending" | "rejected")}
+
+<div className="text-xs text-muted-foreground mt-1 space-y-1">
+  {latestFinalReview?.role && (
+    <div>
+      Last reviewed by <strong>{latestFinalReview.role}</strong>
+    </div>
+  )}
+  {latestFinalReview?.date && (
+    <div>
+      on <strong>{new Date(latestFinalReview.date).toLocaleDateString()}</strong>
+    </div>
+  )}
+  {latestFinalReview?.note && (
+    <div className="italic text-gray-500 text-xs truncate max-w-[160px]">
+      {/* “{latestFinalReview.note}” */}
+    </div>
+  )}
+</div>
+
+
+            <ApprovalSteps request={request} />
+          </motion.div>
+        </TableCell>
+
+        {/* Applied date */}
+        <TableCell>
+          {new Date(request.appliedDate).toLocaleDateString()}
+        </TableCell>
+      </TableRow>
+    );
+  })}
+
+</TableBody>
+
+      </Table>
+    </CardContent>
+  </Card>
+</TabsContent>
+
+        {/* <TabsContent value="balance">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Object.entries(leaveBalance).filter(([key]) => key !== 'employeeId').map(([type, balance]) => (
               <Card key={type}>
@@ -443,7 +592,7 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="status">
           <Card>
@@ -452,24 +601,22 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
               <CardDescription>Track the status of all your leave requests</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {['pending', 'approved', 'rejected'].map((status) => {
-                  const count = leaveRequests.filter(req => req.status === status && (!canApproveLeave || req.employeeId === user?.id)).length;
-                  return (
-                    <Card key={status}>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold mb-2">{count}</div>
-                        <div className="text-sm text-gray-600 capitalize">{status} Requests</div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {['pending', 'approved', 'rejected'].map((status) => (
+                <Card key={`status-card-${status}`}>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl font-bold mb-2">{statusOverview[status]}</div>
+                    <div className="text-sm text-gray-600 capitalize">{status} Requests</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+
           </Card>
         </TabsContent>
 
-        <TabsContent value="recent">
+        {/* <TabsContent value="recent">
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
@@ -477,7 +624,7 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {leaveRequests
+                {requests
                   .filter(req => !canApproveLeave || req.employeeId === user?.id)
                   .slice(0, 5)
                   .map((request) => (
@@ -500,7 +647,7 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         {canApproveLeave && (
           <TabsContent value="approval">
@@ -523,8 +670,9 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {leaveRequests.map((request) => (
-                      <TableRow key={request.id}>
+                    {approvalQueue.flat().map((request) => {
+                      return (
+                         <TableRow key={request.id}>
                         <TableCell className="font-medium">{request.employeeName}</TableCell>
                         <TableCell>
                           <Badge className={getLeaveTypeColor(request.type)}>
@@ -540,7 +688,7 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                         <TableCell>{request.days} day(s)</TableCell>
                         <TableCell className="max-w-xs truncate">{request.reason}</TableCell>
                         <TableCell>{getStatusBadge(request.status)}</TableCell>
-                        <TableCell>
+                        {/* <TableCell>
                           {request.status === 'pending' && (
                             <div className="flex space-x-2">
                               <Button
@@ -559,18 +707,104 @@ const {user: userLeaveManagement,  profile } = useCombinedContext();
                               </Button>
                             </div>
                           )}
+                        </TableCell> */}
+                        <TableCell>
+  {request.status === 'pending' && (
+    <div className="flex space-x-2">
+  <Button
+    size="sm"
+    variant="outline"
+    disabled={isLoading}
+    onClick={() => handleApproveLeaveRequestFlow(request.id)}
+  >
+    {isLoading ? (
+      <Loader2 className="h-4 w-4 animate-spin" />
+    ) : (
+      <Check className="h-4 w-4" />
+    )}
+  </Button>
+
+  <Button
+    size="sm"
+    variant="outline"
+    disabled={isLoading}
+    style={{ border: '2px solid red' }}
+    onClick={() => {
+      dispatch(setSelectedRequest(request));
+      dispatch(setIsDialogOpen(true));
+    }}
+  >
+    {isLoading ? (
+      <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+    ) : (
+      <X className="h-4 w-4 text-red-500" />
+    )}
+  </Button>
+</div>
+
+  )}
                         </TableCell>
+
                       </TableRow>
-                    ))}
+                      )
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>
             </Card>
           </TabsContent>
         )}
+        <Dialog open={isDialogOpen}
+          onOpenChange={(open) => dispatch(setIsDialogOpen(open))}
+         >
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Reject Leave Request</DialogTitle>
+      <DialogDescription>
+        You are about to reject {selectedRequest?.employeeName}'s leave request. Please provide a reason.
+      </DialogDescription>
+    </DialogHeader>
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="rejectionNote">Reason for Rejection</Label>
+        <Textarea
+          id="rejectionNote"
+          value={rejectionNote}
+          onChange={(e) => dispatch(setRejectionNote(e.target.value))}
+          placeholder="Provide feedback or reason for rejection..."
+        />
+      </div>
+    </div>
+    <DialogFooter>
+      <Button variant="outline" onClick={() => dispatch(setIsDialogOpen(false))}>
+        Cancel
+      </Button>
+<Button
+  variant="destructive"
+  disabled={isLoading}
+  onClick={async () => {
+    if (selectedRequest) {
+      const success = await handleRejectLeaveRequestWithNote(selectedRequest.id, rejectionNote);
+      if (success) {
+        dispatch(updateStatusOverview({ approved: false, rejected: true }));
+        dispatch(resetLeaveState()); // ✅ Clear the leave slice state
+        dispatch(setIsDialogOpen(false));
+      }
+    }
+  }}
+>
+  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  Reject Leave
+</Button>
+
+    </DialogFooter>
+  </DialogContent>
+        </Dialog>
+
       </Tabs>
     </div>
   );
 };
 
-export default LeaveManagement;
+
+export default LeaveManagement

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+
 
 import { useEditProfileMutation, useUploadProfileMutation, useGetProfileQuery, useDeleteProfileMutation } from "@/store/slices/profile/profileApi";
 import { toast } from "../use-toast";
 import { ProfileContextType, ProfileFormData } from "@/types/user";
 import { setFormData, setLoading } from "@/store/slices/profile/profileSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 
 
@@ -15,6 +16,9 @@ export const useReduxProfile= (): ProfileContextType => {
   const { user } = useAppSelector((state) => state.auth);
   const [editProfileMutation, {isLoading:editProfileIsLoading}] = useEditProfileMutation();
   const [uploadProfileMutation, {isLoading:uploadIsLoading}] = useUploadProfileMutation();
+  const { data: attendanceRecords, isLoading: historyLoading, error: historyError, refetch: refetchProfile } = useGetProfileQuery(undefined, {
+     skip: !user, // Skip if no user
+   });
  
   const [deleteProfileMutation] = useDeleteProfileMutation();
  
@@ -93,6 +97,6 @@ const uploadProfile = async (formData: FormData): Promise<boolean> => {
     editProfile,
     uploadProfile,
     deleteProfile,
-    // refetchProfile: refetch,
+    refetchProfile
   };
 };

@@ -21,7 +21,7 @@ const Index = () => {
     
 
 
-    return isAuthenticated && user  ? <Dashboard /> : <Login />;
+    return (isAuthenticated && user)  ? <Dashboard /> : <Login />;
   } catch (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

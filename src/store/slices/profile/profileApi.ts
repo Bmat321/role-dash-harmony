@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-import { apiSlice } from "../apiSlice";
+import { apiSlice } from "../auth/apiSlice";
 
 
 

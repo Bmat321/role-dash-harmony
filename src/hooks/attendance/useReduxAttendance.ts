@@ -7,7 +7,7 @@ import {
   useManualCheckOutMutation,
   useGetMyAttendanceHistoryQuery,
   useAdminAttendanceReportQuery,
-  useGetMyAttendanceStatsQuery,
+  // useGetMyAttendanceStatsQuery,
   useGetCompanyAttendanceSummaryQuery,
   useExportAttendanceExcelQuery,
 } from "@/store/slices/attendance/attendanceApi";
@@ -24,9 +24,9 @@ export const useReduxAttendance = (): AttendanceContextType => {
     skip: !user, // Skip if no user
   });
 
-  const { data: attendanceStats, isLoading: statsLoading, error: statsError } = useGetMyAttendanceStatsQuery(undefined, {
-    skip: !user, // Skip if no user
-  });
+  // const { data: attendanceStats, isLoading: statsLoading, error: statsError } = useGetMyAttendanceStatsQuery(undefined, {
+  //   skip: !user, // Skip if no user
+  // });
 
   const { data: companyAttendanceSummary, isLoading: summaryLoading, error: summaryError } = useGetCompanyAttendanceSummaryQuery(undefined, {
     skip: !user, // Skip if no user
@@ -81,7 +81,7 @@ export const useReduxAttendance = (): AttendanceContextType => {
   };
 
   const handleManualCheckIn = async (data: any): Promise<boolean> => {
-    console.log("DATAhandleManualCheckIn", data)
+
     dispatch(setLoading(false))
     try {
       await manualCheckIn(data).unwrap();
@@ -101,10 +101,12 @@ export const useReduxAttendance = (): AttendanceContextType => {
   };
 
   const handleManualCheckOut = async (data: any): Promise<boolean> => {
+    console.log("DATAhandleManualCheckIn", data)
+    dispatch(setLoading(false))
     try {
       await manualCheckOut(data).unwrap();
       toast({ title: "Manual Check-Out Successful" });
-      refetchAttendanceHistory();
+      // refetchAttendanceHistory();
       return true; // Return true if successful
     } catch (error: any) {
       toast({
@@ -113,6 +115,8 @@ export const useReduxAttendance = (): AttendanceContextType => {
         variant: "destructive",
       });
       return false; // Return false if failed
+    }finally{
+     dispatch(setLoading(false))
     }
   };
 
@@ -136,13 +140,13 @@ export const useReduxAttendance = (): AttendanceContextType => {
 
   return {
     attendanceRecords,
-    attendanceStats,
+    // attendanceStats,
     companyAttendanceSummary,
     adminAttendanceReport,
     exportedAttendanceData,
     isLoading: {
       historyLoading,
-      statsLoading,
+      // statsLoading,
       summaryLoading,
       adminReportLoading,
       exportLoading,
@@ -153,7 +157,7 @@ export const useReduxAttendance = (): AttendanceContextType => {
     },
     error: {
       historyError,
-      statsError,
+      // statsError,
       summaryError,
       adminReportError,
       exportError,

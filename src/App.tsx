@@ -8,10 +8,15 @@ import { CombinedProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Provider } from "react-redux";
-import { store} from "./store/store";
+import { persistor, store} from "./store/store";
 import { PersistGate } from "redux-persist/integration/react";
 
 const queryClient = new QueryClient();
+
+// ✅ TEMP: Clear persisted Redux state (e.g., old types like 'personal')
+// persistor.purge().then(() => {
+//   console.log("Redux Persist store purged");
+// });
 
 const App = () => (
   // <QueryClientProvider client={queryClient}>
@@ -29,7 +34,7 @@ const App = () => (
   // </QueryClientProvider>
 
     <Provider store={store}>
-    {/* <PersistGate loading={<div>Loading...</div>} persistor={persistor}> */}
+    <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
       <TooltipProvider>
         <CombinedProvider>
           <Toaster />
@@ -40,7 +45,7 @@ const App = () => (
           </Routes>
         </CombinedProvider>
       </TooltipProvider>
-    {/* </PersistGate> */}
+    </PersistGate>
   </Provider>
 );
 

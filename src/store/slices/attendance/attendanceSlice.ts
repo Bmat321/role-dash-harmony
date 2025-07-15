@@ -3,6 +3,7 @@ import { AttendanceRecord } from '@/types/attendance'; // Assuming your types ar
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { attendanceApi } from './attendanceApi';
 import { normalizeAttendanceRecord } from '@/utils/normalize';
+import { shiftUtils } from '@/utils/attendanceHelpers';
 
 interface AttendanceState {
   isLoading: boolean;
@@ -27,7 +28,7 @@ const initialState: AttendanceState = {
   companySummary: null,
   isClocking: false,
   activeTab: 'clock-in', // Default active tab
-  selectedShift: 'day', // Default selected shift
+  selectedShift: shiftUtils.get(),  // Default selected shift
   isCheckedIn: false, // Default checked-in status
   currentSession: null, // Default current session
 
@@ -47,6 +48,16 @@ const attendanceSlice = createSlice({
     },
     setIsClocking(state, action: PayloadAction<boolean>) {
   state.isClocking = action.payload;
+},
+
+setSelectedShift(state, action: PayloadAction<'day' | 'night'>) {
+  state.selectedShift = action.payload;
+  shiftUtils.set(action.payload); // persist
+},
+
+clearSelectedShift(state) {
+  state.selectedShift = 'day';
+  shiftUtils.clear(); // clear on checkout/reset
 },
 
     // Set attendance records
@@ -84,9 +95,9 @@ const attendanceSlice = createSlice({
       state.activeTab = action.payload;
     },
     // Set selected shift
-    setSelectedShift(state, action: PayloadAction<'day' | 'night'>) {
-      state.selectedShift = action.payload;
-    },
+    // setSelectedShift(state, action: PayloadAction<'day' | 'night'>) {
+    //   state.selectedShift = action.payload;
+    // },
     // Set checked-in status
     setIsCheckedIn(state, action: PayloadAction<boolean>) {
       state.isCheckedIn = action.payload;
@@ -117,20 +128,20 @@ const attendanceSlice = createSlice({
         state.error = action.error?.message || 'Failed to fetch attendance history';
       });
 
-    // Get My Attendance Stats
-    builder
-      .addMatcher(attendanceApi.endpoints.getMyAttendanceStats.matchPending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addMatcher(attendanceApi.endpoints.getMyAttendanceStats.matchFulfilled, (state, action) => {
-        state.isLoading = false;
-        state.stats = action.payload.data; // Assuming payload contains stats data
-      })
-      .addMatcher(attendanceApi.endpoints.getMyAttendanceStats.matchRejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.error?.message || 'Failed to fetch attendance stats';
-      });
+    // // Get My Attendance Stats
+    // builder
+    //   .addMatcher(attendanceApi.endpoints.getMyAttendanceStats.matchPending, (state) => {
+    //     state.isLoading = true;
+    //     state.error = null;
+    //   })
+    //   .addMatcher(attendanceApi.endpoints.getMyAttendanceStats.matchFulfilled, (state, action) => {
+    //     state.isLoading = false;
+    //     state.stats = action.payload.data; // Assuming payload contains stats data
+    //   })
+    //   .addMatcher(attendanceApi.endpoints.getMyAttendanceStats.matchRejected, (state, action) => {
+    //     state.isLoading = false;
+    //     state.error = action.error?.message || 'Failed to fetch attendance stats';
+    //   });
 
     // Get Company Attendance Summary
     builder
@@ -214,14 +225,20 @@ const attendanceSlice = createSlice({
       })
       .addMatcher(attendanceApi.endpoints.manualCheckOut.matchFulfilled, (state, action) => {
         state.isLoading = false;
-        const payload = action.payload.data;
-        const updatedRecord: AttendanceRecord = payload.data;
+
+        const updatedRecord = normalizeAttendanceRecord(action.payload.data.data);
+
         const index = state.records.findIndex((record) => record.id === updatedRecord.id);
         if (index !== -1) {
-          state.records[index] = updatedRecord; // Update record
+          state.records[index] = updatedRecord;
+        } else {
+          state.records.push(updatedRecord); // Optional fallback
         }
-        state.currentRecord = updatedRecord; // Optionally, update current record
+
+        state.currentRecord = updatedRecord;
+        state.isCheckedIn = false;
       })
+
       .addMatcher(attendanceApi.endpoints.manualCheckOut.matchRejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error?.message || 'Failed to check-out manually';
@@ -241,6 +258,7 @@ export const {
   setSelectedShift,
   setIsCheckedIn,
   setCurrentSession,
+  clearSelectedShift,
   setIsClocking
 } = attendanceSlice.actions;
 

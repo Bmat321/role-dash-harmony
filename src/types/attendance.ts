@@ -3,20 +3,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
-// export interface AttendanceRecord {
-//   id: string;
-//   employeeId: string;
-//   employeeName: string;
-//   date: string;
-//   clockIn?: string;
-//   clockOut?: string;
-//   breakStart?: string;
-//   breakEnd?: string;
-//   totalHours?: number;
-//   status: 'present' | 'absent' | 'late' | 'partial' | 'checked-in';
-//   biometricId?: string;
-//   notes?: string;
-// }
 
 export interface AttendanceRecord {
   id: string;
@@ -46,14 +32,14 @@ export interface CompanySummaryData {
 }
 export interface AttendanceContextType {
   attendanceRecords: AttendanceRecord[];  
-  attendanceStats: AttendanceStats | null;  
+  // attendanceStats: AttendanceStats | null;  
   companyAttendanceSummary: any | null;  
   adminAttendanceReport: any | null;  
   exportedAttendanceData: any | null;  
 
   isLoading: {
     historyLoading: boolean;
-    statsLoading: boolean;
+    // statsLoading: boolean;
     summaryLoading: boolean;
     adminReportLoading: boolean;
     exportLoading: boolean;
@@ -65,7 +51,7 @@ export interface AttendanceContextType {
 
   error: {
     historyError: string | null | FetchBaseQueryError | SerializedError | FetchBaseQueryError | SerializedError;
-    statsError: string | null | FetchBaseQueryError | SerializedError;
+    // statsError: string | null | FetchBaseQueryError | SerializedError;
     summaryError: string | null | FetchBaseQueryError | SerializedError;
     adminReportError: string | null | FetchBaseQueryError | SerializedError;
     exportError: string | null | FetchBaseQueryError | SerializedError;
