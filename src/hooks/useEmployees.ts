@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Employee, EmployeeStats } from '@/types/employee';
 
@@ -30,7 +29,7 @@ const mockEmployees: Employee[] = [
     id: '3',
     name: 'Mike Wilson',
     email: 'manager@hris.com',
-    role: 'manager',
+    role: 'md',
     department: 'Engineering',
     position: 'Team Lead',
     status: 'active',

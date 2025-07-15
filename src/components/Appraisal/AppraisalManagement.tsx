@@ -82,8 +82,8 @@ const AppraisalManagement: React.FC = () => {
     return (
       <AppraisalScoring
         appraisal={selectedAppraisal}
-        isTeamLead={isTeamLead && selectedAppraisal.teamLeadId === user?.id}
-        isEmployee={isEmployee && selectedAppraisal.employeeId === user?.id}
+        isTeamLead={isTeamLead && selectedAppraisal.teamLeadId === user?._id}
+        isEmployee={isEmployee && selectedAppraisal.employeeId === user?._id}
         onBack={() => setSelectedAppraisal(null)}
         onSubmit={handleAppraisalUpdate}
       />
