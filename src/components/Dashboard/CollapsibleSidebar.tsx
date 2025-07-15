@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -13,7 +14,6 @@ import {
   DollarSign,
   Menu,
   X,
-  Shield,
   UserCheck,
   TrendingUp,
   Briefcase,
@@ -73,7 +73,6 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
           { id: 'documents', label: 'Document Management', icon: FolderOpen },
           { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-          { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
           { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
           { id: 'analytics', label: 'Analytics', icon: BarChart },
           { id: 'reports', label: 'Reports', icon: FileText },
@@ -94,7 +93,6 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
           { id: 'documents', label: 'Document Management', icon: FolderOpen },
           { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-          { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
           { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
           { id: 'reports', label: 'HR Reports', icon: FileText },
         ];
@@ -111,7 +109,6 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'appraisal', label: 'Appraisal Management', icon: Award },
           { id: 'appraisal-approval', label: 'Appraisal Approval', icon: ClipboardCheck },
           { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-          { id: 'handover-approval', label: 'Handover Approval', icon: Shield },
           { id: 'time-tracking', label: 'Team Time Tracking', icon: MapPin },
           { id: 'reports', label: 'Team Reports', icon: FileText },
         ];
@@ -148,14 +145,14 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             </div>
             {!isCollapsed && <span className="text-xl font-bold text-white">HRIS</span>}
           </div>
-          {/* Desktop collapse toggle */}
+          {/* Desktop collapse toggle - always visible */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleCollapse}
-            className="hidden lg:flex text-white hover:bg-gray-700"
+            className="text-white hover:bg-gray-700 p-1 h-8 w-8 flex items-center justify-center"
           >
-            {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
           {/* Mobile close button */}
           <Button

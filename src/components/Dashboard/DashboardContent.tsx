@@ -1,3 +1,4 @@
+
 import React from 'react';
 import DashboardOverview from './DashboardOverview';
 import EmployeeManagement from '../Employee/EmployeeManagement';
@@ -8,7 +9,6 @@ import PerformanceManagement from '../Performance/PerformanceManagement';
 import RecruitmentManagement from '../Recruitment/RecruitmentManagement';
 import DocumentManagement from '../Documents/DocumentManagement';
 import HandoverManagement from '../Handover/HandoverManagement';
-import HandoverApprovalQueue from '../Handover/HandoverApprovalQueue';
 import TimeTrackingManagement from '../TimeTracking/TimeTrackingManagement';
 import Reports from './Reports';
 import Analytics from './Analytics';
@@ -51,8 +51,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeItem, onNavig
       return <DocumentManagement />;
     case 'handover':
       return <HandoverManagement />;
-    case 'handover-approval':
-      return <HandoverApprovalQueue />;
     case 'time-tracking':
       return <TimeTrackingManagement />;
     case 'analytics':
