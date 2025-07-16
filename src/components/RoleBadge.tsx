@@ -7,7 +7,6 @@ interface RoleBadgeProps {
   role: User['role'];
   size?: 'sm' | 'md' | 'lg';
 }
-
 const roleConfig = {
   admin: {
     label: 'admin',
@@ -17,15 +16,24 @@ const roleConfig = {
     label: 'hr',
     className: 'bg-hr text-white hover:bg-hr/90',
   },
-  manager: {
+  md: {
     label: 'md',
-    className: 'bg-manager text-white hover:bg-manager/90',
+    className: 'bg-md text-white hover:bg-md/90',
+  },
+  hod: {
+    label: 'hod',
+    className: 'bg-hod text-white hover:bg-hod/90',
+  },
+  teamlead: {
+    label: 'teamlead',
+    className: 'bg-teamlead text-white hover:bg-teamlead/90',
   },
   employee: {
     label: 'employee',
     className: 'bg-employee text-white hover:bg-employee/90',
   },
 };
+
 
 const RoleBadge: React.FC<RoleBadgeProps> = ({ role, size = 'md' }) => {
   const config = roleConfig[role];

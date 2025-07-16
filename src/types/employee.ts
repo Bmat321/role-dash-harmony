@@ -3,7 +3,7 @@ export interface Employee {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'hr' | 'md' | 'employee';
+  role: 'admin' | 'hr' | 'md' | 'employee' | 'hod';
   department: string;
   position: string;
   status: 'active' | 'inactive' | 'terminated';

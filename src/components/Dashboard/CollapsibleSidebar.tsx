@@ -59,6 +59,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
 
     switch (role) {
       case 'admin':
+      case 'hr':
         return [
           ...baseItems,
           { id: 'profile', label: 'My Profile', icon: User },
@@ -79,23 +80,23 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           { id: 'settings', label: 'System Settings', icon: Settings },
         ];
 
-      case 'hr':
-        return [
-          ...baseItems,
-          { id: 'profile', label: 'My Profile', icon: User },
-          { id: 'employees', label: 'Employees', icon: Users },
-          { id: 'attendance', label: 'Attendance', icon: Clock },
-          { id: 'leave', label: 'Leave Management', icon: Calendar },
-          { id: 'loan', label: 'Loan Management', icon: CreditCard },
-          { id: 'appraisal', label: 'Appraisal Management', icon: Award },
-          { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
-          { id: 'performance', label: 'Performance Management', icon: TrendingUp },
-          { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
-          { id: 'documents', label: 'Document Management', icon: FolderOpen },
-          { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
-          { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
-          { id: 'reports', label: 'HR Reports', icon: FileText },
-        ];
+      // case 'hr':
+      //   return [
+      //     ...baseItems,
+      //     { id: 'profile', label: 'My Profile', icon: User },
+      //     { id: 'employees', label: 'Employees', icon: Users },
+      //     { id: 'attendance', label: 'Attendance', icon: Clock },
+      //     { id: 'leave', label: 'Leave Management', icon: Calendar },
+      //     { id: 'loan', label: 'Loan Management', icon: CreditCard },
+      //     { id: 'appraisal', label: 'Appraisal Management', icon: Award },
+      //     { id: 'payroll', label: 'Payroll Management', icon: DollarSign },
+      //     { id: 'performance', label: 'Performance Management', icon: TrendingUp },
+      //     { id: 'recruitment', label: 'Recruitment', icon: UserCheck },
+      //     { id: 'documents', label: 'Document Management', icon: FolderOpen },
+      //     { id: 'handover', label: 'Handover Management', icon: ArrowRightLeft },
+      //     { id: 'time-tracking', label: 'Time Tracking', icon: MapPin },
+      //     { id: 'reports', label: 'HR Reports', icon: FileText },
+      //   ];
 
       case 'md':
       case 'teamlead':

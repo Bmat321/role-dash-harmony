@@ -47,6 +47,7 @@ import authReducer from './slices/auth/authSlice';
 import leaveReducer from './slices/leave/leaveSlice';
 import attendanceReducer from './slices/attendance/attendanceSlice'
 import profileReducer from './slices/profile/profileSlice'
+import handoverReducer from './slices/handover/handoverSlice'
 
 // 1. Combine all reducers
 const rootReducer = combineReducers({
@@ -54,6 +55,7 @@ const rootReducer = combineReducers({
   profile: profileReducer,
   attendance: attendanceReducer,
   leave: leaveReducer,
+  handover: handoverReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
 });
 

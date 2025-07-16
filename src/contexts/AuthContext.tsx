@@ -41,6 +41,8 @@ import { useReduxAttendance } from '@/hooks/attendance/useReduxAttendance';
 import { AttendanceContextType } from '@/types/attendance';
 import { useReduxLeave } from '@/hooks/leave/useReduxLeave';
 import { UseReduxLeaveReturnType } from '@/types/leave';
+import { HandoverContextType } from '@/types/handover';
+import { useReduxHandover } from '@/hooks/handover/useReduxHandover';
 
 
 const CombinedContext = createContext<{
@@ -48,6 +50,7 @@ const CombinedContext = createContext<{
   profile: ProfileContextType;
   attendance: AttendanceContextType
   leave: UseReduxLeaveReturnType
+  handover: HandoverContextType
 } | undefined>(undefined);
 
 export const CombinedProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -55,15 +58,16 @@ export const CombinedProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const profile = useReduxProfile();
   const attendance = useReduxAttendance()
   const leave = useReduxLeave()
+  const handover = useReduxHandover()
 
   // Check if auth and profile are undefined
-  if (!user || !profile || !attendance || !leave) {
+  if (!user || !profile || !attendance || !leave ||!handover) {
     console.error('useReduxAuth or useReduxProfile returned undefined');
     return <div>Loading...</div>;
   }
 
   return (
-    <CombinedContext.Provider value={{ user, profile , attendance, leave}}>
+    <CombinedContext.Provider value={{ user, profile , attendance, leave, handover}}>
       {children}
     </CombinedContext.Provider>
   );
