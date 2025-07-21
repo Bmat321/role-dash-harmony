@@ -126,7 +126,7 @@ const handleSave = async () => {
                 {(user?.role === 'admin' || user?.role === 'hr') && (
                   <div className="flex items-center gap-2 text-sm">
                     <Settings className="h-4 w-4 text-gray-500" />
-                    <span>System Administrator</span>
+                    <span>{user?.position}</span>
                   </div>
                 )}
               </div>

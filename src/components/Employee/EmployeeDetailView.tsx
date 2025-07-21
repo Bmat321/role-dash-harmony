@@ -152,11 +152,11 @@ const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({ employee, onBac
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Department</label>
-                 <div className="font-medium">
-  {employee.department
-    ? employee.department.charAt(0).toUpperCase() + employee.department.slice(1)
-    : ''}
-</div>
+                              <div className="font-medium">
+                {employee.department
+                  ? employee.department.charAt(0).toUpperCase() + employee.department.slice(1)
+                  : ''}
+                  </div>
 
                 </div>
                 <div>

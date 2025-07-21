@@ -40,6 +40,7 @@ const EmployeeManagement: React.FC = () => {
   const canViewAllEmployees = userEmployeeManagement.user?.role === 'admin' || userEmployeeManagement.user?.role === 'hr';
   const [loadingStates, setLoadingStates] = useState<Record<string, string | null>>({});
   const isButtonLoading = (id: string, type: string) => loadingStates[id] === type;
+const shouldShowSkeleton =  !user || (user.role === 'hr' || user.role === 'admin' && profilesIsLoading);
 
 const filteredEmployees = bulkEmployees?.filter((employee:any) => {
   const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase();
@@ -52,6 +53,7 @@ const filteredEmployees = bulkEmployees?.filter((employee:any) => {
 
   return matchesSearch && matchesDepartment;
 });
+{console.log('profilesIsLoading:', profilesIsLoading)}
 
 
 const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -677,6 +679,59 @@ const handleDelete = async (employeeId: string) => {
     <CardTitle>Employees ({filteredEmployees.length})</CardTitle>
     <CardDescription>Manage your organization's employees</CardDescription>
   </CardHeader>  
+  {shouldShowSkeleton ? (
+       Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={`skeleton-${i}`} className="animate-pulse">
+        {/* Employee Cell */}
+        <TableCell>
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 rounded-full bg-muted" />
+            <div className="space-y-1">
+              <div className="h-4 w-32 bg-muted rounded" /> {/* Name */}
+              <div className="h-3 w-40 bg-muted-foreground/50 rounded" /> {/* Email */}
+              <div className="h-3 w-28 bg-muted-foreground/40 rounded" /> {/* Phone */}
+            </div>
+          </div>
+        </TableCell>
+
+        {/* Role */}
+        <TableCell>
+          <div className="h-4 w-16 bg-muted rounded" />
+        </TableCell>
+
+        {/* Department */}
+        <TableCell>
+          <div className="h-4 w-24 bg-muted rounded" />
+        </TableCell>
+
+        {/* Status */}
+        <TableCell>
+          <div className="h-4 w-20 bg-muted rounded" />
+        </TableCell>
+
+        {/* Hire Date */}
+        <TableCell>
+          <div className="h-4 w-28 bg-muted rounded" />
+        </TableCell>
+
+        {/* Salary (conditionally rendered) */}
+        {canViewAllEmployees && (
+          <TableCell>
+            <div className="h-4 w-20 bg-muted rounded" />
+          </TableCell>
+        )}
+
+        {/* Actions */}
+        <TableCell>
+          <div className="flex space-x-2">
+            <div className="h-8 w-8 rounded bg-muted" />
+            <div className="h-8 w-8 rounded bg-muted" />
+            <div className="h-8 w-8 rounded bg-muted" />
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  ): (
           <CardContent>
             <Table>
               <TableHeader>
@@ -750,11 +805,11 @@ const handleDelete = async (employeeId: string) => {
                               : '-'}
                           </TableCell>
 
-{canViewAllEmployees && (
-  <TableCell className="font-medium">
-    {employee.salary ? `#${Number(employee.salary).toLocaleString()}` : '-'}
-  </TableCell>
-)}
+                      {canViewAllEmployees && (
+                        <TableCell className="font-medium">
+                          {employee.salary ? `#${Number(employee.salary).toLocaleString()}` : '-'}
+                        </TableCell>
+                      )}
 
 
                     <TableCell>
@@ -806,25 +861,25 @@ const handleDelete = async (employeeId: string) => {
                             </Button>
 
                      {(employee.sendInvite === true || employee.resetRequested === true) && (
-  <Button
-    variant="outline"
-    size="sm"
-    className="flex items-center gap-2 text-sm"
-    onClick={() => handleResendInvite(employee.email, employee._id)}
-    disabled={isButtonLoading(employee._id, 'resend')}
-  >
-    {isButtonLoading(employee._id, 'resend') ? (
-      <>
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        Sending...
-      </>
-    ) : (
-      employee.sendInvite === true
-        ? 'Resend Invite'
-        : 'Send Password Instructions'
-    )}
-  </Button>
-)}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex items-center gap-2 text-sm"
+                                  onClick={() => handleResendInvite(employee.email, employee._id)}
+                                  disabled={isButtonLoading(employee._id, 'resend')}
+                                >
+                                  {isButtonLoading(employee._id, 'resend') ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                      Sending...
+                                    </>
+                                  ) : (
+                                    employee.sendInvite === true
+                                      ? 'Resend Invite'
+                                      : 'Send Password Instructions'
+                                  )}
+                                </Button>
+                              )}
 
                           </>
                         )}
@@ -839,41 +894,43 @@ const handleDelete = async (employeeId: string) => {
               </TableBody>
             </Table>
           </CardContent>
+
+  ) }
       </Card>
 
-<Dialog
-  open={isDeleteDialogOpen}
-  onOpenChange={(open) => dispatch(setIsDeleteDialogOpen(open))}
->
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Confirm Delete</DialogTitle>
-      <DialogDescription>
-        Are you sure you want to delete this employee?
-      </DialogDescription>
-    </DialogHeader>
+                            <Dialog
+                              open={isDeleteDialogOpen}
+                              onOpenChange={(open) => dispatch(setIsDeleteDialogOpen(open))}
+                            >
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Confirm Delete</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to delete this employee?
+                                  </DialogDescription>
+                                </DialogHeader>
 
-    <DialogFooter>
-      <Button
-        variant="outline"
-        onClick={() => dispatch(setIsDeleteDialogOpen(false))}
-        disabled={isLoading}
-      >
-        Cancel
-      </Button>
-      <Button
-        variant="destructive"
-        onClick={() => handleDelete(selectedDeleteId)}
-        disabled={isLoading}
-      >
-        {isLoading && (
-          <Loader2 className="h-4 w-4 animate-spin mr-2 text-muted-foreground" />
-        )}
-        Confirm
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+                                <DialogFooter>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => dispatch(setIsDeleteDialogOpen(false))}
+                                    disabled={isLoading}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => handleDelete(selectedDeleteId)}
+                                    disabled={isLoading}
+                                  >
+                                    {isLoading && (
+                                      <Loader2 className="h-4 w-4 animate-spin mr-2 text-muted-foreground" />
+                                    )}
+                                    Confirm
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
 
 
       {/* <DeleteConfirmationDialog onConfirm={handleDelete} />            */}
