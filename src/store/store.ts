@@ -66,7 +66,7 @@ const persistConfig = {
   key: 'root',
   version: 1,
   storage,
-  whitelist: ['auth', 'leave'],
+  whitelist: ['auth', 'leave', 'handover'],
 };
 
 const persistedReducer = persistReducer<RootReducerType>(persistConfig, rootReducer);
@@ -84,6 +84,11 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
+// const initializeApp = async() => {
+//   await store.dispatch(apiSlice.endpoints.loadUser.initiate({}, {forceRefetch: true}));
+// }
+
+// initializeApp();
 // 4. App-wide types
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

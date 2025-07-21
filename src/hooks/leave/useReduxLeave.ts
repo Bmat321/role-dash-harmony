@@ -28,7 +28,7 @@ export const useReduxLeave = (): UseReduxLeaveReturnType => {
     error: approvalQueueError,
     refetch: refetchApprovalQueue,
   } = useGetLeaveApprovalQueueQuery(undefined, {
-     skip: !user,
+      skip: !user || (user.role !== "teamlead" && user.role !== "hr"),
   });
 
   const {
@@ -46,7 +46,7 @@ export const useReduxLeave = (): UseReduxLeaveReturnType => {
     error: teamleadError,
     refetch: refetchTeamlead,
   } = useGetTeamLeadQuery(undefined, {
-     skip: !user,
+       skip: !user || (user.role !== "teamlead" && user.role !== "hr"),
   });
 
   const {

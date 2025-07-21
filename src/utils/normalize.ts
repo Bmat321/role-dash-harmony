@@ -19,7 +19,6 @@ export const normalizeAttendanceRecord = (record: any): AttendanceRecord => ({
 
 
 // export const normalizeLeaveRequest = (item: any): LeaveRequest => {
-//   console.log("Normalizing leave request item:", item);
 
 //   return {
 //     id: item._id,

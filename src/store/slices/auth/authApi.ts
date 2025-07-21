@@ -41,7 +41,6 @@ export const authApi = apiSlice.injectEndpoints({
     //       );
     //     } catch (error) {
     //       if (import.meta.env.NODE_ENV !== 'production') {
-    //         console.log('REGISTER ERROR', error);
     //       }
     //     }
     //   },
@@ -66,10 +65,10 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     requestPassword: builder.mutation({
-      query: ({ requestEmail }) => ({
-        url: '/api/auth/request-user-password',
+      query: ({ email }) => ({
+        url: '/api/auth/request-password',
         method: 'POST',
-        body: { requestEmail },
+        body: { email },
         credentials: 'include' as const,
       }),
     
@@ -103,6 +102,44 @@ export const authApi = apiSlice.injectEndpoints({
       }),
     }),  
 
+    newSetPassword: builder.mutation({
+      query: ({ newPassword, passwordConfig, temporaryPassword }) => ({
+        url: '/api/auth/set-password',
+        method: 'POST',
+        body: { newPassword, passwordConfig, temporaryPassword },
+        credentials: 'include' as const,
+      }),
+    }),  
+
+    
+    inviteUser: builder.mutation({
+      query: (data) => ({
+        url: '/api/auth/invite-user',
+        method: 'POST',
+        body: data,
+        credentials: 'include' as const,
+      }),
+    }),
+
+    resendIviteLink: builder.mutation({
+      query: (email) => ({
+        url: '/api/auth/reset-activation',
+        method: 'POST',
+        body: email,
+        credentials: 'include' as const,
+      }),
+      invalidatesTags: ['Profiles'],
+    }),
+
+    bulkInviteUsers: builder.mutation({
+      query: (formData) => ({
+        url: '/api/auth/bulk-invite',
+        method: 'POST',
+        body: formData,
+        credentials: 'include' as const,
+      }),
+    }),
+
  
     logoutUser: builder.mutation({
       query: () => ({
@@ -122,5 +159,9 @@ export const {
   useResetPasswordMutation,
   useVerify2faMutation,
   useResendPasswordMutation,
-  useLogoutUserMutation
+  useLogoutUserMutation,
+  useInviteUserMutation,
+  useBulkInviteUsersMutation,
+  useResendIviteLinkMutation,
+  useNewSetPasswordMutation
 } = authApi;

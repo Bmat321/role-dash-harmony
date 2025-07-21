@@ -25,7 +25,6 @@ const  LeaveManagement: React.FC = () => {
 const {user: userLeaveManagement, leave } = useCombinedContext();
   const { user} = userLeaveManagement
   const { user:currentUser} = useAppSelector((state) => state.auth); 
-  console.log("currentUser", currentUser) 
   
   const {  handleCreateLeaveRequest, handleApproveLeaveRequest, handleRejectLeaveRequest } = leave
   const {

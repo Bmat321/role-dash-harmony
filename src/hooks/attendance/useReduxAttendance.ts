@@ -101,7 +101,6 @@ export const useReduxAttendance = (): AttendanceContextType => {
   };
 
   const handleManualCheckOut = async (data: any): Promise<boolean> => {
-    console.log("DATAhandleManualCheckIn", data)
     dispatch(setLoading(false))
     try {
       await manualCheckOut(data).unwrap();

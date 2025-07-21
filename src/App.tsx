@@ -19,20 +19,6 @@ const queryClient = new QueryClient();
 // });
 
 const App = () => (
-  // <QueryClientProvider client={queryClient}>
-  //   <TooltipProvider>
-  //      <CombinedProvider>
-
-  //       <Toaster />
-  //       <Sonner />
-  //       <Routes>
-  //         <Route path="/" element={<Index />} />
-  //         <Route path="*" element={<NotFound />} />
-  //       </Routes>
-  //      </CombinedProvider>
-  //   </TooltipProvider>
-  // </QueryClientProvider>
-
     <Provider store={store}>
     <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
       <TooltipProvider>

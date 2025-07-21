@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { useReduxAuth } from '@/hooks/auth/useReduxAuth';
 import { LoginResponse } from '@/types/auth';
-import { BarChart, Clock, Loader2, Shield, Users } from 'lucide-react';
+import { BarChart, Clock, Eye, EyeOff, Loader2, Shield, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import RequestPassword from './Auth/RequestPassword';
 import TwoFactorModal from './Auth/TwoFactorModal';
@@ -16,6 +16,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show2FA, setShow2FA] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showRequestPassword, setShowRequestPassword] = useState(false);
   const [pendingLogin, setPendingLogin] = useState<{email: string, password: string} | null>(null);
    const { isLoading, error } = useAppSelector((state) => state.auth);
@@ -95,63 +96,71 @@ const handleSubmit = async (e: React.FormEvent) => {
                   Enter your credentials to access the dashboard
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      className="h-12"
-                      autoComplete='email'
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                      className="h-12"
-                      autoComplete='current-password'
-                      required
-                    />
-                  </div>
-                  
-                  {/* Forgot Password Link */}
-                  <div className="text-right">
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto"
-                      onClick={() => setShowRequestPassword(true)}
-                    >
-                      Forgot password?
-                    </Button>
-                  </div>
+    <CardContent className="space-y-4">
+  <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-2">
+      <Label htmlFor="email">Email Address</Label>
+      <Input
+        id="email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        className="h-12"
+        autoComplete="email"
+        required
+      />
+    </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg font-semibold" 
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        Sign In
-                        <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                      </>
-                    ) : (
-                      'Sign In'
-                    )}
-                  </Button>
-                </form>
-              </CardContent>
+    <div className="space-y-2 relative">
+      <Label htmlFor="password">Password</Label>
+      <Input
+        id="password"
+        type={showPassword ? 'text' : 'password'}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Enter your password"
+        className="h-12 pr-10"
+        autoComplete="current-password"
+        required
+      />
+      <div
+        className="absolute top-9 right-3 cursor-pointer text-gray-500 hover:text-black"
+        onClick={() => setShowPassword((prev) => !prev)}
+      >
+        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+      </div>
+    </div>
+
+    {/* Forgot Password Link */}
+    <div className="text-right">
+      <Button
+        type="button"
+        variant="link"
+        className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto"
+        onClick={() => setShowRequestPassword(true)}
+      >
+        Forgot password?
+      </Button>
+    </div>
+
+    <Button
+      type="submit"
+      className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg font-semibold"
+      disabled={isLoading}
+    >
+      {isLoading ? (
+        <>
+          Sign In
+          <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+        </>
+      ) : (
+        'Sign In'
+      )}
+    </Button>
+  </form>
+</CardContent>
+
             </Card>
 
             {/* <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">

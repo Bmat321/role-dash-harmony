@@ -20,10 +20,6 @@ const roleConfig = {
     label: 'md',
     className: 'bg-md text-white hover:bg-md/90',
   },
-  hod: {
-    label: 'hod',
-    className: 'bg-hod text-white hover:bg-hod/90',
-  },
   teamlead: {
     label: 'teamlead',
     className: 'bg-teamlead text-white hover:bg-teamlead/90',

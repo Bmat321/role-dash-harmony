@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Mail, ArrowLeft, CheckCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useReduxAuth } from '@/hooks/auth/useReduxAuth';
 
 interface RequestPasswordProps {
   onBack?: () => void;
@@ -16,6 +17,7 @@ const RequestPassword: React.FC<RequestPasswordProps> = ({ onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
+  const {reqestNewPassword} = useReduxAuth()
 
   const handleRequestPassword = async () => {
     if (!email) {
@@ -28,16 +30,12 @@ const RequestPassword: React.FC<RequestPasswordProps> = ({ onBack }) => {
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      toast({
-        title: "Password Request Sent",
-        description: "Check your email for password reset instructions",
-      });
-    }, 2000);
+   const success = await reqestNewPassword(email)
+     setIsLoading(false);
+
+  if (success) {
+    setIsSuccess(true);
+  }
   };
 
   if (isSuccess) {
@@ -56,10 +54,10 @@ const RequestPassword: React.FC<RequestPasswordProps> = ({ onBack }) => {
         <CardContent className="pt-0 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Request Sent!</h2>
-          <p className="text-gray-600 mb-6">
-            We've sent password reset instructions to your email address. 
-            Please check your inbox and follow the instructions.
-          </p>
+    <p className="text-gray-600 mb-6">
+  The HR  will send password setup instructions to your email shortly.  
+  Please check your inbox and follow the steps to complete the process.
+</p>
           <Button className="w-full" onClick={onBack}>
             Close
           </Button>

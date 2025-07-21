@@ -1,7 +1,7 @@
 
 import { toast } from '@/hooks/use-toast';
 import { getTokens } from '@/utils/cookieUtils';
-import { tokenUtils } from '@/utils/tokenUtils';
+// import { tokenUtils } from '@/utils/tokenUtils';
 import {
   BaseQueryApi,
   createApi,
@@ -15,27 +15,33 @@ const ENDPOINT = import.meta.env.VITE_API_BASE_URL;
 
 const baseQuery = fetchBaseQuery({ 
   baseUrl: ENDPOINT,
+  credentials: 'include',  
   prepareHeaders: async (headers, {getState, endpoint}) => {
-    const excludedRoutes = [
-      '/register',
-      '/activate-user',
-      '/login',
-      'verify-2fa',
-      '/request-user-password',
-      '/reset-user-password',
-    ];
 
-    const currentUrl = endpoint;
-
-    if (!excludedRoutes.some(route => currentUrl.includes(route))) {
-      const token = tokenUtils.getToken();
-
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
-    }
     return headers;
   },
+  // prepareHeaders: async (headers, {getState, endpoint}) => {
+  //   const excludedRoutes = [
+  //     '/register',
+  //     '/activate-user',
+  //     '/login',
+  //     '/verify-2fa',
+  //     '/request-user-password',
+  //     '/reset-user-password',
+  //   ];
+
+  //   const currentUrl = endpoint;
+
+  //   if (!excludedRoutes.some(route => currentUrl.includes(route))) {
+  //     const token = tokenUtils.getToken();
+  //     console.log("tokenr", token)
+
+  //     if (token) {
+  //       headers.set('Authorization', `Bearer ${token}`);
+  //     }
+  //   }
+  //   return headers;
+  // },
 });
 
 const baseQueryWithReauth = async (
@@ -57,7 +63,16 @@ const baseQueryWithReauth = async (
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  endpoints: () => ({}),
+  tagTypes: ['Profiles'],
+  endpoints: builder => ({
+    loadUser: builder.query({
+      query: () => ({
+        url: '/api/user/me',
+        method: 'GET',
+        credentials: 'include' as const,
+      }),
+    }),
+  }),
 });
 
 // export const {useLoadUserQuery} = apiSlice;

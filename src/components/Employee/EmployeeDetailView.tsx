@@ -10,9 +10,10 @@ import { Employee } from '@/types/employee';
 import RoleBadge from '@/components/RoleBadge';
 import StatusBadge from '@/components/StatusBadge';
 import EmployeePerformanceChart from './EmployeePerformanceChart';
+import { ProfileFormData } from '@/types/user';
 
 interface EmployeeDetailViewProps {
-  employee: Employee;
+  employee: ProfileFormData;
   onBack: () => void;
 }
 
@@ -20,7 +21,6 @@ const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({ employee, onBac
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -41,15 +41,15 @@ const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({ employee, onBac
           <Card>
             <CardHeader className="text-center">
               <Avatar className="w-24 h-24 mx-auto mb-4">
-                <AvatarImage src={employee.avatar} />
+                <AvatarImage src={employee.profileImage} />
                 <AvatarFallback className="bg-primary-100 text-primary-700 text-lg">
-                  {getInitials(employee.name)}
+                  {getInitials(employee.firstName)}
                 </AvatarFallback>
               </Avatar>
-              <CardTitle className="text-xl">{employee.name}</CardTitle>
+              <CardTitle className="text-xl">{employee.firstName}</CardTitle>
               <div className="flex justify-center gap-2">
                 <RoleBadge role={employee.role} />
-                <StatusBadge status={employee.status} />
+                {/* <StatusBadge status={employee.status} /> */}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -61,17 +61,22 @@ const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({ employee, onBac
                   <span>{employee.email}</span>
                 </div>
                 
-                {employee.phone && (
+                {employee.phoneNumber && (
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-4 w-4 text-gray-500" />
-                    <span>{employee.phone}</span>
+                    <span>{employee.phoneNumber}</span>
                   </div>
                 )}
                 
                 <div className="flex items-center gap-2 text-sm">
                   <Briefcase className="h-4 w-4 text-gray-500" />
                   <div>
-                    <div className="font-medium">{employee.department}</div>
+                   <div className="font-medium">
+  {employee.department
+    ? employee.department.charAt(0).toUpperCase() + employee.department.slice(1)
+    : ''}
+</div>
+
                     <div className="text-gray-500">{employee.position}</div>
                   </div>
                 </div>
@@ -80,21 +85,24 @@ const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({ employee, onBac
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <div>
                     <div className="font-medium">Hire Date</div>
-                    <div className="text-gray-500">{new Date(employee.hireDate).toLocaleDateString()}</div>
+                    <div className="text-gray-500">{new Date(employee.startDate).toLocaleDateString()}</div>
                   </div>
                 </div>
 
-                {employee.salary && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="h-4 w-4 flex items-center justify-center">
-                      <span className="text-gray-500 text-xs">$</span>
-                    </div>
-                    <div>
-                      <div className="font-medium">Salary</div>
-                      <div className="text-gray-500">${employee.salary.toLocaleString()}</div>
-                    </div>
-                  </div>
-                )}
+               {employee.salary && (
+  <div className="flex items-center gap-2 text-sm">
+    <div className="h-4 w-4 flex items-center justify-center">
+      <span className="text-gray-500 text-xs">#</span>
+    </div>
+    <div>
+      <div className="font-medium">Salary</div>
+      <div className="text-gray-500">
+        #{Number(employee.salary).toLocaleString()}
+      </div>
+    </div>
+  </div>
+)}
+
               </div>
             </CardContent>
           </Card>
@@ -129,31 +137,36 @@ const EmployeeDetailView: React.FC<EmployeeDetailViewProps> = ({ employee, onBac
 
         {/* Performance Analytics */}
         <div className="lg:col-span-2 space-y-6">
-          <EmployeePerformanceChart employeeId={employee.id} employeeName={employee.name} />
+          <EmployeePerformanceChart employeeId={employee._id} employeeName={employee.firstName} />
           
           {/* Additional Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Employment Details</CardTitle>
-              </CardHeader>
+            </CardHeader>
               <CardContent className="space-y-3">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Employee ID</label>
-                  <p className="text-sm">{employee.id}</p>
+                  <p className="text-sm">{employee._id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Department</label>
-                  <p className="text-sm">{employee.department}</p>
+                 <div className="font-medium">
+  {employee.department
+    ? employee.department.charAt(0).toUpperCase() + employee.department.slice(1)
+    : ''}
+</div>
+
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Position</label>
                   <p className="text-sm">{employee.position}</p>
                 </div>
-                <div>
+                {/* <div>
                   <label className="text-sm font-medium text-gray-500">Manager</label>
                   <p className="text-sm">{employee.managerId || 'Direct Report'}</p>
-                </div>
+                </div> */}
                 <div>
                   <label className="text-sm font-medium text-gray-500">Employment Type</label>
                   <p className="text-sm">Full-time</p>

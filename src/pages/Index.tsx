@@ -10,14 +10,13 @@ import { useCombinedContext } from '@/contexts/AuthContext';
 const Index = () => {
   try {
   
-    const {user: userDashboard,  profile } = useCombinedContext();
+    const {user: userDashboard } = useCombinedContext();
     const { user, isAuthenticated } = userDashboard  
     
-    
-    if (userDashboard.isLoading && user) {
-      // Show skeleton when user is authenticated but dashboard data is loading
-      return <DashboardSkeleton />;
-    }
+    // if (userDashboard.isLoading && user) {
+    //   // Show skeleton when user is authenticated but dashboard data is loading
+    //   return <DashboardSkeleton />;
+    // }
     
 
 

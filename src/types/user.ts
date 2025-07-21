@@ -10,28 +10,52 @@ interface IEmergencyContact {
 }
 
 export interface ProfileFormData {
+  _id:string,
   firstName: string;
   lastName: string;
+  middleName: string;
   phoneNumber?: string;
   email: string;
   address: string;
   dateOfBirth: string;
   profileImage?: string;
   emergencyContact: IEmergencyContact;
-  skills: string;
+  skills: string[];
   education: string;
-  experience: string;
-  department: string;
+  experience?: string;
+  department?: string;
   position: string;
-  role: string
+    role:  
+  | 'md'
+  | 'teamlead'
+  | 'employee'
+  | 'admin'
+  | 'hr';
   createdAt: string;
+  startDate: string;
+  salary?: number;
+  sendInvite: boolean;
+  status: 'active' | 'inactive' | 'terminated';
+  company: string,
+  resetRequested: boolean
 }
 
 export interface ProfileState {
   isEditing: boolean;
   isLoading: boolean;
   error: string | null;
-  formData: ProfileFormData;  // Reference the new formData type here
+   bulkEmployees: Partial<ProfileFormData>[];
+  formData: ProfileFormData;  
+  isBulkImportOpen: boolean;
+  isDialogOpen:boolean;
+  selectedEmployee: ProfileFormData | null;
+  showDetailView: boolean;
+  searchTerm: string;
+  filterDepartment: string;
+  isProcessingBulk: boolean;
+  isEditMode: boolean
+  selectedDeleteId: string
+  isDeleteDialogOpen: boolean
 }
 
 export interface ProfileResponse {
@@ -50,6 +74,5 @@ export interface ProfileContextType {
   editProfile: (profile: ProfileFormData) => Promise<boolean>;  
   uploadProfile: (formData: FormData) => Promise<boolean>;  
   deleteProfile: (id: string) => Promise<boolean>; 
-  refetchProfile:any; 
 }
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 
-import { useEditProfileMutation, useUploadProfileMutation, useGetProfileQuery, useDeleteProfileMutation } from "@/store/slices/profile/profileApi";
+import { useEditProfileMutation, useUploadProfileMutation, useGetProfileQuery, useDeleteProfileMutation, useGetAllProfileQuery } from "@/store/slices/profile/profileApi";
 import { toast } from "../use-toast";
 import { ProfileContextType, ProfileFormData } from "@/types/user";
 import { setFormData, setLoading } from "@/store/slices/profile/profileSlice";
@@ -16,16 +16,13 @@ export const useReduxProfile= (): ProfileContextType => {
   const { user } = useAppSelector((state) => state.auth);
   const [editProfileMutation, {isLoading:editProfileIsLoading}] = useEditProfileMutation();
   const [uploadProfileMutation, {isLoading:uploadIsLoading}] = useUploadProfileMutation();
-  const { data: attendanceRecords, isLoading: historyLoading, error: historyError, refetch: refetchProfile } = useGetProfileQuery(undefined, {
-     skip: !user, // Skip if no user
-   });
- 
-  const [deleteProfileMutation] = useDeleteProfileMutation();
- 
 
+  const [deleteProfileMutation] = useDeleteProfileMutation();  
+ 
 const editProfile = async (profile: any): Promise<boolean> => {
+
+  dispatch(setLoading(true));
   try {
-    dispatch(setLoading(true));
     const result = await editProfileMutation(profile).unwrap();
     
     // Assuming result contains the updated profile data
@@ -50,6 +47,8 @@ const editProfile = async (profile: any): Promise<boolean> => {
 
 
 const uploadProfile = async (formData: FormData): Promise<boolean> => {
+  dispatch(setLoading(true));
+
   try {
     // Await the result of the mutation and unwrap the response
     const success = await uploadProfileMutation(formData).unwrap();
@@ -70,10 +69,14 @@ const uploadProfile = async (formData: FormData): Promise<boolean> => {
       variant: 'destructive',
     });
     return false;
+  }finally{
+    dispatch(setLoading(false));
   }
 };
 
   const deleteProfile = async (id: string): Promise<boolean> => {
+  dispatch(setLoading(true));
+
     try {
       await deleteProfileMutation(id).unwrap();
       toast({ title: 'Profile deleted successfully' });
@@ -86,7 +89,9 @@ const uploadProfile = async (formData: FormData): Promise<boolean> => {
         variant: 'destructive',
       });
       return false;
-    }
+    }finally{
+    dispatch(setLoading(false));
+  }
   };
 
   return {
@@ -97,6 +102,5 @@ const uploadProfile = async (formData: FormData): Promise<boolean> => {
     editProfile,
     uploadProfile,
     deleteProfile,
-    refetchProfile
   };
 };

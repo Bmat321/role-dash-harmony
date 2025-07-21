@@ -2,44 +2,51 @@
 
 import {
   useCreateHandoverMutation,
-  useGetMyHandoverReportsQuery,
-  useApproveHandoverReportMutation,
-  useRejectHandoverReportMutation,
-} from "@/store/slices/handover/handoverApi";
-import { toast } from "../use-toast";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  setSelectedReport,
-  clearHandoverState,
-} from "@/store/slices/handover/handoverSlice";
-import { HandoverContextType } from "@/types/handover";
+  useDeleteHandoverByIdMutation,
+  useGetMyHandoverReportQuery,
+  useTeamGetHandoverReportByDepartmentQuery,
 
+} from "@/store/slices/handover/handoverApi";
+
+import { toast } from "../use-toast";
+
+import {
+  clearHandoverState,
+  setIsLoading,
+} from "@/store/slices/handover/handoverSlice";
+
+import { HandoverContextType } from "@/types/handover";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export const useReduxHandover = (): HandoverContextType => {
   const dispatch = useAppDispatch();
-   const { user } = useAppSelector((state) => state.auth);
-
-  const { reports, isLoading, error, selectedReport } = useAppSelector(
-    (state) => state.handover
-  );
+  const { user } = useAppSelector((state) => state.auth);
 
   const [createHandoverMutation, { isLoading: createLoading }] =
     useCreateHandoverMutation();
-  const [approveMutation, { isLoading: approveLoading }] =
-    useApproveHandoverReportMutation();
-  const [rejectMutation, { isLoading: rejectLoading }] =
-    useRejectHandoverReportMutation();
+
+const [deleteHandoverById, { isLoading: deleteLoading }] =   useDeleteHandoverByIdMutation();
 
   const {
-    data,
-    isLoading: fetchLoading,
-    error: fetchError,
-    refetch: refetchReports,
-  } = useGetMyHandoverReportsQuery(undefined, {
-     skip: !user, // Skip if no user
-   });
+    data: myReports,
+    isLoading: myReportsLoading,
+    error: myReportsError,
+    refetch: refetchMyReports,
+  } = useGetMyHandoverReportQuery(undefined, {
+    skip: !user || user?.role !== "employee",
+  });
 
-  const createHandover = async (formData: FormData): Promise<boolean> => {
+  const {
+    data: teamReports,
+    isLoading: teamReportsLoading,
+    error: teamReportsError,
+    refetch: refetchTeamReports,
+  } = useTeamGetHandoverReportByDepartmentQuery(undefined, {
+    skip: !user || user?.role !== "teamlead",
+  });
+
+  const createHandover = async (formData: any): Promise<boolean> => {
+    dispatch(setIsLoading(true));
     try {
       await createHandoverMutation(formData).unwrap();
       toast({
@@ -54,52 +61,43 @@ export const useReduxHandover = (): HandoverContextType => {
         variant: "destructive",
       });
       return false;
+    } finally {
+      dispatch(setIsLoading(false));
     }
   };
 
-  const approveHandover = async (id: string): Promise<boolean> => {
-    try {
-      await approveMutation(id).unwrap();
-      toast({ title: "Report approved successfully" });
-      return true;
-    } catch (error: any) {
-      toast({
-        title: "Approval Error",
-        description: error?.data?.message || "Failed to approve report",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
 
-  const rejectHandover = async (id: string): Promise<boolean> => {
-    try {
-      await rejectMutation(id).unwrap();
-      toast({ title: "Report rejected successfully" });
-      return true;
-    } catch (error: any) {
-      toast({
-        title: "Rejection Error",
-        description: error?.data?.message || "Failed to reject report",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
+const deleteHandover = async (id: string): Promise<boolean> => {
+  dispatch(setIsLoading(true));
+  try {
+    await deleteHandoverById(id).unwrap();
+    toast({
+      title: 'Deleted',
+      description: 'Handover report deleted successfully.',
+    });
+    return true;
+  } catch (error: any) {
+    toast({
+      title: 'Delete Error',
+      description: error?.data?.message || 'Failed to delete handover report',
+      variant: 'destructive',
+    });
+    return false;
+  } finally {
+    dispatch(setIsLoading(false));
+  }
+};
+
 
   return {
-    reports: data,
-    selectedReport,
-    isHandoverLoading: isLoading || fetchLoading,
-    handoverError: error ,
-    createLoading,
-    approveLoading,
-    rejectLoading,
     createHandover,
-    approveHandover,
-    rejectHandover,
-    refetchReports,
-    setSelectedReport: (report) => dispatch(setSelectedReport(report)),
+    deleteHandover,
+    myReports,
+    myReportsLoading,
+    teamReports,
+    teamReportsLoading,
+    refetchMyReports,
+    refetchTeamReports,
     clearHandoverState: () => dispatch(clearHandoverState()),
   };
 };

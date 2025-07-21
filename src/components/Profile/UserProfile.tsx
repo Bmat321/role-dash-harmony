@@ -41,30 +41,10 @@ const UserProfile: React.FC = () => {
     const {profile:user,  isProfileLoading } = userProfile
   const {editProfile} = useReduxProfile()
   const dispatch = useAppDispatch()
-  const {formData, isEditing, isLoading } = useAppSelector((state) => state.profile);  
+  const {formData, isEditing, isLoading, bulkEmployees } = useAppSelector((state) => state.profile);  
 
-
-  // Sync user data with Redux formData when the component first mounts
-  // useEffect(() => {
-  //   if (user && !isEditing) {
-  //     dispatch(setFormData({
-  //       firstName: user.firstName,
-  //       lastName: user.lastName,
-  //       email: user.email,
-  //       phoneNumber: user.phoneNumber,
-  //       dateOfBirth: user.dateOfBirth,
-  //       address: user.address,
-  //       department: user.department,
-  //       position: user.position,
-  //       skills: user.skills,
-  //       education: user.education,
-  //       experience: user.experience,
-  //       emergencyContact: user.emergencyContact,
-  //     }));
-  //   }
-  // }, [user, isEditing, dispatch]);
-
-    // Create a map of which fields are editable for each role
+console.log('formDATAA', formData)
+ 
   const editableFields = getEditableFields(user?.role);
 
 
@@ -79,8 +59,8 @@ const handleSave = async () => {
   };
 
 
-  const RoleIcon = getRoleIcon(user?.role.toLowerCase() || '');
-  const canEditAll = user?.role.toLowerCase() === 'admin' || user?.role.toLowerCase() === 'hr';
+  const RoleIcon = getRoleIcon(user?.role || '');
+  const canEditAll = user?.role === 'admin' || user?.role === 'hr';
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -125,7 +105,7 @@ const handleSave = async () => {
             <CardContent className="space-y-4">
               <div className="text-center">
                 <h3 className="text-xl font-semibold">{user?.firstName} {user?.lastName}</h3>
-                <Badge className={`mt-2 ${getRoleColor(user?.role.toLowerCase() || '')}`}>
+                <Badge className={`mt-2 ${getRoleColor(user?.role || '')}`}>
                   {user?.role?.toUpperCase().replace('_', ' ')}
                 </Badge>
               </div>
@@ -212,8 +192,7 @@ const handleSave = async () => {
                         id="phone"
                         value={formData?.phoneNumber}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        disabled={!(isEditing && editableFields.includes('phone'))}
-                                        
+                        disabled={!(isEditing && editableFields.includes('phone'))}                                      
 
                         placeholder="+1 (555) 000-0000"
                       />
@@ -348,9 +327,9 @@ const handleSave = async () => {
                     <Label htmlFor="emergencyContact">Emergency Contact Details</Label>
                     <Textarea
                       id="emergencyContact"
-                      value={formData?.emergencyContact.phone}
+                      value={formData?.emergencyContact?.name}
                       onChange={(e) => dispatch(setFormData({ ...formData, emergencyContact: e.target.value }))}
-                                                                                        disabled={!(isEditing && editableFields.includes('emergencyContact'))}
+                    disabled={!(isEditing && editableFields.includes('emergencyContact'))}
 
 
                       placeholder="Name, relationship, phone number, and address of emergency contact"

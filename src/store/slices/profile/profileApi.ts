@@ -14,6 +14,7 @@ export const profileApi = apiSlice.injectEndpoints({
         body: data,
         credentials: 'include' as const,
       }),
+      // invalidatesTags: ['Profiles'],
     }),
 
     uploadProfile: builder.mutation({
@@ -34,12 +35,22 @@ export const profileApi = apiSlice.injectEndpoints({
         method: 'GET',
         credentials: 'include' as const,
       }),
+      
+    }),
+
+    getAllProfile: builder.query({
+      query: () => ({
+        url: '/api/user/users',
+        method: 'GET',
+        credentials: 'include' as const,
+      }),
+      providesTags: ['Profiles'],
     }),
 
     deleteProfile: builder.mutation({
       query: (id) => ({
         url: `/api/user/${id}`,
-        method: 'GET',
+        method: 'DELETE',
         credentials: 'include' as const,
       }),
     }),
@@ -54,6 +65,7 @@ export const {
 useEditProfileMutation,
 useUploadProfileMutation,
 useGetProfileQuery,
-useDeleteProfileMutation
+useDeleteProfileMutation,
+useGetAllProfileQuery
  
 } = profileApi;

@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, CheckCircle, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useReduxAuth } from '@/hooks/auth/useReduxAuth';
 
 interface SetPasswordProps {
   token?: string;
@@ -24,6 +25,7 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email: initialEmail })
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
+  const {setNewPassword} = useReduxAuth()
 
   const validatePassword = (pwd: string) => {
     const minLength = pwd.length >= 8;
@@ -75,15 +77,30 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email: initialEmail })
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      toast({
-        title: "Password Set Successfully",
-        description: "You can now log in with your new password",
-      });
-    }, 2000);
+
+  const success = await setNewPassword(
+    password,
+    {
+      minLength: 8,
+      requireUppercase: true,
+      requireNumber: true,
+      requireSpecialChar: true,
+    },
+    tempPassword
+  );
+
+  setIsLoading(false);
+
+  if (success) {
+    setIsSuccess(true);
+  }
+    // setTimeout(() => {
+    //   setIsSuccess(true);
+    //   toast({
+    //     title: "Password Set Successfully",
+    //     description: "You can now log in with your new password",
+    //   });
+    // }, 2000);
   };
 
   if (isSuccess) {

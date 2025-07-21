@@ -1,36 +1,4 @@
 
-// import React, { createContext, useContext } from 'react';
-// import { AuthContextType } from '@/types/auth';
-// import { useReduxAuth } from '@/hooks/useReduxAuth';
-
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const reduxAuth = useReduxAuth();
-
-//   // Add error boundary to prevent crashes
-//   if (!reduxAuth) {
-//     console.error('useReduxAuth returned undefined');
-//     return <div>Loading authentication...</div>;
-//   }
-
-//   return (
-//     <AuthContext.Provider value={reduxAuth}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// // eslint-disable-next-line react-refresh/only-export-components
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error('useAuth must be used within AuthProvider');
-//   }
-//   return context;
-// };
-
-
 import React, { createContext, useContext } from 'react';
 import { AuthContextType } from '@/types/auth';
 
@@ -62,7 +30,6 @@ export const CombinedProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Check if auth and profile are undefined
   if (!user || !profile || !attendance || !leave ||!handover) {
-    console.error('useReduxAuth or useReduxProfile returned undefined');
     return <div>Loading...</div>;
   }
 

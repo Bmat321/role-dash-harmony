@@ -12,7 +12,7 @@ export const SystemSettings: React.FC = () => {
        const {user: userSystemSettings,  profile } = useCombinedContext();
       const { user} = userSystemSettings
 
-  if (user?.role !== 'admin') {
+  if (user?.role !== 'hr') {
     return (
       <Card>
         <CardContent className="pt-6">

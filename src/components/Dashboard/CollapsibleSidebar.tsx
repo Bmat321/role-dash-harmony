@@ -55,7 +55,7 @@ const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       { id: 'dashboard', label: 'Dashboard', icon: Home },
     ];
 
-    const role = user.role?.toLowerCase(); 
+    const role = user.role; 
 
     switch (role) {
       case 'admin':
