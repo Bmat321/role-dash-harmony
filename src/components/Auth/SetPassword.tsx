@@ -86,7 +86,8 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email: initialEmail })
       requireNumber: true,
       requireSpecialChar: true,
     },
-    tempPassword
+    tempPassword,
+    token
   );
 
   setIsLoading(false);
@@ -103,22 +104,30 @@ const SetPassword: React.FC<SetPasswordProps> = ({ token, email: initialEmail })
     // }, 2000);
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Password Set Successfully!</h2>
-            <p className="text-gray-600 mb-6">You can now log in to your account using your new password.</p>
-            <Button className="w-full" onClick={() => window.location.href = '/login'}>
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+ if (isSuccess) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6 text-center">
+          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Password Set Successfully!</h2>
+          <p className="text-gray-600 mb-6">
+            You can now log in to your account using your new password.
+          </p>
+          <Button
+            className="w-full"
+            onClick={() =>
+              window.location.href = 'http://staging-hris.btmlimited.net'
+            }
+          >
+            Go to Login
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
