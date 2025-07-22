@@ -20,28 +20,7 @@ const baseQuery = fetchBaseQuery({
 
     return headers;
   },
-  // prepareHeaders: async (headers, {getState, endpoint}) => {
-  //   const excludedRoutes = [
-  //     '/register',
-  //     '/activate-user',
-  //     '/login',
-  //     '/verify-2fa',
-  //     '/request-user-password',
-  //     '/reset-user-password',
-  //   ];
 
-  //   const currentUrl = endpoint;
-
-  //   if (!excludedRoutes.some(route => currentUrl.includes(route))) {
-  //     const token = tokenUtils.getToken();
-  //     console.log("tokenr", token)
-
-  //     if (token) {
-  //       headers.set('Authorization', `Bearer ${token}`);
-  //     }
-  //   }
-  //   return headers;
-  // },
 });
 
 const baseQueryWithReauth = async (
