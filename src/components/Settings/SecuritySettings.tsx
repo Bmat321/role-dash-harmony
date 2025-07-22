@@ -40,7 +40,6 @@ const SecuritySettings: React.FC = () => {
   ]);
 
   const handleSave = () => {
-    console.log('Saving security settings:', settings);
     toast({
       title: "Security Settings Saved",
       description: "Security configurations have been updated successfully.",

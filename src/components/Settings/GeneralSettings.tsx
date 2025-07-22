@@ -31,7 +31,6 @@ const GeneralSettings: React.FC = () => {
   });
 
   const handleSave = () => {
-    console.log('Saving general settings:', settings);
     toast({
       title: "Settings Saved",
       description: "General settings have been updated successfully.",

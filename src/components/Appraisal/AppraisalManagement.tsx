@@ -22,7 +22,6 @@ const mockEmployees = [
 const AppraisalManagement: React.FC = () => {
            const {user: userAppraisalManagement,  profile } = useCombinedContext();
           const { user} = userAppraisalManagement
-          console.log("userAppraisalManagement", user)
   const [appraisals, setAppraisals] = useState<Appraisal[]>([]);
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

@@ -15,7 +15,7 @@ interface SetPasswordProps {
 }
 
 const SetPassword: React.FC<SetPasswordProps> = ({ token, email: initialEmail }) => {
-  const [email, setEmail] = useState(initialEmail || '');
+  const [email, setEmail] = useState('');
   const [tempPassword, setTempPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

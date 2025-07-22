@@ -32,7 +32,6 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  console.log("file", selectedFile)
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

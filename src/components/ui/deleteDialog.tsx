@@ -16,7 +16,6 @@ export const DeleteConfirmationDialog = ({ onConfirm }: Props) => {
   const isLoading = useAppSelector((state) => state.handover.isLoading);
   const selectedProfileId = useAppSelector((state) => state.profile.selectedDeleteId);
 
-console.log("selectedProfileId", selectedProfileId)
 
   const handleCancel = () => {
     dispatch(setIsDeleteDialogOpen(false));

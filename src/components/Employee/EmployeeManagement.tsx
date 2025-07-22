@@ -53,7 +53,6 @@ const filteredEmployees = bulkEmployees?.filter((employee:any) => {
 
   return matchesSearch && matchesDepartment;
 });
-{console.log('profilesIsLoading:', profilesIsLoading)}
 
 
 const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -550,11 +549,11 @@ const handleDelete = async (employeeId: string) => {
                           <div>
                             <Label htmlFor="hireDate">Hire Date</Label>
                             <Input
-                              id="hireDate"
+                              id="startDate"
                               type="date"
                               value={formData.startDate || ''}
                               onChange={(e) =>
-                                dispatch(setFormData({ ...formData, hireDate: e.target.value }))
+                                dispatch(setFormData({ ...formData, startDate: e.target.value }))
                               }
                             />
                           </div>

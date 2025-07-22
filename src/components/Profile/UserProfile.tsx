@@ -43,7 +43,6 @@ const UserProfile: React.FC = () => {
   const dispatch = useAppDispatch()
   const {formData, isEditing, isLoading, bulkEmployees } = useAppSelector((state) => state.profile);  
 
-console.log('formDATAA', formData)
  
   const editableFields = getEditableFields(user?.role);
 
